@@ -1,0 +1,300 @@
+import type { Depth, Lang, Level, Tag } from "./types";
+
+// UI chrome strings. The contract's *content* is explained in the user's language
+// by the model (or the bilingual fixture); this file is only the surrounding UI.
+// German and English are first-class; tr/uk/ar reuse the English chrome and rely
+// on translated contract content — the point the challenge names is understanding
+// the contract, not the buttons.
+
+interface Strings {
+  tagline: string;
+  disclaimer: string;
+  disclaimerLong: string;
+  screens: { upload: string; analyzing: string; overview: string; original: string; decision: string };
+  mobileView: string;
+  mobileViewOn: string;
+  mockupLabel: string;
+  stubBanner: string;
+
+  // upload
+  hero: string;
+  heroSub: string;
+  dragText: string;
+  fileTypes: string;
+  uploadBtn: string;
+  privacy: string;
+  exampleBtn: string;
+  exampleNote: string;
+
+  // analyzing
+  analyzingTitle: string;
+  analyzingSub: string;
+  steps: [string, string, string, string];
+  skip: string;
+
+  // overview
+  glanceHeading: string;
+  fileMeta: (pages: number) => string;
+  explanationLevel: string;
+  depth: Record<Depth, string>;
+  findingsHeading: (n: number) => string;
+  findingsSub: string;
+  levelLegend: string;
+  costHeading: string;
+  costSub: string;
+  everyMonth: string;
+  overYear: string;
+  oneTimeHeading: string;
+  notMentioned: string;
+  possibleAddl: string;
+  first12: string;
+  firstMonthHigher: string;
+  datesHeading: string;
+  datesSub: string;
+  addCalendar: string;
+  calAdded: string;
+  rightsHeading: string;
+  rightsSub: string;
+  dutiesHeading: string;
+  dutiesSub: string;
+  showClause: string;
+  askHeading: string;
+  askSub: string;
+  askPlaceholder: string;
+  askBtn: string;
+  askExplanation: string;
+  askShowClause: string;
+  viewOriginal: string;
+  beforeSign: string;
+
+  // original
+  originalTitle: string;
+  originalSub: string;
+  backToSummary: string;
+  explanationLabel: string;
+  selectFinding: string;
+  selectHint: string;
+
+  // decision
+  decisionTitle: string;
+  decisionSub: string;
+  checklist: { id: string; t: string }[];
+  reviewWarnTitle: string;
+  reviewWarnBody: string;
+  reviewClause: string;
+  downloadSummary: string;
+  summaryReady: string;
+
+  // clause panel
+  fromContract: string;
+  explainedBy: string;
+  meansTitle: string;
+  whyTitle: string;
+  legalToggle: string;
+  legalDisclaimer: string;
+  showInDoc: string;
+  close: string;
+  aiMeta: (depth: string, lang: string) => string;
+
+  // labels
+  levelName: Record<Level, string>;
+  tagName: Record<Tag, string>;
+  langLabel: string;
+
+  // confidence / errors
+  lowConfidence: string;
+  errorTitle: string;
+  tryAgain: string;
+}
+
+const EN: Strings = {
+  tagline: "Your contract. Explained clearly.",
+  disclaimer: "This tool explains your contract; it does not replace legal advice.",
+  disclaimerLong:
+    "This tool explains your contract; it does not replace legal advice. For a binding opinion, contact a lawyer or a tenants’ association (Mieterverein).",
+  screens: { upload: "1 · Upload", analyzing: "2 · Analysis", overview: "3 · Overview", original: "4 · Original", decision: "5 · Before you sign" },
+  mobileView: "Mobile view",
+  mobileViewOn: "Mobile view ✓",
+  mockupLabel: "Screens",
+  stubBanner: "Demo mode — showing the sample analysis. Connect the model to read your own contract.",
+  hero: "Know what you’re signing.",
+  heroSub: "Upload your contract and we’ll explain the important parts in plain language.",
+  dragText: "Drag your contract here",
+  fileTypes: "PDF, DOCX or image · up to 20 pages",
+  uploadBtn: "Upload contract",
+  privacy:
+    "Your document is processed only to create your explanation. It is not stored after your session, and never used for training.",
+  exampleBtn: "Try with an example contract",
+  exampleNote: "A sample rental agreement — nothing to upload.",
+  analyzingTitle: "We’re turning the legal language into something easier to understand.",
+  analyzingSub: "This usually takes under a minute. You can stay on this page.",
+  steps: ["Reading your contract", "Finding important clauses", "Checking costs and deadlines", "Preparing your summary"],
+  skip: "Skip ahead to my summary",
+  glanceHeading: "Your contract at a glance",
+  fileMeta: (p) => `${p} pages · explained in English`,
+  explanationLevel: "Explanation level",
+  depth: { simple: "Simple", standard: "Standard", detailed: "Detailed" },
+  findingsHeading: (n) => `${n} things to know before you sign`,
+  findingsSub: "Select any item to see the exact wording in your contract.",
+  levelLegend:
+    "Levels: Important affects money, obligations or cancellation · Worth checking may matter depending on your situation · Standard is a common provision.",
+  costHeading: "What will this cost me?",
+  costSub: "Based on the amounts written in your contract.",
+  everyMonth: "Every month",
+  overYear: "Over one year",
+  oneTimeHeading: "One-time, at the start",
+  notMentioned: "Not mentioned in your contract",
+  possibleAddl: "Possible additional costs",
+  first12: "Your first 12 months",
+  firstMonthHigher: "First month is higher because of the deposit",
+  datesHeading: "Important dates",
+  datesSub: "Missing a notice deadline can cost you several months of rent, so these matter most.",
+  addCalendar: "Add deadline to calendar",
+  calAdded: "A reminder file (.ics) has been downloaded — open it to add the deadline to your calendar.",
+  rightsHeading: "Your rights",
+  rightsSub: "What the contract says you can expect.",
+  dutiesHeading: "Your responsibilities",
+  dutiesSub: "What you agree to do by signing.",
+  showClause: "Show clause",
+  askHeading: "Ask about this contract…",
+  askSub: "Answers point back to the wording in your document.",
+  askPlaceholder: "Type your question…",
+  askBtn: "Ask",
+  askExplanation: "SignWise explanation",
+  askShowClause: "Show the clause this comes from",
+  viewOriginal: "View original contract",
+  beforeSign: "Before you sign →",
+  originalTitle: "Original contract",
+  originalSub: "Highlighted passages are the ones your findings come from.",
+  backToSummary: "← Back to summary",
+  explanationLabel: "Explanation",
+  selectFinding: "Select a finding",
+  selectHint: "Choose one of the findings below and we’ll explain the passage next to it in plain language.",
+  decisionTitle: "Before you sign",
+  decisionSub: "Tick what you feel sure about. We won’t tell you to sign or not to sign — that decision is yours.",
+  checklist: [
+    { id: "costs", t: "I understand my monthly and one-time costs" },
+    { id: "duration", t: "I understand the duration of the contract" },
+    { id: "cancel", t: "I know how and when I can cancel" },
+    { id: "duties", t: "I understand my main responsibilities" },
+  ],
+  reviewWarnTitle: "There is 1 clause you may want to review",
+  reviewWarnBody: "§ 13 puts small repairs on you. This may deserve closer review before you sign.",
+  reviewClause: "Review the clause",
+  downloadSummary: "Download my contract summary",
+  summaryReady: "Your summary is opening in a new tab — use your browser’s Print → Save as PDF.",
+  fromContract: "From your contract",
+  explainedBy: "Explained by SignWise",
+  meansTitle: "What this means for you",
+  whyTitle: "Why it matters",
+  legalToggle: "Relevant legal context (general information)",
+  legalDisclaimer: "General information about German tenancy law — not a statement about your contract, and not legal advice.",
+  showInDoc: "Show this in the original document",
+  close: "Close",
+  aiMeta: (d, l) => `AI explanation · ${d} · ${l}`,
+  levelName: { important: "Important", check: "Worth checking", standard: "Standard" },
+  tagName: { money: "Money", deadline: "Deadline", responsibility: "Responsibility", risk: "Risk" },
+  langLabel: "English",
+  lowConfidence:
+    "SignWise is less certain about this contract than usual — the document may be scanned, unusual, or hard to read. Treat the summary as a first orientation and check the original wording.",
+  errorTitle: "We couldn’t read that file",
+  tryAgain: "Try another file",
+};
+
+const DE: Strings = {
+  tagline: "Ihr Vertrag. Klar erklärt.",
+  disclaimer: "Dieses Tool erklärt Ihren Vertrag; es ersetzt keine Rechtsberatung.",
+  disclaimerLong:
+    "Dieses Tool erklärt Ihren Vertrag; es ersetzt keine Rechtsberatung. Für eine verbindliche Einschätzung wenden Sie sich an einen Anwalt oder einen Mieterverein.",
+  screens: { upload: "1 · Hochladen", analyzing: "2 · Analyse", overview: "3 · Überblick", original: "4 · Original", decision: "5 · Vor der Unterschrift" },
+  mobileView: "Mobile Ansicht",
+  mobileViewOn: "Mobile Ansicht ✓",
+  mockupLabel: "Bildschirme",
+  stubBanner: "Demo-Modus — es wird die Beispielanalyse gezeigt. Verbinden Sie das Modell, um Ihren eigenen Vertrag zu lesen.",
+  hero: "Wissen, was Sie unterschreiben.",
+  heroSub: "Laden Sie Ihren Vertrag hoch, und wir erklären die wichtigen Teile in einfacher Sprache.",
+  dragText: "Vertrag hierher ziehen",
+  fileTypes: "PDF, DOCX oder Bild · bis zu 20 Seiten",
+  uploadBtn: "Vertrag hochladen",
+  privacy:
+    "Ihr Dokument wird nur zur Erstellung Ihrer Erklärung verarbeitet. Es wird nach Ihrer Sitzung nicht gespeichert und niemals für Training verwendet.",
+  exampleBtn: "Mit einem Beispielvertrag testen",
+  exampleNote: "Ein Beispiel-Mietvertrag — Sie müssen nichts hochladen.",
+  analyzingTitle: "Wir übersetzen die Rechtssprache in etwas Verständlicheres.",
+  analyzingSub: "Das dauert meist unter einer Minute. Sie können auf dieser Seite bleiben.",
+  steps: ["Vertrag wird gelesen", "Wichtige Klauseln werden gesucht", "Kosten und Fristen werden geprüft", "Ihre Zusammenfassung wird erstellt"],
+  skip: "Direkt zur Zusammenfassung",
+  glanceHeading: "Ihr Vertrag auf einen Blick",
+  fileMeta: (p) => `${p} Seiten · erklärt auf Deutsch`,
+  explanationLevel: "Erklärungstiefe",
+  depth: { simple: "Einfach", standard: "Standard", detailed: "Ausführlich" },
+  findingsHeading: (n) => `${n} Dinge, die Sie vor der Unterschrift wissen sollten`,
+  findingsSub: "Wählen Sie einen Punkt, um den genauen Wortlaut in Ihrem Vertrag zu sehen.",
+  levelLegend:
+    "Stufen: Wichtig betrifft Geld, Pflichten oder Kündigung · Prüfenswert kann je nach Situation relevant sein · Standard ist eine übliche Regelung.",
+  costHeading: "Was kostet mich das?",
+  costSub: "Basierend auf den in Ihrem Vertrag genannten Beträgen.",
+  everyMonth: "Jeden Monat",
+  overYear: "Über ein Jahr",
+  oneTimeHeading: "Einmalig, zu Beginn",
+  notMentioned: "Nicht im Vertrag erwähnt",
+  possibleAddl: "Mögliche zusätzliche Kosten",
+  first12: "Ihre ersten 12 Monate",
+  firstMonthHigher: "Der erste Monat ist wegen der Kaution höher",
+  datesHeading: "Wichtige Termine",
+  datesSub: "Eine verpasste Kündigungsfrist kann mehrere Monatsmieten kosten — deshalb zählen diese am meisten.",
+  addCalendar: "Frist zum Kalender hinzufügen",
+  calAdded: "Eine Erinnerungsdatei (.ics) wurde heruntergeladen — öffnen Sie sie, um die Frist in Ihren Kalender zu übernehmen.",
+  rightsHeading: "Ihre Rechte",
+  rightsSub: "Was Sie laut Vertrag erwarten dürfen.",
+  dutiesHeading: "Ihre Pflichten",
+  dutiesSub: "Wozu Sie sich mit der Unterschrift verpflichten.",
+  showClause: "Klausel anzeigen",
+  askHeading: "Fragen Sie zu diesem Vertrag…",
+  askSub: "Antworten verweisen zurück auf den Wortlaut in Ihrem Dokument.",
+  askPlaceholder: "Ihre Frage eingeben…",
+  askBtn: "Fragen",
+  askExplanation: "SignWise-Erklärung",
+  askShowClause: "Die zugehörige Klausel anzeigen",
+  viewOriginal: "Originalvertrag ansehen",
+  beforeSign: "Vor der Unterschrift →",
+  originalTitle: "Originalvertrag",
+  originalSub: "Hervorgehobene Passagen sind die, aus denen Ihre Punkte stammen.",
+  backToSummary: "← Zurück zur Zusammenfassung",
+  explanationLabel: "Erklärung",
+  selectFinding: "Einen Punkt auswählen",
+  selectHint: "Wählen Sie unten einen der Punkte, und wir erklären die Passage daneben in einfacher Sprache.",
+  decisionTitle: "Vor der Unterschrift",
+  decisionSub: "Haken Sie ab, was Ihnen sicher ist. Wir sagen Ihnen nicht, ob Sie unterschreiben sollen — das entscheiden Sie.",
+  checklist: [
+    { id: "costs", t: "Ich verstehe meine monatlichen und einmaligen Kosten" },
+    { id: "duration", t: "Ich verstehe die Laufzeit des Vertrags" },
+    { id: "cancel", t: "Ich weiß, wie und wann ich kündigen kann" },
+    { id: "duties", t: "Ich verstehe meine wichtigsten Pflichten" },
+  ],
+  reviewWarnTitle: "Es gibt 1 Klausel, die Sie prüfen sollten",
+  reviewWarnBody: "§ 13 überträgt Kleinreparaturen auf Sie. Das sollten Sie vor der Unterschrift genauer prüfen.",
+  reviewClause: "Klausel prüfen",
+  downloadSummary: "Meine Zusammenfassung herunterladen",
+  summaryReady: "Ihre Zusammenfassung öffnet sich in einem neuen Tab — nutzen Sie Drucken → Als PDF speichern.",
+  fromContract: "Aus Ihrem Vertrag",
+  explainedBy: "Von SignWise erklärt",
+  meansTitle: "Was das für Sie bedeutet",
+  whyTitle: "Warum es wichtig ist",
+  legalToggle: "Relevanter rechtlicher Kontext (allgemeine Information)",
+  legalDisclaimer: "Allgemeine Informationen zum deutschen Mietrecht — keine Aussage über Ihren Vertrag und keine Rechtsberatung.",
+  showInDoc: "Dies im Originaldokument anzeigen",
+  close: "Schließen",
+  aiMeta: (d, l) => `KI-Erklärung · ${d} · ${l}`,
+  levelName: { important: "Wichtig", check: "Prüfenswert", standard: "Standard" },
+  tagName: { money: "Geld", deadline: "Frist", responsibility: "Pflicht", risk: "Risiko" },
+  langLabel: "Deutsch",
+  lowConfidence:
+    "SignWise ist bei diesem Vertrag unsicherer als sonst — das Dokument ist vielleicht gescannt, ungewöhnlich oder schwer lesbar. Sehen Sie die Zusammenfassung als erste Orientierung und prüfen Sie den Originalwortlaut.",
+  errorTitle: "Wir konnten diese Datei nicht lesen",
+  tryAgain: "Andere Datei versuchen",
+};
+
+export function t(lang: Lang): Strings {
+  return lang === "de" ? DE : EN;
+}
