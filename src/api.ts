@@ -16,12 +16,16 @@ export class ApiError extends Error {
   }
 }
 
-export async function analyze(file: File, lang: Lang): Promise<Analysis> {
-  const dataB64 = await fileToB64(file);
+// Send extracted text when we have it (PDFs), else the raw image bytes for vision.
+export async function analyze(file: File, lang: Lang, text: string | null): Promise<Analysis> {
+  const body: Record<string, unknown> = { lang, filename: file.name, mime: file.type };
+  if (text && text.trim()) body.text = text;
+  else body.dataB64 = await fileToB64(file);
+
   const res = await fetch("/api/analyze", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ lang, filename: file.name, mime: file.type, dataB64 }),
+    body: JSON.stringify(body),
   });
   const json = await res.json().catch(() => ({}));
   if (!res.ok) throw new ApiError(json?.error ?? `http_${res.status}`);

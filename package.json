@@ -6,22 +6,28 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "start": "tsx server.ts",
     "preview": "vite preview",
     "test": "tsx --test test/*.test.ts"
   },
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
-    "@anthropic-ai/foundry-sdk": "^0.4.4",
+    "express": "^5.2.1",
+    "openai": "^4.104.0",
     "pdfjs-dist": "^4.7.76",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "tsx": "^4.19.1",
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/express": "^5.0.6",
     "@types/node": "^20.19.43",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
-    "tsx": "^4.19.1",
     "typescript": "^5.5.4",
     "vite": "^5.4.6"
   }

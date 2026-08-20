@@ -55,40 +55,57 @@ npm run build    # typecheck + production build
 ## The model
 
 Contract reading runs through **one file**: [`api/_model.ts`](api/_model.ts). It
-calls **Claude on Azure AI Foundry** (`claude-opus-5`) when credentials are set,
-and falls back to the built-in sample analysis (tagged so the UI shows a "demo
-mode" banner) when they aren't — so local dev and the demo never break on a
-missing key.
+calls a **GPT model on Azure OpenAI** when credentials are set, and falls back to
+the built-in sample analysis (tagged so the UI shows a "demo mode" banner) when
+they aren't — so local dev and the demo never break on a missing key.
 
-Set the credentials (see [`.env.example`](.env.example)) in `.env.local` and in
-your Vercel project:
+Set the credentials (see [`.env.example`](.env.example)) in `.env.local` and as
+App Settings on your Azure Web App:
 
 ```
-ANTHROPIC_FOUNDRY_RESOURCE=your-foundry-resource-name
-ANTHROPIC_FOUNDRY_API_KEY=your-foundry-project-api-key
-MODEL_ID=claude-opus-5           # your Foundry deployment name
+AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com
+AZURE_OPENAI_API_KEY=your-azure-openai-key
+AZURE_OPENAI_DEPLOYMENT=gpt-4o           # your deployment name
+AZURE_OPENAI_API_VERSION=2024-10-21
 ```
 
-The PDF is sent to the model as a base64 document block; the model returns the
-structured `Analysis` JSON, which is validated against the schema and whose
-quotes are verified against the document text client-side before anything is
-shown. The same seam fits the Anthropic API or Azure OpenAI with a one-file
-change.
+The contract text (extracted from the PDF client-side via pdf.js, or an image
+for scanned contracts via GPT-4o vision) is sent to the model, which returns the
+structured `Analysis` JSON. That JSON is validated against the schema and its
+quotes are verified against the document text before anything is shown. Only this
+one file talks to a model — swapping to Claude, Bedrock, etc. is a one-file change.
 
-> **Foundry billing note:** Claude on Foundry is an Azure Marketplace purchase
-> billed in Claude Consumption Units. It does **not** work on credit-only,
-> sponsored, or free-trial subscriptions, and with a card on file the **card is
-> charged, not Azure credits**.
+## Deploy (Azure App Service)
+
+The app is a single Node process ([`server.ts`](server.ts)) that serves the built
+SPA and the API — no Functions rewrite, no separate API project.
+
+1. Create a **Web App** (Linux, **Node 20 LTS**) on your Azure subscription.
+2. **Deployment Center** → connect this GitHub repo/branch. Azure builds
+   (`npm install && npm run build`) and starts it on every push.
+3. Set the **Startup Command** to `npm start`.
+4. Add the Azure OpenAI variables above under **Settings → Environment variables**.
+
+CLI equivalent:
+
+```bash
+az webapp up --name signwise --runtime "NODE:20-lts" --sku B1
+az webapp config set --name signwise --startup-file "npm start"
+```
+
+Without the Azure OpenAI settings the site still runs — in demo mode.
 
 ## Architecture
 
-Vite + React + TypeScript SPA; three Vercel serverless functions in `api/`
-(`analyze`, `ask`, `translate`). No UI framework, router, state library, chart
+Vite + React + TypeScript SPA; three `(req,res)` handlers in `api/`
+(`analyze`, `ask`, `translate`), served by [`server.ts`](server.ts) in production
+and by Vite dev middleware locally. No UI framework, router, state library, chart
 or icon dependency — the data contract in [`src/types.ts`](src/types.ts) (one Zod
 schema) drives the API, the sample fixture, and the UI types alike.
 
 ```
-api/_model.ts     the only file that talks to a model (stub → Foundry next)
+server.ts         Express server for Azure App Service (serves SPA + API)
+api/_model.ts     the only file that talks to a model (Azure OpenAI + fallback)
 src/types.ts      the Analysis contract — one schema, everywhere
 src/sample.ts     the bilingual demo contract
 src/verify.ts     verbatim quote verification (pure, tested)

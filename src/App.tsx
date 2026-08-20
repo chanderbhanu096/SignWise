@@ -114,7 +114,7 @@ export default function App() {
       (async () => {
         const buf = await file.arrayBuffer();
         const text = await extractPdfText(buf.slice(0)); // slice: keep our own copy
-        const a = await analyze(file, lang);
+        const a = await analyze(file, lang, text);
         return { a, text };
       })(),
     );
