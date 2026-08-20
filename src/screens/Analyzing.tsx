@@ -9,7 +9,7 @@ export function Analyzing({ lang, step, filename, onSkip }: { lang: Lang; step: 
   return (
     <section className="screen shell" style={{ maxWidth: 640 }} aria-labelledby="an-h">
       <div className="card" style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1552cf" strokeWidth="1.7" strokeLinejoin="round" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0f5f6b" strokeWidth="1.7" strokeLinejoin="round" aria-hidden="true">
           <path d="M14 3v5h5" />
           <path d="M6 3h8l5 5v13H6z" />
         </svg>

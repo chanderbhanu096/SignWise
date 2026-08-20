@@ -74,7 +74,7 @@ export function Upload({
           }}
         >
           <div className="drop-icon">
-            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#1552cf" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#0f5f6b" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M14 3v5h5" />
               <path d="M6 3h8l5 5v13H6z" />
               <path d="M9 13h6" />
