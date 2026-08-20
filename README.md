@@ -54,18 +54,31 @@ npm run build    # typecheck + production build
 
 ## The model
 
-Contract reading runs through **one file**: [`api/_model.ts`](api/_model.ts).
+Contract reading runs through **one file**: [`api/_model.ts`](api/_model.ts). It
+calls **Claude on Azure AI Foundry** (`claude-opus-5`) when credentials are set,
+and falls back to the built-in sample analysis (tagged so the UI shows a "demo
+mode" banner) when they aren't — so local dev and the demo never break on a
+missing key.
 
-Right now it is a **stub** — it returns the built-in sample analysis (tagged so
-the UI shows a "demo mode" banner), so the whole product runs with no API key.
-Everything else is real: upload, client-side PDF text extraction, schema
-validation, quote verification, and all five screens.
+Set the credentials (see [`.env.example`](.env.example)) in `.env.local` and in
+your Vercel project:
 
-The next step swaps the stub body for an **Azure AI Foundry** Claude call
-(`claude-opus-5`, PDF input, structured JSON output). Because only this one file
-talks to a model, that is a single-file change — the same seam also fits the
-Anthropic API or Azure OpenAI directly. The call shape and Foundry billing notes
-are recorded inline in `api/_model.ts`.
+```
+ANTHROPIC_FOUNDRY_RESOURCE=your-foundry-resource-name
+ANTHROPIC_FOUNDRY_API_KEY=your-foundry-project-api-key
+MODEL_ID=claude-opus-5           # your Foundry deployment name
+```
+
+The PDF is sent to the model as a base64 document block; the model returns the
+structured `Analysis` JSON, which is validated against the schema and whose
+quotes are verified against the document text client-side before anything is
+shown. The same seam fits the Anthropic API or Azure OpenAI with a one-file
+change.
+
+> **Foundry billing note:** Claude on Foundry is an Azure Marketplace purchase
+> billed in Claude Consumption Units. It does **not** work on credit-only,
+> sponsored, or free-trial subscriptions, and with a card on file the **card is
+> charged, not Azure credits**.
 
 ## Architecture
 
