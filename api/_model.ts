@@ -13,7 +13,7 @@ import { sampleAnalysis } from "../src/sample";
 const ENDPOINT = process.env.AZURE_OPENAI_ENDPOINT; // https://<resource>.openai.azure.com
 const API_KEY = process.env.AZURE_OPENAI_API_KEY;
 export const DEPLOYMENT = process.env.AZURE_OPENAI_DEPLOYMENT ?? "gpt-4o";
-const API_VERSION = process.env.AZURE_OPENAI_API_VERSION ?? "2024-10-21";
+const API_VERSION = process.env.AZURE_OPENAI_API_VERSION ?? "2025-01-01-preview";
 
 const live = !!(ENDPOINT && API_KEY);
 
@@ -107,10 +107,11 @@ function extractJson(text: string): unknown {
 }
 
 async function complete(system: string, content: ChatContent, maxTokens: number): Promise<string> {
+  // gpt-5.x reasoning models: use max_completion_tokens (covers reasoning + output)
+  // and no custom temperature. Budget generously so reasoning can't starve the JSON.
   const res = await client().chat.completions.create({
     model: DEPLOYMENT,
-    max_tokens: maxTokens,
-    temperature: 1,
+    max_completion_tokens: maxTokens,
     response_format: { type: "json_object" },
     messages: [
       { role: "system", content: system },
@@ -125,7 +126,7 @@ export async function analyzeContract(input: AnalyzeInput): Promise<Analysis> {
     const a = sampleAnalysis(input.lang);
     return { ...a, warnings: [...a.warnings, "stub"] };
   }
-  return AnalysisSchema.parse(extractJson(await complete(ANALYZE_SYSTEM, userContent(input), 4000)));
+  return AnalysisSchema.parse(extractJson(await complete(ANALYZE_SYSTEM, userContent(input), 16000)));
 }
 
 export async function askContract(
@@ -142,7 +143,7 @@ export async function askContract(
   const content = `Contract analysis (JSON):\n${JSON.stringify(
     analysis,
   )}\n\nQuestion (answer in language "${analysis.lang}"): ${question}\n\nReturn a JSON object: { "answer": string, "clauseId": string|null } where clauseId is one of the clause ids above, or null.`;
-  const out = extractJson(await complete(ASK_SYSTEM, content, 800)) as { answer?: string; clauseId?: string | null };
+  const out = extractJson(await complete(ASK_SYSTEM, content, 4000)) as { answer?: string; clauseId?: string | null };
   return { answer: String(out.answer ?? ""), clauseId: out.clauseId ?? null };
 }
 
@@ -151,5 +152,5 @@ export async function translateAnalysis(analysis: Analysis, target: Lang): Promi
   const content = `Translate the human-readable text of this analysis into language "${target}". Keep every quote and ref unchanged. Set "lang" to "${target}". Return the translated JSON object, same shape.\n\n${JSON.stringify(
     analysis,
   )}`;
-  return AnalysisSchema.parse(extractJson(await complete(TRANSLATE_SYSTEM, content, 4000)));
+  return AnalysisSchema.parse(extractJson(await complete(TRANSLATE_SYSTEM, content, 16000)));
 }
