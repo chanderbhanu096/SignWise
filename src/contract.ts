@@ -90,3 +90,21 @@ export function getOfficialLawUrl(law: string, section?: string): string | null 
   if (!m) return null;
   return `https://www.gesetze-im-internet.de/${slug}/__${m[1].toLowerCase()}.html`;
 }
+
+// What the financial section actually has to show. Without this the section
+// rendered a full-height card reading "Not mentioned" over a dash whenever the
+// contract stated no amounts — a large empty block where a number should be.
+export function getMoneyState(money: Analysis["money"]): {
+  headline: { amount: number; period: "monthly" | "yearly" } | null;
+  hasDetail: boolean;
+  hasAnything: boolean;
+} {
+  const headline =
+    money.monthly != null
+      ? ({ amount: money.monthly, period: "monthly" } as const)
+      : money.yearly != null
+        ? ({ amount: money.yearly, period: "yearly" } as const)
+        : null;
+  const hasDetail = money.oneTime.length > 0 || money.variable.length > 0;
+  return { headline, hasDetail, hasAnything: !!headline || hasDetail };
+}

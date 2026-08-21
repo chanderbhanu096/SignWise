@@ -1,10 +1,11 @@
 import { useState } from "react";
-import type { Analysis, Depth } from "../types";
-import { DEPTHS } from "../types";
+import type { Analysis, Depth, Level } from "../types";
+import { DEPTHS, LEVELS } from "../types";
 import { t } from "../i18n";
 import { euro } from "../format";
-import { getContractCategory, getFinancialCopy, getContractSuggestions } from "../contract";
-import { Severity } from "../components/Severity";
+import { getContractCategory, getFinancialCopy, getContractSuggestions, getMoneyState } from "../contract";
+import { Severity, MARK } from "../components/Severity";
+import { Section } from "../components/Section";
 
 export function Overview({
   analysis,
@@ -36,6 +37,7 @@ export function Overview({
   const s = t(analysis.lang);
   const { money } = analysis;
   const [typed, setTyped] = useState("");
+  const [filter, setFilter] = useState<Level | null>(null);
   const byId = (id: string) => analysis.clauses.find((c) => c.id === id);
   const locale = analysis.lang === "de" ? "de-DE" : "en-GB";
   const cur = money.currency;
@@ -50,6 +52,7 @@ export function Overview({
 
   const monthly = money.monthly ?? 0;
   const items = money.oneTime; // one-time costs (expense) or additional pay (income)
+  const moneyState = getMoneyState(money);
 
   // Freq note appended to a line item, e.g. "/ year".
   const freqNote = (freq?: string) =>
@@ -107,8 +110,15 @@ export function Overview({
   const suggestions = getContractSuggestions(analysis.contractType, analysis.lang);
   const findings = analysis.findings.map((id, i) => ({ c: byId(id)!, n: i + 1 })).filter((x) => x.c);
 
+  // Attention triage. The counts are over the findings the reader can actually see,
+  // so a filter never claims more than the list holds.
+  const counts = Object.fromEntries(LEVELS.map((l) => [l, findings.filter((f) => f.c.level === l).length])) as Record<Level, number>;
+  const shown = filter ? findings.filter((f) => f.c.level === filter) : findings;
+
   // Calendar: the first warning-tone (or first available) date with a machine date.
   const deadline = analysis.dates.find((d) => d.tone === "warning" && d.iso) ?? analysis.dates.find((d) => d.iso);
+  const hasUrgentDate = analysis.dates.some((d) => d.tone === "warning");
+  const rdCount = analysis.rights.length + analysis.duties.length;
 
   const itemRow = (label: string, amount: number | null, ref?: string, freq?: string, key?: string) => (
     <div className="money-row" key={key ?? label}>
@@ -157,14 +167,53 @@ export function Overview({
         ))}
       </dl>
 
-      {/* Findings */}
+      {/* Findings — always open, with the attention triage as its header */}
       <div className="card block">
         <h2 className="section-h" style={{ fontSize: 22 }}>
           {s.findingsHeading(findings.length)}
         </h2>
         <p className="section-sub">{s.findingsSub}</p>
+
+        <div className="attn">
+          <div className="attn-top">
+            <span className="attn-label">{s.attentionHeading}</span>
+            {filter && (
+              <button className="link-btn" onClick={() => setFilter(null)}>
+                {s.filterAll}
+              </button>
+            )}
+          </div>
+          <div className="attn-chips" role="group" aria-label={s.attentionHeading}>
+            {LEVELS.map((lv) => (
+              <button
+                key={lv}
+                className={"attn-chip" + (filter === lv ? " on" : "")}
+                data-level={lv}
+                aria-pressed={filter === lv}
+                disabled={counts[lv] === 0}
+                onClick={() => setFilter(filter === lv ? null : lv)}
+              >
+                <span className="attn-mark" aria-hidden="true">
+                  {MARK[lv]}
+                </span>
+                <span>{s.levelName[lv]}</span>
+                <span className="attn-n">{counts[lv]}</span>
+              </button>
+            ))}
+          </div>
+          {/* The colours mean attention, never legal validity. Said out loud, not implied. */}
+          <details className="attn-note">
+            <summary>{s.attentionNoteToggle}</summary>
+            <p>{s.attentionNote}</p>
+            <p>{s.levelLegend}</p>
+          </details>
+        </div>
+
+        <p className="sr-only" role="status">
+          {s.filterShowing(shown.length, findings.length)}
+        </p>
         <ol className="findings">
-          {findings.map(({ c, n }) => (
+          {shown.map(({ c, n }) => (
             <li key={c.id}>
               <button className={"finding" + (c.verified ? "" : " unverified")} onClick={() => onOpenClause(c.id)}>
                 <span className="finding-n" aria-hidden="true">
@@ -184,199 +233,10 @@ export function Overview({
             </li>
           ))}
         </ol>
-        <p className="section-sub" style={{ marginTop: 14, marginBottom: 0, fontSize: 14 }}>
-          {s.levelLegend}
-        </p>
       </div>
 
-      {/* Financial — heading, labels and chart adapt to the contract category */}
-      <h2 className="section-h block" style={{ fontSize: 22 }}>
-        {fin.heading}
-      </h2>
-      <p className="section-sub">{fin.subheading}</p>
-      <div className="money">
-        <div className="card">
-          <div className="money-label">{fin.monthly}</div>
-          <div className="money-big">{monthly ? fmt(monthly) : s.notMentioned}</div>
-          <div className="money-year">
-            {fin.yearly}: {money.yearly != null ? fmt(money.yearly) : "—"}
-          </div>
-        </div>
-
-        {mixed ? (
-          <div className="card">
-            <div className="money-label">{fin.receiveHeading}</div>
-            {items
-              .filter((it) => ["salary", "bonus", "holiday_pay", "variable"].includes(it.kind ?? ""))
-              .map((it, i) => itemRow(it.label, it.amount, it.ref, it.freq, "r" + i))}
-            <div className="money-label" style={{ marginTop: 14 }}>
-              {fin.payHeading}
-            </div>
-            {items
-              .filter((it) => ["rent", "deposit", "fee", "other"].includes(it.kind ?? "other"))
-              .map((it, i) => itemRow(it.label, it.amount, it.ref, it.freq, "p" + i))}
-          </div>
-        ) : (
-          <div className="card">
-            <div className="money-label">{fin.extrasHeading}</div>
-            {items.map((it, i) => itemRow(it.label, it.amount, it.ref, it.freq, "it" + i))}
-            {money.variable.map((v) => (
-              <div className="money-row" key={v.label}>
-                <span>
-                  <div>{variableHeading}</div>
-                  <div style={{ fontWeight: 600 }}>{v.label}</div>
-                  <div className="finding-ref">{v.note}</div>
-                </span>
-              </div>
-            ))}
-            {showTotal && (
-              <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--line)" }}>
-                <div className="money-row">
-                  <span>{s.baseAnnual}</span>
-                  <strong>{fmt(money.yearly as number)}</strong>
-                </div>
-                <div className="money-row">
-                  <span>{s.additionalAnnual}</span>
-                  <strong>{fmt(totalAnnual - (money.yearly as number))}</strong>
-                </div>
-                <div className="money-row">
-                  <span style={{ fontWeight: 700 }}>{s.totalAnnual}</span>
-                  <strong>{fmt(totalAnnual)}</strong>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {showChart && (
-        <div className="card block">
-          <div className="overview-head" style={{ alignItems: "center" }}>
-            <h3 style={{ fontSize: 18 }}>{fin.chartTitle}</h3>
-            {chartNote && <span className="finding-ref">{chartNote}</span>}
-          </div>
-          <div
-            className="chart"
-            role="img"
-            aria-label={
-              analysis.lang === "de"
-                ? `Balkendiagramm über 12 Monate: Grundbetrag je ${fmt(monthly)}; hervorgehobene Monate enthalten eine zusätzliche Zahlung.`
-                : `Bar chart over 12 months: base amount ${fmt(monthly)} each; highlighted months include an extra payment.`
-            }
-          >
-            {bars.map((b, i) => (
-              <div className="bar-col" key={i}>
-                <span className="bar-amt">{new Intl.NumberFormat(locale).format(b.value)}</span>
-                <div className={"bar" + (b.bumped ? " first" : "")} style={{ height: `${(b.value / maxBar) * 100}%` }} />
-                <span className="bar-m">{b.label}</span>
-              </div>
-            ))}
-          </div>
-          {unplaced.length > 0 && (
-            <ul className="rd-list" style={{ marginTop: 14 }}>
-              {unplaced.map((it, i) => (
-                <li className="rd-item" key={"u" + i}>
-                  <span className="rd-mark duty" aria-hidden="true">
-                    •
-                  </span>
-                  <span className="rd-text">
-                    {s.timingUnspecified}: {it.label}
-                    {it.amount != null && <> — {fmt(it.amount)}</>}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
-
-      {/* Dates */}
-      <h2 className="section-h block" style={{ fontSize: 22 }}>
-        {s.datesHeading}
-      </h2>
-      <p className="section-sub">{s.datesSub}</p>
-      <ol className="timeline">
-        {analysis.dates.map((d, i) => (
-          <li className="tl" data-tone={d.tone} key={i}>
-            <div className="tl-rail">
-              <span className="tl-dot" aria-hidden="true" />
-              <span className="tl-line" aria-hidden="true" style={i === analysis.dates.length - 1 ? { minHeight: 0 } : undefined} />
-            </div>
-            <div className="tl-card">
-              <div className="tl-date">{d.date}</div>
-              <div className="tl-title">{d.title}</div>
-              <div className="tl-body">{d.body}</div>
-            </div>
-          </li>
-        ))}
-      </ol>
-      {deadline && (
-        <button className="btn" onClick={() => onAddCalendar(deadline.title, deadline.iso as string)}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
-            <path d="M4 6h16v14H4z" />
-            <path d="M8 3v4M16 3v4M4 11h16" />
-          </svg>
-          {s.addCalendar}
-        </button>
-      )}
-      {calMsg && (
-        <div className="banner-warn" style={{ marginTop: 12 }}>
-          <div className="banner-in">{calMsg}</div>
-        </div>
-      )}
-
-      {/* Rights / duties */}
-      <div className="two block">
-        <div className="card">
-          <h2 style={{ fontSize: 20 }}>{s.rightsHeading}</h2>
-          <p className="section-sub" style={{ marginBottom: 0 }}>
-            {s.rightsSub}
-          </p>
-          <ul className="rd-list">
-            {analysis.rights.map((r) => (
-              <li className="rd-item" key={r.clauseId}>
-                <span className="rd-mark right" aria-hidden="true">
-                  ✓
-                </span>
-                <span className="rd-text">
-                  {r.text}
-                  <div>
-                    <button className="link-btn" onClick={() => onOpenClause(r.clauseId)}>
-                      {s.showClause}
-                    </button>
-                  </div>
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="card">
-          <h2 style={{ fontSize: 20 }}>{s.dutiesHeading}</h2>
-          <p className="section-sub" style={{ marginBottom: 0 }}>
-            {s.dutiesSub}
-          </p>
-          <ul className="rd-list">
-            {analysis.duties.map((d) => (
-              <li className="rd-item" key={d.clauseId}>
-                <span className="rd-mark duty" aria-hidden="true">
-                  •
-                </span>
-                <span className="rd-text">
-                  {d.text}
-                  <div>
-                    <button className="link-btn" onClick={() => onOpenClause(d.clauseId)}>
-                      {s.showClause}
-                    </button>
-                  </div>
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-
-      {/* Ask */}
-      <div className="card block">
+      {/* Ask — never collapsed: it is the proof the analysis is about *this* document */}
+      <div className="card block ask-card">
         <h2 style={{ fontSize: 20 }}>{s.askHeading}</h2>
         <p className="section-sub" style={{ marginBottom: 0 }}>
           {s.askSub}
@@ -415,6 +275,209 @@ export function Overview({
           </button>
         </form>
       </div>
+
+      {/* Financial — heading, labels and chart adapt to the contract category.
+          Nothing stated? A single line, not a card full of dashes. */}
+      {moneyState.hasAnything ? (
+        <Section title={fin.heading} sub={fin.subheading} defaultOpen>
+          <div className="money">
+            {moneyState.headline && (
+              <div className="card">
+                <div className="money-label">{moneyState.headline.period === "monthly" ? fin.monthly : fin.yearly}</div>
+                <div className="money-big">{fmt(moneyState.headline.amount)}</div>
+                {moneyState.headline.period === "monthly" && money.yearly != null && (
+                  <div className="money-year">
+                    {fin.yearly}: {fmt(money.yearly)}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {moneyState.hasDetail &&
+              (mixed ? (
+                <div className="card">
+                  <div className="money-label">{fin.receiveHeading}</div>
+                  {items
+                    .filter((it) => ["salary", "bonus", "holiday_pay", "variable"].includes(it.kind ?? ""))
+                    .map((it, i) => itemRow(it.label, it.amount, it.ref, it.freq, "r" + i))}
+                  <div className="money-label" style={{ marginTop: 14 }}>
+                    {fin.payHeading}
+                  </div>
+                  {items
+                    .filter((it) => ["rent", "deposit", "fee", "other"].includes(it.kind ?? "other"))
+                    .map((it, i) => itemRow(it.label, it.amount, it.ref, it.freq, "p" + i))}
+                </div>
+              ) : (
+                <div className="card">
+                  <div className="money-label">{fin.extrasHeading}</div>
+                  {items.map((it, i) => itemRow(it.label, it.amount, it.ref, it.freq, "it" + i))}
+                  {money.variable.map((v) => (
+                    <div className="money-row" key={v.label}>
+                      <span>
+                        <div>{variableHeading}</div>
+                        <div style={{ fontWeight: 600 }}>{v.label}</div>
+                        <div className="finding-ref">{v.note}</div>
+                      </span>
+                    </div>
+                  ))}
+                  {showTotal && (
+                    <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--line)" }}>
+                      <div className="money-row">
+                        <span>{s.baseAnnual}</span>
+                        <strong>{fmt(money.yearly as number)}</strong>
+                      </div>
+                      <div className="money-row">
+                        <span>{s.additionalAnnual}</span>
+                        <strong>{fmt(totalAnnual - (money.yearly as number))}</strong>
+                      </div>
+                      <div className="money-row">
+                        <span style={{ fontWeight: 700 }}>{s.totalAnnual}</span>
+                        <strong>{fmt(totalAnnual)}</strong>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+          </div>
+
+          {showChart && (
+            <div className="card block">
+              <div className="overview-head" style={{ alignItems: "center" }}>
+                <h3 style={{ fontSize: 18 }}>{fin.chartTitle}</h3>
+                {chartNote && <span className="finding-ref">{chartNote}</span>}
+              </div>
+              <div
+                className="chart"
+                role="img"
+                aria-label={
+                  analysis.lang === "de"
+                    ? `Balkendiagramm über 12 Monate: Grundbetrag je ${fmt(monthly)}; hervorgehobene Monate enthalten eine zusätzliche Zahlung.`
+                    : `Bar chart over 12 months: base amount ${fmt(monthly)} each; highlighted months include an extra payment.`
+                }
+              >
+                {bars.map((b, i) => (
+                  <div className="bar-col" key={i}>
+                    <span className="bar-amt">{new Intl.NumberFormat(locale).format(b.value)}</span>
+                    <div className={"bar" + (b.bumped ? " first" : "")} style={{ height: `${(b.value / maxBar) * 100}%` }} />
+                    <span className="bar-m">{b.label}</span>
+                  </div>
+                ))}
+              </div>
+              {unplaced.length > 0 && (
+                <ul className="rd-list" style={{ marginTop: 14 }}>
+                  {unplaced.map((it, i) => (
+                    <li className="rd-item" key={"u" + i}>
+                      <span className="rd-mark duty" aria-hidden="true">
+                        •
+                      </span>
+                      <span className="rd-text">
+                        {s.timingUnspecified}: {it.label}
+                        {it.amount != null && <> — {fmt(it.amount)}</>}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+        </Section>
+      ) : (
+        // Absence is itself worth stating when the contract type implies money.
+        !neutral && <p className="sec-empty block">{s.noAmounts}</p>
+      )}
+
+      {/* Dates — open when one of them is a deadline that can cost the reader */}
+      {analysis.dates.length > 0 && (
+        <Section title={s.datesHeading} sub={s.datesSub} count={s.sectionCount(analysis.dates.length)} defaultOpen={hasUrgentDate}>
+          <ol className="timeline">
+            {analysis.dates.map((d, i) => (
+              <li className="tl" data-tone={d.tone} key={i}>
+                <div className="tl-rail">
+                  <span className="tl-dot" aria-hidden="true" />
+                  <span className="tl-line" aria-hidden="true" style={i === analysis.dates.length - 1 ? { minHeight: 0 } : undefined} />
+                </div>
+                <div className="tl-card">
+                  <div className="tl-date">{d.date}</div>
+                  <div className="tl-title">{d.title}</div>
+                  <div className="tl-body">{d.body}</div>
+                </div>
+              </li>
+            ))}
+          </ol>
+          {deadline && (
+            <button className="btn" onClick={() => onAddCalendar(deadline.title, deadline.iso as string)}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+                <path d="M4 6h16v14H4z" />
+                <path d="M8 3v4M16 3v4M4 11h16" />
+              </svg>
+              {s.addCalendar}
+            </button>
+          )}
+          {calMsg && (
+            <div className="banner-warn" style={{ marginTop: 12 }}>
+              <div className="banner-in">{calMsg}</div>
+            </div>
+          )}
+        </Section>
+      )}
+
+      {/* Rights / duties — detail, one click away */}
+      {rdCount > 0 && (
+        <Section title={s.rightsDutiesHeading} count={s.sectionCount(rdCount)}>
+          <div className="two">
+            {analysis.rights.length > 0 && (
+              <div className="card">
+                <h3 style={{ fontSize: 20 }}>{s.rightsHeading}</h3>
+                <p className="section-sub" style={{ marginBottom: 0 }}>
+                  {s.rightsSub}
+                </p>
+                <ul className="rd-list">
+                  {analysis.rights.map((r) => (
+                    <li className="rd-item" key={r.clauseId}>
+                      <span className="rd-mark right" aria-hidden="true">
+                        ✓
+                      </span>
+                      <span className="rd-text">
+                        {r.text}
+                        <div>
+                          <button className="link-btn" onClick={() => onOpenClause(r.clauseId)}>
+                            {s.showClause}
+                          </button>
+                        </div>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {analysis.duties.length > 0 && (
+              <div className="card">
+                <h3 style={{ fontSize: 20 }}>{s.dutiesHeading}</h3>
+                <p className="section-sub" style={{ marginBottom: 0 }}>
+                  {s.dutiesSub}
+                </p>
+                <ul className="rd-list">
+                  {analysis.duties.map((d) => (
+                    <li className="rd-item" key={d.clauseId}>
+                      <span className="rd-mark duty" aria-hidden="true">
+                        •
+                      </span>
+                      <span className="rd-text">
+                        {d.text}
+                        <div>
+                          <button className="link-btn" onClick={() => onOpenClause(d.clauseId)}>
+                            {s.showClause}
+                          </button>
+                        </div>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </Section>
+      )}
 
       <div className="overview-foot">
         <button className="btn" onClick={onOriginal}>

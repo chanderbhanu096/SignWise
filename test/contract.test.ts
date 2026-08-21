@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { AnalysisSchema } from "../src/types.ts";
 import { sampleAnalysis, employmentAnalysis } from "../src/sample.ts";
-import { getContractCategory, getContractSubtype, getOfficialLawUrl, getContractSuggestions } from "../src/contract.ts";
+import { getContractCategory, getContractSubtype, getOfficialLawUrl, getContractSuggestions, getMoneyState } from "../src/contract.ts";
 
 test("rental contract is framed as expense", () => {
   assert.equal(getContractCategory(sampleAnalysis("de")), "expense");
@@ -59,4 +59,22 @@ test("rental fixture clauses carry mappable legal references", () => {
   const rent = a.clauses.find((c) => c.id === "rent")!;
   assert.ok(rent.legalRefs && rent.legalRefs.length > 0);
   assert.equal(getOfficialLawUrl(rent.legalRefs[0].law, rent.legalRefs[0].section), "https://www.gesetze-im-internet.de/bgb/__556b.html");
+});
+
+test("financial section reports nothing to show when the contract states no amounts", () => {
+  const a = sampleAnalysis("de");
+  assert.equal(getMoneyState(a.money).headline?.period, "monthly");
+  assert.equal(getMoneyState(a.money).hasAnything, true);
+
+  const silent = { ...a.money, monthly: null, yearly: null, oneTime: [], variable: [] };
+  const state = getMoneyState(silent);
+  assert.equal(state.headline, null);
+  assert.equal(state.hasDetail, false);
+  assert.equal(state.hasAnything, false); // no card, no "Not mentioned" over a dash
+});
+
+test("a yearly-only contract still gets a headline number", () => {
+  const a = employmentAnalysis("en");
+  const state = getMoneyState({ ...a.money, monthly: null, yearly: 41280 });
+  assert.deepEqual(state.headline, { amount: 41280, period: "yearly" });
 });

@@ -65,6 +65,14 @@ interface Strings {
   findingsHeading: (n: number) => string;
   findingsSub: string;
   levelLegend: string;
+  attentionHeading: string;
+  attentionNoteToggle: string;
+  attentionNote: string;
+  filterAll: string;
+  filterShowing: (shown: number, total: number) => string;
+  sectionCount: (n: number) => string;
+  noAmounts: string;
+  rightsDutiesHeading: string;
   costHeading: string;
   costSub: string;
   everyMonth: string;
@@ -217,6 +225,15 @@ const EN: Strings = {
   findingsSub: "Select any item to see the exact wording in your contract.",
   levelLegend:
     "Levels: Important affects money, obligations or cancellation · Worth checking may matter depending on your situation · Standard is a common provision.",
+  attentionHeading: "What deserves your attention",
+  attentionNoteToggle: "What do these levels mean?",
+  attentionNote:
+    "These levels show how much attention something deserves. They do not say whether a clause is legally valid — SignWise never judges that.",
+  filterAll: "Show all",
+  filterShowing: (shown, total) => `Showing ${shown} of ${total} findings.`,
+  sectionCount: (n) => `${n} ${n === 1 ? "item" : "items"}`,
+  noAmounts: "This contract does not state any amounts.",
+  rightsDutiesHeading: "Your rights and responsibilities",
   costHeading: "What will this cost me?",
   costSub: "Based on the amounts written in your contract.",
   everyMonth: "Every month",
@@ -401,6 +418,15 @@ const DE: Strings = {
   findingsSub: "Wählen Sie einen Punkt, um den genauen Wortlaut in Ihrem Vertrag zu sehen.",
   levelLegend:
     "Stufen: Wichtig betrifft Geld, Pflichten oder Kündigung · Prüfenswert kann je nach Situation relevant sein · Standard ist eine übliche Regelung.",
+  attentionHeading: "Was Ihre Aufmerksamkeit verdient",
+  attentionNoteToggle: "Was bedeuten diese Stufen?",
+  attentionNote:
+    "Die Stufen zeigen, welche Punkte besondere Aufmerksamkeit verdienen. Sie bewerten nicht die rechtliche Wirksamkeit einer Klausel — das beurteilt SignWise nie.",
+  filterAll: "Alle anzeigen",
+  filterShowing: (shown, total) => `${shown} von ${total} Punkten werden angezeigt.`,
+  sectionCount: (n) => `${n} ${n === 1 ? "Eintrag" : "Einträge"}`,
+  noAmounts: "Dieser Vertrag nennt keine Beträge.",
+  rightsDutiesHeading: "Ihre Rechte und Pflichten",
   costHeading: "Was kostet mich das?",
   costSub: "Basierend auf den in Ihrem Vertrag genannten Beträgen.",
   everyMonth: "Jeden Monat",

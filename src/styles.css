@@ -179,7 +179,7 @@ section.screen.upload-screen { padding-top: 52px; }
 [data-level="standard"] .sev, .sev[data-level="standard"] { color: var(--std-fg); background: var(--std-bg); border: 1px solid var(--std-bd); }
 
 /* Money */
-.money { display: grid; grid-template-columns: 1fr 1.2fr; gap: 18px; margin-top: 16px; }
+.money { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 18px; margin-top: 16px; }
 .money-big { font-size: 40px; font-weight: 700; letter-spacing: -1px; }
 .money-year { color: var(--muted); margin-top: 4px; }
 .money-label { font-size: 13px; color: var(--muted-2); text-transform: uppercase; letter-spacing: 0.04em; }
@@ -227,6 +227,47 @@ section.screen.upload-screen { padding-top: 52px; }
 .ask-row input { flex: 1; min-height: 48px; padding: 0 16px; border: 1px solid var(--line-2); border-radius: 10px; font-size: 16px; }
 
 .overview-foot { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+
+/* Attention triage — the traffic light. Colour + icon + text, and it says what it
+   means: how much attention a point deserves, never whether a clause is valid. */
+.attn { margin: 4px 0 18px; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); }
+.attn-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 4px 12px; }
+.attn-label { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted-2); }
+.attn-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.attn-chip { display: inline-flex; align-items: center; gap: 9px; min-height: 44px; padding: 0 15px; border-radius: 99px; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); font-size: 14px; font-weight: 600; cursor: pointer; }
+.attn-chip:hover:not(:disabled) { border-color: var(--line-2); }
+.attn-chip:disabled { opacity: 0.45; cursor: default; }
+.attn-mark { flex: none; width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: 700; }
+.attn-chip[data-level="important"] .attn-mark { background: var(--imp-fg); }
+.attn-chip[data-level="check"] .attn-mark { background: var(--chk-fg); }
+.attn-chip[data-level="standard"] .attn-mark { background: var(--std-fg); }
+.attn-n { font-variant-numeric: tabular-nums; color: var(--muted-2); }
+.attn-chip.on[data-level="important"] { background: var(--imp-bg); border-color: var(--imp-bd); color: var(--imp-fg); }
+.attn-chip.on[data-level="check"] { background: var(--chk-bg); border-color: var(--chk-bd); color: var(--chk-fg); }
+.attn-chip.on[data-level="standard"] { background: var(--std-bg); border-color: var(--std-bd); color: var(--std-fg); }
+.attn-chip.on .attn-n { color: inherit; }
+.attn-note { margin-top: 12px; }
+.attn-note summary { display: inline-flex; align-items: center; min-height: 34px; color: var(--brand); font-size: 13.5px; font-weight: 600; cursor: pointer; }
+.attn-note p { margin-top: 8px; max-width: 62em; color: var(--muted); font-size: 13.5px; }
+
+/* Collapsible secondary sections — detail one click away, never hidden on hover */
+.sec { border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); }
+.sec-head { min-height: 64px; padding: 14px 20px; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 14px; align-items: center; cursor: pointer; list-style: none; }
+.sec-head::-webkit-details-marker { display: none; }
+.sec-head:hover { background: var(--surface-2); border-radius: var(--radius-lg); }
+.sec[open] .sec-head { border-bottom: 1px solid var(--line); border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+.sec-titles { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.sec-title { font-size: 21px; font-weight: 700; letter-spacing: -0.3px; }
+.sec-sub { color: var(--muted); font-size: 14px; }
+.sec-count { padding: 5px 12px; border-radius: 99px; background: var(--brand-tint); color: var(--brand-strong); font-size: 13px; font-weight: 600; white-space: nowrap; }
+.sec-chevron { color: var(--muted-2); font-size: 20px; transition: transform 0.16s ease; }
+.sec[open] .sec-chevron { transform: rotate(180deg); }
+.sec-body { padding: 20px; }
+.sec-body > .money, .sec-body > .timeline { margin-top: 0; }
+.sec-empty { padding: 15px 18px; border: 1px dashed var(--line-2); border-radius: var(--radius); background: var(--surface); color: var(--muted); font-size: 15px; }
+
+/* Ask — deliberately never collapsed */
+.ask-card { border-top: 3px solid var(--brand); }
 
 /* Original split */
 .split { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 18px; margin-top: 16px; align-items: start; }
@@ -401,7 +442,10 @@ li.law-ref > .law-ref-label { display: inline-block; padding: 6px 2px; } /* plai
 }
 
 @media print {
-  .hdr, .nav, .banner, .overview-foot, .seg, .ask-chips, .ask-row, .link-btn, .finding-caret, .print-status { display: none !important; }
+  .hdr, .nav, .banner, .overview-foot, .seg, .ask-chips, .ask-row, .link-btn, .finding-caret, .print-status, .sec-chevron, .attn-note { display: none !important; }
+  /* Collapsed sections still belong in a printed summary. */
+  .sec > .sec-body { display: block !important; }
+  .sec { break-inside: avoid; }
   body { background: #fff; }
   .card { break-inside: avoid; border-color: #ccc; }
   .decision-hero { padding: 20px; background: #fff; }
