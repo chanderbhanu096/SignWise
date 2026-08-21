@@ -85,15 +85,50 @@ section.screen { padding-top: 40px; }
 .block { margin-top: 30px; }
 
 /* Upload */
-.hero { font-size: 44px; line-height: 1.08; letter-spacing: -1.2px; max-width: 16em; }
-.hero-sub { margin-top: 16px; font-size: 19px; color: var(--ink-2); max-width: 34em; }
-.drop { border: 2px dashed var(--line-2); border-radius: var(--radius); background: var(--surface-2); padding: 44px 24px; display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center; cursor: pointer; }
+.upload-screen { max-width: 1180px; }
+section.screen.upload-screen { padding-top: 52px; }
+.upload-main-grid { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(480px, 1.1fr); grid-template-areas: "intro card" "benefits card"; column-gap: clamp(40px, 6vw, 76px); row-gap: 28px; align-items: start; }
+.upload-intro { grid-area: intro; padding-top: 28px; }
+.upload-eyebrow, .example-eyebrow { display: inline-block; color: var(--brand-strong); font-size: 12px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; }
+.upload-hero { max-width: 680px; margin-top: 12px; font-size: clamp(42px, 5vw, 62px); line-height: 1.04; letter-spacing: -2px; }
+.upload-hero-sub { max-width: 600px; margin-top: 20px; color: var(--ink-2); font-size: 18px; line-height: 1.62; }
+.upload-benefits { grid-area: benefits; }
+.upload-benefits-label { margin-bottom: 12px; color: var(--muted); font-size: 13px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+.upload-benefits ul { list-style: none; display: grid; gap: 10px; }
+.upload-benefits li { display: flex; align-items: center; gap: 10px; color: var(--ink-2); font-size: 15px; }
+.upload-benefits li > span { flex: none; width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: var(--std-fg); background: var(--std-bg); border: 1px solid var(--std-bd); font-size: 12px; font-weight: 700; }
+.upload-card { grid-area: card; position: relative; overflow: hidden; padding: 24px; border: 1px solid #cbd9d8; border-radius: 20px; background: var(--surface); box-shadow: 0 18px 50px rgba(18,38,43,0.09); }
+.upload-card::before { content: ""; position: absolute; inset: 0 0 auto; height: 4px; background: var(--brand); }
+.upload-card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; margin-bottom: 18px; }
+.upload-card-head h2 { font-size: 24px; }
+.upload-card-head p { margin-top: 5px; color: var(--muted); font-size: 14px; }
+.upload-time { flex: none; min-height: 32px; padding: 5px 9px; border: 1px solid var(--std-bd); border-radius: 99px; background: var(--std-bg); color: var(--std-fg); font-size: 12px; font-weight: 600; white-space: nowrap; }
+.upload-error { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 14px; padding: 11px 13px; border: 1px solid #f0cfcc; border-radius: 10px; background: #fbeceb; color: #7a1a13; font-size: 14px; }
+.upload-error > span { flex: none; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: #fff; font-weight: 700; }
+.drop { width: 100%; min-height: 276px; border: 2px dashed var(--line-2); border-radius: 15px; background: var(--surface-2); padding: 28px 22px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; text-align: center; color: var(--ink); cursor: pointer; }
 .drop:hover, .drop.over { border-color: var(--brand); background: #f0f8f8; }
-.drop-icon { width: 64px; height: 64px; border-radius: var(--radius); background: var(--brand-tint); border: 1px solid #b9dbdd; display: flex; align-items: center; justify-content: center; }
-.drop-title { font-size: 20px; font-weight: 600; }
-.drop-types { font-size: 15px; color: var(--muted); }
-.drop-cta { min-height: 52px; padding: 0 26px; border-radius: 10px; background: var(--brand); color: #fff; font-size: 17px; font-weight: 600; display: inline-flex; align-items: center; }
-.privacy { display: flex; gap: 10px; align-items: flex-start; padding: 14px 4px 0; font-size: 14px; color: var(--muted); max-width: 52em; }
+.drop:hover .drop-cta, .drop.over .drop-cta { background: var(--brand-strong); }
+.drop-icon { width: 58px; height: 58px; border-radius: 14px; background: var(--brand-tint); border: 1px solid #b9dbdd; color: var(--brand); display: flex; align-items: center; justify-content: center; }
+.drop-title { font-size: 20px; font-weight: 700; }
+.drop-types { font-size: 14px; color: var(--muted); }
+.drop-cta { min-height: 52px; margin-top: 6px; padding: 0 24px; border-radius: 10px; background: var(--brand); color: #fff; font-size: 16px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 9px; transition: background 0.16s ease; }
+.upload-handling { display: flex; align-items: flex-start; gap: 10px; padding: 14px 3px 0; color: var(--muted); font-size: 13px; }
+.upload-handling svg { flex: none; margin-top: 1px; color: var(--brand); }
+.example-strip { margin-top: 42px; padding: 24px 26px; display: grid; grid-template-columns: minmax(250px, 0.8fr) minmax(420px, 1.2fr); gap: 34px; align-items: center; border: 1px solid var(--line); border-radius: 18px; background: #edf3f2; }
+.example-copy h2 { margin-top: 6px; font-size: 22px; }
+.example-copy p { max-width: 520px; margin-top: 7px; color: var(--muted); font-size: 14px; }
+.example-actions { min-width: 0; }
+.rental-example { width: 100%; min-height: 86px; padding: 14px 16px; display: grid; grid-template-columns: 48px minmax(0, 1fr) 24px; gap: 13px; align-items: center; border: 1px solid var(--line-2); border-radius: 13px; background: var(--surface); color: var(--ink); text-align: left; cursor: pointer; }
+.rental-example:hover { border-color: var(--brand); box-shadow: 0 5px 18px rgba(18,38,43,0.06); }
+.example-icon { width: 48px; height: 48px; border-radius: 11px; display: inline-flex; align-items: center; justify-content: center; background: var(--brand-tint); color: var(--brand); }
+.example-button-copy { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.example-button-copy strong { font-size: 15px; }
+.example-button-copy small, .employment-example small { color: var(--muted); font-size: 12px; font-weight: 400; overflow-wrap: anywhere; }
+.example-arrow { color: var(--brand); font-size: 20px; }
+.employment-example { width: 100%; min-height: 44px; margin-top: 4px; padding: 7px 4px; border: none; background: transparent; color: var(--brand-strong); display: flex; flex-wrap: wrap; align-items: center; gap: 5px 8px; text-align: left; cursor: pointer; font-size: 13px; font-weight: 600; }
+.employment-example > span:last-child { margin-left: auto; font-size: 17px; }
+.employment-example:hover > span:first-child { text-decoration: underline; text-underline-offset: 3px; }
+.upload-disclaimer { max-width: none; margin-top: 18px; padding: 11px 14px; background: transparent; border: 1px solid var(--line); font-size: 12px; }
 
 /* Analyzing */
 .steps { list-style: none; display: flex; flex-direction: column; gap: 14px; margin-top: 20px; }
@@ -291,23 +326,65 @@ li.law-ref > .law-ref-label { display: inline-block; padding: 6px 2px; } /* plai
 @keyframes sheet { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
 
 /* Mobile */
+@media (max-width: 900px) {
+  section.screen.upload-screen { padding-top: 36px; }
+  .upload-main-grid { grid-template-columns: 1fr; grid-template-areas: "intro" "card" "benefits"; gap: 26px; }
+  .upload-intro { max-width: 720px; padding-top: 0; }
+  .upload-card { width: 100%; }
+  .upload-benefits { margin-top: 0; }
+  .example-strip { grid-template-columns: 1fr; gap: 18px; }
+}
+
 @media (max-width: 860px) {
   .money, .two, .split, .decision-attention-grid { grid-template-columns: 1fr; }
   .review-list, .clarification-list, .understanding-list { grid-template-columns: 1fr; }
   .commitment-grid { grid-template-columns: 1fr 1fr; }
   .glance { grid-template-columns: 1fr 1fr; }
-  .hero { font-size: 34px; }
   .doc-side { position: static; }
   .doc { max-height: none; }
   .panel { top: auto; left: 0; right: 0; bottom: 0; width: 100%; max-height: 88vh; border-left: none; border-top: 1px solid var(--line); border-radius: 16px 16px 0 0; animation: sheet 0.22s ease-out; }
 }
 
 @media (max-width: 540px) {
+  .hdr-in { padding: 10px 12px; flex-wrap: nowrap; gap: 8px; }
+  .brand { min-width: 0; gap: 8px; }
+  .brand-mark { width: 34px; height: 34px; border-radius: 9px; font-size: 13px; }
+  .brand-name { font-size: 17px; }
+  .brand-tag { display: none; }
+  .langs { flex: none; gap: 4px; }
+  .pill { min-height: 44px; padding: 0 10px; font-size: 14px; }
+  section.screen.upload-screen { padding-top: 20px; }
+  .upload-main-grid { gap: 22px; }
+  .upload-eyebrow { font-size: 11px; }
+  .upload-hero { margin-top: 8px; font-size: clamp(32px, 10vw, 38px); line-height: 1.07; letter-spacing: -1.2px; }
+  .upload-hero-sub { margin-top: 13px; font-size: 16px; line-height: 1.5; }
+  .upload-card { padding: 18px; border-radius: 16px; }
+  .upload-card-head { display: block; margin-bottom: 14px; }
+  .upload-card-head h2 { font-size: 21px; }
+  .upload-card-head p { font-size: 13px; }
+  .upload-time { display: none; }
+  .drop { min-height: 218px; padding: 18px 16px; gap: 8px; }
+  .drop-icon { width: 48px; height: 48px; }
+  .drop-title { font-size: 17px; }
+  .drop-types { font-size: 13px; }
+  .drop-cta { width: 100%; min-height: 50px; padding: 0 14px; font-size: 15px; }
+  .upload-handling { padding-top: 12px; font-size: 12px; }
+  .upload-benefits-label { font-size: 12px; }
+  .example-strip { margin-top: 30px; padding: 19px; border-radius: 15px; }
+  .example-copy h2 { font-size: 20px; }
+  .rental-example { min-height: 82px; padding: 12px; grid-template-columns: 44px minmax(0, 1fr) 20px; gap: 10px; }
+  .example-icon { width: 44px; height: 44px; }
+  .employment-example { align-items: flex-start; }
   .decision-hero { padding: 24px 20px; }
   .decision-lead { font-size: 16px; }
   .commitment-grid { grid-template-columns: 1fr; }
   .decision-panel, .understanding-section { padding: 18px; }
   .understanding-answer { padding-left: 18px; }
+}
+
+@media (max-width: 360px) {
+  .upload-eyebrow { display: none; }
+  .upload-hero { margin-top: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {

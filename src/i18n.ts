@@ -21,6 +21,8 @@ export interface FinancialCopy {
 
 interface Strings {
   tagline: string;
+  languageSelector: string;
+  moreLanguages: string;
   disclaimer: string;
   disclaimerLong: string;
   screens: { upload: string; analyzing: string; overview: string; original: string; decision: string };
@@ -30,12 +32,21 @@ interface Strings {
   stubBanner: string;
 
   // upload
+  uploadEyebrow: string;
   hero: string;
   heroSub: string;
+  benefitLabel: string;
+  uploadBenefits: [string, string, string];
+  uploadHeading: string;
+  uploadSub: string;
+  uploadTime: string;
   dragText: string;
   fileTypes: string;
   uploadBtn: string;
   privacy: string;
+  exampleEyebrow: string;
+  exampleHeading: string;
+  exampleSub: string;
   exampleBtn: string;
   exampleNote: string;
 
@@ -153,6 +164,8 @@ interface Strings {
 
 const EN: Strings = {
   tagline: "Your contract. Explained clearly.",
+  languageSelector: "Language",
+  moreLanguages: "More",
   disclaimer: "This tool explains your contract; it does not replace legal advice.",
   disclaimerLong:
     "This tool explains your contract; it does not replace legal advice. For a binding opinion, contact a lawyer or an appropriate advice centre (e.g. a consumer or tenants’ association).",
@@ -161,15 +174,29 @@ const EN: Strings = {
   mobileViewOn: "Mobile view ✓",
   mockupLabel: "Screens",
   stubBanner: "Demo mode — showing the sample analysis. Connect the model to read your own contract.",
-  hero: "Know what you’re signing.",
-  heroSub: "Upload your contract and we’ll explain the important parts in plain language.",
-  dragText: "Drag your contract here",
-  fileTypes: "PDF, DOCX or image · up to 20 pages",
-  uploadBtn: "Upload contract",
+  uploadEyebrow: "Clarity before you sign",
+  hero: "Understand your contract before you sign.",
+  heroSub:
+    "Upload your contract to see key costs, deadlines and responsibilities in plain language — with links back to the original wording.",
+  benefitLabel: "What you’ll see",
+  uploadBenefits: [
+    "Costs and payments",
+    "Deadlines and cancellation",
+    "Rights and responsibilities",
+  ],
+  uploadHeading: "Upload your contract",
+  uploadSub: "Choose a file or drag it here to begin.",
+  uploadTime: "Usually under 1 min",
+  dragText: "Drop your contract here",
+  fileTypes: "PDF, JPG, PNG or WebP · max. 4 MB",
+  uploadBtn: "Choose contract file",
   privacy:
-    "Your document is processed only to create your explanation. It is not stored after your session, and never used for training.",
-  exampleBtn: "Try with an example contract",
-  exampleNote: "A sample rental agreement — nothing to upload.",
+    "Your document is used to create this analysis. Only upload documents you’re allowed to share.",
+  exampleEyebrow: "No contract ready?",
+  exampleHeading: "See how SignWise works",
+  exampleSub: "Open a prepared rental contract and explore the complete explanation. No upload required.",
+  exampleBtn: "View rental example",
+  exampleNote: "Rent, deposit, notice period and key clauses",
   analyzingTitle: "We’re turning the legal language into something easier to understand.",
   analyzingSub: "This usually takes under a minute. You can stay on this page.",
   steps: ["Reading your contract", "Finding important clauses", "Checking costs and deadlines", "Preparing your summary"],
@@ -309,12 +336,14 @@ const EN: Strings = {
   depositBump: "The first month is higher because of the deposit.",
   bonusBump: "A highlighted month includes a bonus or holiday payment.",
   viewOfficialLaw: "View official law ↗",
-  employmentBtn: "Or try an employment contract",
-  employmentNote: "A sample employment agreement.",
+  employmentBtn: "Also view an employment example",
+  employmentNote: "Salary, probation and overtime",
 };
 
 const DE: Strings = {
   tagline: "Ihr Vertrag. Klar erklärt.",
+  languageSelector: "Sprache",
+  moreLanguages: "Mehr",
   disclaimer: "Dieses Tool erklärt Ihren Vertrag; es ersetzt keine Rechtsberatung.",
   disclaimerLong:
     "Dieses Tool erklärt Ihren Vertrag; es ersetzt keine Rechtsberatung. Für eine verbindliche Einschätzung wenden Sie sich an einen Anwalt oder eine geeignete Beratungsstelle (z. B. Verbraucher- oder Mieterverein).",
@@ -323,15 +352,29 @@ const DE: Strings = {
   mobileViewOn: "Mobile Ansicht ✓",
   mockupLabel: "Bildschirme",
   stubBanner: "Demo-Modus — es wird die Beispielanalyse gezeigt. Verbinden Sie das Modell, um Ihren eigenen Vertrag zu lesen.",
-  hero: "Wissen, was Sie unterschreiben.",
-  heroSub: "Laden Sie Ihren Vertrag hoch, und wir erklären die wichtigen Teile in einfacher Sprache.",
-  dragText: "Vertrag hierher ziehen",
-  fileTypes: "PDF, DOCX oder Bild · bis zu 20 Seiten",
-  uploadBtn: "Vertrag hochladen",
+  uploadEyebrow: "Klarheit vor der Unterschrift",
+  hero: "Vertrag verstehen, bevor Sie unterschreiben.",
+  heroSub:
+    "Laden Sie Ihren Vertrag hoch und sehen Sie wichtige Kosten, Fristen und Pflichten in verständlicher Sprache — mit Verweisen auf den Originalwortlaut.",
+  benefitLabel: "Das sehen Sie auf einen Blick",
+  uploadBenefits: [
+    "Kosten und Zahlungen",
+    "Fristen und Kündigung",
+    "Rechte und Pflichten",
+  ],
+  uploadHeading: "Vertrag hochladen",
+  uploadSub: "Datei auswählen oder hierher ziehen, um zu starten.",
+  uploadTime: "Meist unter 1 Min.",
+  dragText: "Vertrag hier ablegen",
+  fileTypes: "PDF, JPG, PNG oder WebP · max. 4 MB",
+  uploadBtn: "Vertragsdatei auswählen",
   privacy:
-    "Ihr Dokument wird nur zur Erstellung Ihrer Erklärung verarbeitet. Es wird nach Ihrer Sitzung nicht gespeichert und niemals für Training verwendet.",
-  exampleBtn: "Mit einem Beispielvertrag testen",
-  exampleNote: "Ein Beispiel-Mietvertrag — Sie müssen nichts hochladen.",
+    "Ihr Dokument wird verwendet, um diese Analyse zu erstellen. Laden Sie nur Dokumente hoch, die Sie teilen dürfen.",
+  exampleEyebrow: "Kein Vertrag zur Hand?",
+  exampleHeading: "So funktioniert SignWise",
+  exampleSub: "Öffnen Sie einen vorbereiteten Mietvertrag und erkunden Sie die vollständige Erklärung. Kein Upload erforderlich.",
+  exampleBtn: "Mietvertrags-Beispiel ansehen",
+  exampleNote: "Miete, Kaution, Kündigungsfrist und wichtige Klauseln",
   analyzingTitle: "Wir übersetzen die Rechtssprache in etwas Verständlicheres.",
   analyzingSub: "Das dauert meist unter einer Minute. Sie können auf dieser Seite bleiben.",
   steps: ["Vertrag wird gelesen", "Wichtige Klauseln werden gesucht", "Kosten und Fristen werden geprüft", "Ihre Zusammenfassung wird erstellt"],
@@ -471,8 +514,8 @@ const DE: Strings = {
   depositBump: "Der erste Monat ist wegen der Kaution höher.",
   bonusBump: "Ein hervorgehobener Monat enthält eine Bonus- oder Sonderzahlung.",
   viewOfficialLaw: "Gesetz im Original ansehen ↗",
-  employmentBtn: "Oder einen Arbeitsvertrag testen",
-  employmentNote: "Ein Beispiel-Arbeitsvertrag.",
+  employmentBtn: "Auch ein Arbeitsvertrags-Beispiel ansehen",
+  employmentNote: "Gehalt, Probezeit und Überstunden",
 };
 
 export function t(lang: Lang): Strings {

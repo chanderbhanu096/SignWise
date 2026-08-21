@@ -26,13 +26,13 @@ function errMessage(code: string, lang: Lang): string {
   const de = lang === "de";
   const map: Record<string, string> = de
     ? {
-        unsupported_type: "Nicht unterstütztes Format. Bitte PDF, DOCX oder Bild.",
+        unsupported_type: "Nicht unterstütztes Format. Bitte PDF, JPG, PNG oder WebP.",
         too_large: "Die Datei ist zu groß (max. 4 MB).",
         empty_file: "Die Datei war leer.",
         analysis_failed: "Bei der Analyse ist etwas schiefgegangen.",
       }
     : {
-        unsupported_type: "Unsupported format. Please use PDF, DOCX or an image.",
+        unsupported_type: "Unsupported format. Please use PDF, JPG, PNG or WebP.",
         too_large: "The file is too large (max 4 MB).",
         empty_file: "The file was empty.",
         analysis_failed: "Something went wrong during analysis.",
@@ -208,12 +208,12 @@ export default function App() {
               <div className="brand-tag">{s.tagline}</div>
             </div>
           </div>
-          <div className="langs" role="group" aria-label="Language">
+          <div className="langs" role="group" aria-label={s.languageSelector}>
             {langBtn("de", "DE")}
             {langBtn("en", "EN")}
             <div style={{ position: "relative" }}>
               <button className={"pill" + (["tr", "uk", "ar"].includes(lang) ? " on" : "")} aria-expanded={moreOpen} onClick={() => setMoreOpen((v) => !v)}>
-                {lang === "tr" ? "TR" : lang === "uk" ? "UA" : lang === "ar" ? "AR" : "More"}
+                {lang === "tr" ? "TR" : lang === "uk" ? "UA" : lang === "ar" ? "AR" : s.moreLanguages}
               </button>
               {moreOpen && (
                 <div className="card" style={{ position: "absolute", right: 0, top: "52px", padding: 8, zIndex: 40, minWidth: 160 }}>
