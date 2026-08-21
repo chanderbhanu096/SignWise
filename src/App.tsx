@@ -138,10 +138,22 @@ export default function App() {
 
   const [selectedInDoc, setSelectedInDoc] = useState<string | null>(null);
 
+  // Two distinct actions on one selection. selectClause moves the current clause
+  // (the Original split view follows it); openClause additionally opens the detail
+  // panel. Both write the same state, so no screen can show a stale explanation.
+  function selectClause(id: string) {
+    setSelectedInDoc(id);
+  }
   function openClause(id: string) {
     triggerRef.current = document.activeElement as HTMLElement;
-    setSelectedInDoc(id); // keep the Original preview in sync
+    setSelectedInDoc(id);
     setClauseId(id);
+  }
+  // Entering the document without picking a clause: start clean, not on whatever
+  // was clicked several screens ago. Original then falls back to the first finding.
+  function goOriginal() {
+    setSelectedInDoc(null);
+    setScreen("original");
   }
   function closePanel() {
     setClauseId(null);
@@ -245,7 +257,7 @@ export default function App() {
             <button className={"nav-btn" + (screen === "overview" ? " on" : "")} aria-current={screen === "overview" ? "page" : undefined} onClick={() => setScreen("overview")}>
               {s.screens.overview}
             </button>
-            <button className={"nav-btn" + (screen === "original" ? " on" : "")} aria-current={screen === "original" ? "page" : undefined} onClick={() => setScreen("original")}>
+            <button className={"nav-btn" + (screen === "original" ? " on" : "")} aria-current={screen === "original" ? "page" : undefined} onClick={goOriginal}>
               {s.screens.original}
             </button>
             <button className={"nav-btn" + (screen === "decision" ? " on" : "")} aria-current={screen === "decision" ? "page" : undefined} onClick={() => setScreen("decision")}>
@@ -295,7 +307,7 @@ export default function App() {
             setDepth={setDepth}
             filename={filename}
             onOpenClause={openClause}
-            onOriginal={() => setScreen("original")}
+            onOriginal={goOriginal}
             onDecision={() => setScreen("decision")}
             onAsk={handleAsk}
             answer={answer}
@@ -312,6 +324,7 @@ export default function App() {
             analysis={analysis}
             depth={depth}
             selectedClauseId={selectedInDoc}
+            onSelectClause={selectClause}
             onOpenClause={openClause}
             onBack={() => setScreen("overview")}
           />
@@ -320,7 +333,7 @@ export default function App() {
           <Decision
             analysis={analysis}
             onOpenClause={openClause}
-            onOriginal={() => setScreen("original")}
+            onOriginal={goOriginal}
             onDownload={() => {
               setDlMsg(s.summaryReady);
               setTimeout(() => window.print(), 200);
@@ -330,8 +343,10 @@ export default function App() {
         )}
       </main>
 
+      {/* key: transient panel state (the legal-context expander) belongs to one
+          clause and must not carry over when a different clause is opened. */}
       {openClauseObj && analysis && (
-        <ClausePanel clause={openClauseObj} analysis={analysis} depth={depth} onClose={closePanel} onShowInDoc={showInDoc} />
+        <ClausePanel key={openClauseObj.id} clause={openClauseObj} analysis={analysis} depth={depth} onClose={closePanel} onShowInDoc={showInDoc} />
       )}
     </div>
   );

@@ -278,7 +278,13 @@ section.screen.upload-screen { padding-top: 52px; }
 .doc-clause { border-left: 3px solid var(--brand); background: var(--brand-tint); padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 12px 0; cursor: pointer; }
 .doc-clause[data-tone="warning"] { border-left-color: #b8860b; background: var(--chk-bg); }
 .doc-clause .tag { font-size: 12px; font-weight: 600; color: var(--muted-2); }
-.doc-side { position: sticky; top: 84px; }
+.doc-clause:hover { box-shadow: inset 0 0 0 1px var(--line-2); }
+/* The passage the explanation currently describes. Ring + weight, not colour alone. */
+.doc-clause.on { box-shadow: 0 0 0 2px var(--brand); }
+.doc-clause[data-tone="warning"].on { box-shadow: 0 0 0 2px var(--chk-fg); }
+.finding.on { border-color: var(--brand); background: var(--brand-tint); }
+.expl-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.doc-side { position: sticky; top: 84px; scroll-margin-top: 76px; } /* margin clears the sticky header when stacked */
 
 /* Decision — compact personalized Clear / Review / Clarify brief */
 .decision-screen { max-width: 1180px; }
