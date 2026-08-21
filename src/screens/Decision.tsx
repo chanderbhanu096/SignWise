@@ -17,8 +17,16 @@ export function Decision({
   dlMsg: string;
 }) {
   const s = t(analysis.lang);
-  // The one "worth checking" finding drives the review nudge, if there is one.
-  const toReview = analysis.clauses.find((c) => analysis.findings.includes(c.id) && c.level === "check");
+  // The "worth checking" findings drive the review nudge, if there are any. Copy is
+  // derived from the actual clause(s), not hardcoded to any contract type.
+  const toReviewList = analysis.clauses.filter((c) => analysis.findings.includes(c.id) && c.level === "check");
+  const toReview = toReviewList[0];
+  const reviewTitle =
+    toReviewList.length > 0
+      ? analysis.lang === "de"
+        ? `${toReviewList.length} Klausel${toReviewList.length > 1 ? "n" : ""} sollten Sie prüfen`
+        : `${toReviewList.length} clause${toReviewList.length > 1 ? "s" : ""} you may want to review`
+      : "";
 
   return (
     <section className="screen shell" style={{ maxWidth: 640 }} aria-labelledby="de-h">
@@ -46,8 +54,10 @@ export function Decision({
             △
           </span>
           <div>
-            <p style={{ fontWeight: 600 }}>{s.reviewWarnTitle}</p>
-            <p style={{ color: "var(--muted)", marginTop: 4 }}>{s.reviewWarnBody}</p>
+            <p style={{ fontWeight: 600 }}>{reviewTitle}</p>
+            <p style={{ color: "var(--muted)", marginTop: 4 }}>
+              <strong>{toReview.ref}</strong> — {toReview.means}
+            </p>
           </div>
         </div>
       )}

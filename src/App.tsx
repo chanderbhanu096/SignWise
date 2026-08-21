@@ -1,7 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import type { Analysis, Depth, Lang } from "./types";
 import { t } from "./i18n";
-import { sampleAnalysis, SAMPLE_DOC_TEXT, SAMPLE_FILENAME } from "./sample";
+import {
+  sampleAnalysis,
+  SAMPLE_DOC_TEXT,
+  SAMPLE_FILENAME,
+  employmentAnalysis,
+  EMPLOYMENT_DOC_TEXT,
+  EMPLOYMENT_FILENAME,
+} from "./sample";
 import { extractPdfText, verifyQuote } from "./pdf";
 import { analyze, ask, translate, ApiError } from "./api";
 import { downloadDeadlineIcs } from "./ics";
@@ -45,6 +52,7 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>("upload");
   const [step, setStep] = useState(0);
   const [source, setSource] = useState<Source>("sample");
+  const [sampleKind, setSampleKind] = useState<"rental" | "employment">("rental");
   const [filename, setFilename] = useState(SAMPLE_FILENAME);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [depth, setDepth] = useState<Depth>("standard");
@@ -103,8 +111,16 @@ export default function App() {
 
   function startExample() {
     setSource("sample");
+    setSampleKind("rental");
     setFilename(SAMPLE_FILENAME);
     begin(Promise.resolve({ a: sampleAnalysis(lang), text: SAMPLE_DOC_TEXT }));
+  }
+
+  function startEmploymentExample() {
+    setSource("sample");
+    setSampleKind("employment");
+    setFilename(EMPLOYMENT_FILENAME);
+    begin(Promise.resolve({ a: employmentAnalysis(lang), text: EMPLOYMENT_DOC_TEXT }));
   }
 
   function startUpload(file: File) {
@@ -159,7 +175,7 @@ export default function App() {
     setLang(l);
     if (!analysis) return;
     if (source === "sample") {
-      setAnalysis(sampleAnalysis(l));
+      setAnalysis(sampleKind === "employment" ? employmentAnalysis(l) : sampleAnalysis(l));
       setAnswer(null);
       return;
     }
@@ -265,7 +281,9 @@ export default function App() {
       )}
 
       <main>
-        {screen === "upload" && <Upload lang={lang} onUpload={startUpload} onExample={startExample} error={error} />}
+        {screen === "upload" && (
+          <Upload lang={lang} onUpload={startUpload} onExample={startExample} onEmploymentExample={startEmploymentExample} error={error} />
+        )}
         {screen === "analyzing" && <Analyzing lang={lang} step={step} filename={filename} onSkip={() => setStep(4)} />}
         {screen === "overview" && analysis && (
           <Overview
@@ -279,8 +297,8 @@ export default function App() {
             onAsk={handleAsk}
             answer={answer}
             asking={asking}
-            onAddCalendar={() => {
-              downloadDeadlineIcs(lang === "de" ? "Kündigungsfrist Mietvertrag" : "Rental cancellation deadline", "2027-06-30");
+            onAddCalendar={(summary, iso) => {
+              downloadDeadlineIcs(summary, iso);
               setCalMsg(s.calAdded);
             }}
             calMsg={calMsg}

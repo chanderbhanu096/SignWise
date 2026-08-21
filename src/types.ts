@@ -6,11 +6,23 @@ import { z } from "zod";
 export const LEVELS = ["important", "check", "standard"] as const;
 export const DEPTHS = ["simple", "standard", "detailed"] as const;
 export const TAGS = ["money", "deadline", "responsibility", "risk"] as const;
+// Financial framing of the contract, from the user's perspective.
+export const CATEGORIES = ["expense", "income", "mixed", "neutral"] as const;
 
 export type Level = (typeof LEVELS)[number];
 export type Depth = (typeof DEPTHS)[number];
 export type Tag = (typeof TAGS)[number];
+export type ContractCategory = (typeof CATEGORIES)[number];
 export type Lang = string; // "de" | "en" | translated codes ("tr", "uk", "ar")
+
+// A cited legal provision, e.g. "§ 622 BGB". The model returns only the citation;
+// the app maps law + section to an official URL deterministically (see contract.ts),
+// so link targets are never model-invented.
+export const LegalRefSchema = z.object({
+  label: z.string(), // full citation label, e.g. "§ 622 BGB — Kündigungsfristen"
+  law: z.string(), // code abbreviation, e.g. "BGB"
+  section: z.string().optional(), // e.g. "§ 622"
+});
 
 export const ClauseSchema = z.object({
   id: z.string(),
@@ -24,13 +36,19 @@ export const ClauseSchema = z.object({
   simple: z.object({ simple: z.string(), standard: z.string(), detailed: z.string() }),
   means: z.string(),
   legal: z.string().optional(),
+  legalRefs: z.array(LegalRefSchema).optional(),
 });
 
-export const OneTimeSchema = z.object({
+// One money line item. Backward compatible: freq/timing/kind are optional.
+export const MoneyItemSchema = z.object({
   label: z.string(),
   amount: z.number().nullable(), // null = not stated in the contract (never render as 0)
   ref: z.string().optional(),
+  freq: z.enum(["once", "monthly", "annual"]).optional(), // default "once"
+  timingMonth: z.number().int().min(0).max(11).nullable().optional(), // 0-11 if a known month
+  kind: z.enum(["salary", "rent", "deposit", "bonus", "holiday_pay", "fee", "variable", "other"]).optional(),
 });
+export const OneTimeSchema = MoneyItemSchema; // legacy alias
 
 export const AnalysisSchema = z.object({
   lang: z.string(),
@@ -42,9 +60,12 @@ export const AnalysisSchema = z.object({
   money: z.object({
     monthly: z.number().nullable(),
     yearly: z.number().nullable(),
-    oneTime: z.array(OneTimeSchema),
+    oneTime: z.array(MoneyItemSchema), // one-time costs (expense) or additional pay (income)
     variable: z.array(z.object({ label: z.string(), note: z.string() })),
     currency: z.string(),
+    // Semantic framing (optional; the app falls back to keyword detection).
+    direction: z.enum(["incoming", "outgoing", "mixed", "neutral"]).optional(),
+    category: z.enum(CATEGORIES).optional(),
   }),
   dates: z.array(
     z.object({
@@ -52,6 +73,7 @@ export const AnalysisSchema = z.object({
       title: z.string(),
       body: z.string(),
       tone: z.enum(["normal", "warning"]),
+      iso: z.string().optional(), // YYYY-MM-DD, for the calendar export
     }),
   ),
   findings: z.array(z.string()).min(1).max(5), // clause ids, most important first

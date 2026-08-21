@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Analysis, Clause, Depth } from "../types";
 import { t } from "../i18n";
+import { getOfficialLawUrl } from "../contract";
 import { Severity } from "./Severity";
 
 // The clause detail. Same component renders as a right-side panel on desktop and a
@@ -104,14 +105,49 @@ export function ClausePanel({
             </div>
           </div>
 
-          {/* 3. general legal information — clearly separated */}
-          {clause.legal && (
+          {/* 3. general legal information — clearly separated. 4. official law link. */}
+          {(clause.legal || (clause.legalRefs && clause.legalRefs.length > 0)) && (
             <div>
               <button className="legal-toggle" onClick={() => setLegalOpen((v) => !v)} aria-expanded={legalOpen}>
                 <span>{s.legalToggle}</span>
                 <span aria-hidden="true">{legalOpen ? "▴" : "▾"}</span>
               </button>
-              {legalOpen && <p className="legal-body">{clause.legal}</p>}
+              {legalOpen && (
+                <>
+                  {clause.legal && <p className="legal-body">{clause.legal}</p>}
+                  {clause.legalRefs && clause.legalRefs.length > 0 && (
+                    <ul className="law-refs">
+                      {clause.legalRefs.map((r, i) => {
+                        const url = getOfficialLawUrl(r.law, r.section);
+                        return (
+                          <li key={i} className="law-ref">
+                            {url ? (
+                              <a
+                                className="law-link"
+                                href={url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label={`${r.label} — ${
+                                  analysis.lang === "de"
+                                    ? "offizielles Gesetz, öffnet in neuem Tab"
+                                    : "official law, opens in a new tab"
+                                }`}
+                              >
+                                <span className="law-ref-label">{r.label}</span>
+                                <span className="law-link-cta">{s.viewOfficialLaw}</span>
+                              </a>
+                            ) : (
+                              <span className="law-ref-label" lang={analysis.docLanguage}>
+                                {r.label}
+                              </span>
+                            )}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </>
+              )}
               <p className="legal-note">{s.legalDisclaimer}</p>
             </div>
           )}

@@ -239,6 +239,22 @@ const RAW: RawClause[] = [
 
 const pick = <T>(l: L10n<T>, lang: Lang): T => (lang === "de" ? l.de : l.en);
 
+// Cited provisions per clause. The app maps law + section to the official URL.
+type RawLegalRef = { label: L10n<string>; law: string; section?: string };
+const LEGAL_REFS: Record<string, RawLegalRef[]> = {
+  rent: [{ label: { de: "§ 556b BGB — Fälligkeit der Miete", en: "§ 556b BGB — When rent is due" }, law: "BGB", section: "§ 556b" }],
+  deposit: [{ label: { de: "§ 551 BGB — Höhe und Anlage der Mietkaution", en: "§ 551 BGB — Amount and holding of the deposit" }, law: "BGB", section: "§ 551" }],
+  notice: [
+    { label: { de: "§ 573c BGB — Fristen der ordentlichen Kündigung", en: "§ 573c BGB — Notice periods" }, law: "BGB", section: "§ 573c" },
+    { label: { de: "§ 568 BGB — Form der Kündigung", en: "§ 568 BGB — Form of notice" }, law: "BGB", section: "§ 568" },
+  ],
+  increase: [{ label: { de: "§ 558 BGB — Mieterhöhung bis zur ortsüblichen Vergleichsmiete", en: "§ 558 BGB — Rent increase to the local comparative rent" }, law: "BGB", section: "§ 558" }],
+  repairs: [{ label: { de: "§ 307 BGB — Inhaltskontrolle von AGB", en: "§ 307 BGB — Review of standard terms" }, law: "BGB", section: "§ 307" }],
+  condition: [{ label: { de: "§ 535 BGB — Pflichten aus dem Mietvertrag", en: "§ 535 BGB — Duties under the tenancy" }, law: "BGB", section: "§ 535" }],
+};
+const refsFor = (id: string, lang: Lang) =>
+  LEGAL_REFS[id]?.map((r) => ({ label: pick(r.label, lang), law: r.law, section: r.section }));
+
 const GLANCE: { key: L10n<string>; value: L10n<string>; derived?: boolean }[] = [
   { key: { de: "Vertragsart", en: "Contract type" }, value: { de: "Mietvertrag", en: "Rental Agreement" } },
   { key: { de: "Parteien", en: "Parties" }, value: { de: "Mieter ↔ Vermieter", en: "Tenant ↔ Landlord" } },
@@ -252,7 +268,7 @@ const GLANCE: { key: L10n<string>; value: L10n<string>; derived?: boolean }[] = 
   },
 ];
 
-const DATES: { date: L10n<string>; title: L10n<string>; body: L10n<string>; tone: "normal" | "warning" }[] = [
+const DATES: { date: L10n<string>; title: L10n<string>; body: L10n<string>; tone: "normal" | "warning"; iso?: string }[] = [
   {
     date: { de: "01. Okt 2026", en: "01 Oct 2026" },
     title: { de: "Vertrag beginnt", en: "Contract begins" },
@@ -261,6 +277,7 @@ const DATES: { date: L10n<string>; title: L10n<string>; body: L10n<string>; tone
       en: "First rent and the first deposit instalment are due.",
     },
     tone: "normal",
+    iso: "2026-10-01",
   },
   {
     date: { de: "30. Jun 2027", en: "30 Jun 2027" },
@@ -273,6 +290,7 @@ const DATES: { date: L10n<string>; title: L10n<string>; body: L10n<string>; tone
       en: "Your signed letter must have arrived. One day late costs another month’s rent.",
     },
     tone: "warning",
+    iso: "2027-06-30",
   },
   {
     date: { de: "30. Sep 2027", en: "30 Sep 2027" },
@@ -282,6 +300,7 @@ const DATES: { date: L10n<string>; title: L10n<string>; body: L10n<string>; tone
       en: "Only if you gave notice in time. Otherwise the contract simply continues.",
     },
     tone: "normal",
+    iso: "2027-09-30",
   },
 ];
 
@@ -342,6 +361,7 @@ export function sampleAnalysis(lang: Lang): Analysis {
     simple: pick(c.simple, lang),
     means: pick(c.means, lang),
     legal: pick(c.legal, lang),
+    legalRefs: refsFor(c.id, lang),
   }));
 
   return {
@@ -350,6 +370,7 @@ export function sampleAnalysis(lang: Lang): Analysis {
     contractType: lang === "de" ? "Mietvertrag" : "Rental Agreement",
     glance: GLANCE.map((g) => ({ key: pick(g.key, lang), value: pick(g.value, lang), derived: g.derived })),
     money: {
+      direction: "outgoing",
       monthly: 1240,
       yearly: 14880,
       oneTime: [
@@ -357,9 +378,11 @@ export function sampleAnalysis(lang: Lang): Analysis {
           label: lang === "de" ? "Kaution" : "Deposit",
           amount: 3000,
           ref: lang === "de" ? "§ 6 · Seite 3" : "§ 6 · page 3",
+          kind: "deposit",
+          timingMonth: 0, // due in the first month → the first bar is taller
         },
         // Absence ≠ zero: the contract names no admin fee, so amount is null, not 0.
-        { label: lang === "de" ? "Bearbeitungsgebühr" : "Administration fee", amount: null },
+        { label: lang === "de" ? "Bearbeitungsgebühr" : "Administration fee", amount: null, kind: "fee" },
       ],
       variable: [
         {
@@ -372,7 +395,7 @@ export function sampleAnalysis(lang: Lang): Analysis {
       ],
       currency: "EUR",
     },
-    dates: DATES.map((d) => ({ date: pick(d.date, lang), title: pick(d.title, lang), body: pick(d.body, lang), tone: d.tone })),
+    dates: DATES.map((d) => ({ date: pick(d.date, lang), title: pick(d.title, lang), body: pick(d.body, lang), tone: d.tone, iso: d.iso })),
     findings: ["rent", "deposit", "notice", "increase", "repairs"],
     rights: RIGHTS.map((r) => ({ clauseId: r.clauseId, text: pick(r.text, lang) })),
     duties: DUTIES.map((d) => ({ clauseId: d.clauseId, text: pick(d.text, lang) })),
@@ -400,3 +423,272 @@ export const SAMPLE_DOC_TEXT = [
 
 // Convenience: what the Overview needs alongside the analysis for display.
 export const sampleYearlyLabel = (lang: Lang) => euro(14880, lang);
+
+// ---------------------------------------------------------------------------
+// Employment fixture — demonstrates the income-side financial framing. Salary is
+// never framed as a "cost", and the compensation chart shows a June holiday-pay bump.
+// ---------------------------------------------------------------------------
+
+type EmpClause = RawClause & { legalRefs?: RawLegalRef[] };
+
+const EMP: EmpClause[] = [
+  {
+    id: "salary",
+    page: 1,
+    level: "important",
+    tags: ["money"],
+    quote: "§ 4 Vergütung. Das monatliche Bruttogehalt beträgt 3.440,00 EUR und wird zum Monatsende gezahlt.",
+    ref: { de: "§ 4 Vergütung · Seite 1", en: "§ 4 Vergütung · page 1" },
+    title: { de: "Ihr Bruttogehalt beträgt 3.440 € / Monat", en: "Your gross salary is €3,440 / month" },
+    simple: {
+      de: {
+        simple: "Sie verdienen 3.440 € brutto im Monat, gezahlt zum Monatsende.",
+        standard: "Das monatliche Bruttogehalt beträgt 3.440 € und wird jeweils zum Monatsende gezahlt. Brutto heißt vor Steuern und Sozialabgaben.",
+        detailed: "Das vereinbarte Bruttogehalt beträgt 3.440 € pro Monat, zahlbar zum Monatsende. „Brutto“ ist der Betrag vor Lohnsteuer und Sozialversicherung; Ihr Nettobetrag ist niedriger und hängt von Steuerklasse und Beiträgen ab — das steht nicht im Vertrag.",
+      },
+      en: {
+        simple: "You earn €3,440 gross per month, paid at month end.",
+        standard: "The monthly gross salary is €3,440, paid at the end of each month. Gross means before tax and social-security contributions.",
+        detailed: "The agreed gross salary is €3,440 per month, payable at month end. “Gross” is the figure before income tax and social security; your net pay is lower and depends on your tax class and contributions — which the contract does not state.",
+      },
+    },
+    means: {
+      de: "Ihr Nettogehalt liegt darunter. SignWise schätzt keine Abzüge — nutzen Sie einen Brutto-Netto-Rechner.",
+      en: "Your take-home pay is lower. SignWise does not estimate deductions — use a gross-to-net calculator.",
+    },
+    legal: {
+      de: "Der Arbeitgeber schuldet die vereinbarte Vergütung für geleistete Arbeit (§ 611a BGB).",
+      en: "The employer owes the agreed remuneration for work performed (§ 611a BGB).",
+    },
+    legalRefs: [{ label: { de: "§ 611a BGB — Arbeitsvertrag", en: "§ 611a BGB — Employment contract" }, law: "BGB", section: "§ 611a" }],
+  },
+  {
+    id: "probation",
+    page: 1,
+    level: "important",
+    tags: ["deadline"],
+    quote: "§ 2 Probezeit. Die ersten sechs Monate gelten als Probezeit. Während der Probezeit beträgt die Kündigungsfrist zwei Wochen.",
+    ref: { de: "§ 2 Probezeit · Seite 1", en: "§ 2 Probezeit · page 1" },
+    title: { de: "6 Monate Probezeit — 2 Wochen Frist", en: "6-month probation — 2 weeks’ notice" },
+    simple: {
+      de: {
+        simple: "In den ersten 6 Monaten können beide Seiten mit 2 Wochen Frist kündigen.",
+        standard: "Die ersten sechs Monate sind Probezeit. In dieser Zeit kann jede Seite mit einer Frist von zwei Wochen kündigen.",
+        detailed: "Die Probezeit dauert sechs Monate (bis 30.04.2027). Während dieser Zeit gilt eine verkürzte Kündigungsfrist von zwei Wochen zu jedem Tag; ein besonderer Kündigungsschutz besteht meist noch nicht.",
+      },
+      en: {
+        simple: "In the first 6 months, either side can cancel with 2 weeks’ notice.",
+        standard: "The first six months are a probation period. During it either side may cancel with two weeks’ notice.",
+        detailed: "Probation lasts six months (until 30 Apr 2027). During it a shortened two-week notice applies on any day, and full dismissal protection usually does not yet apply.",
+      },
+    },
+    means: {
+      de: "Rechnen Sie in den ersten sechs Monaten mit einer kurzen Frist von zwei Wochen.",
+      en: "Expect a short two-week notice period during the first six months.",
+    },
+    legal: {
+      de: "Während einer vereinbarten Probezeit (max. sechs Monate) kann mit zwei Wochen Frist gekündigt werden (§ 622 Abs. 3 BGB).",
+      en: "During an agreed probation (max. six months) notice may be two weeks (§ 622 (3) BGB).",
+    },
+    legalRefs: [{ label: { de: "§ 622 BGB — Kündigungsfristen im Arbeitsverhältnis", en: "§ 622 BGB — Notice periods in employment relationships" }, law: "BGB", section: "§ 622" }],
+  },
+  {
+    id: "notice",
+    page: 2,
+    level: "important",
+    tags: ["deadline"],
+    quote: "§ 9 Kündigung. Nach Ablauf der Probezeit gelten die gesetzlichen Kündigungsfristen.",
+    ref: { de: "§ 9 Kündigung · Seite 2", en: "§ 9 Kündigung · page 2" },
+    title: { de: "Nach der Probezeit gilt die gesetzliche Frist", en: "After probation the statutory notice applies" },
+    simple: {
+      de: {
+        simple: "Nach der Probezeit gelten die normalen gesetzlichen Fristen — für Sie 4 Wochen.",
+        standard: "Nach der Probezeit richtet sich die Kündigungsfrist nach dem Gesetz: für Arbeitnehmer vier Wochen zum 15. oder zum Monatsende.",
+        detailed: "Nach der Probezeit gilt die gesetzliche Grundfrist von vier Wochen zum 15. oder zum Ende eines Kalendermonats (§ 622 Abs. 1 BGB). Für den Arbeitgeber verlängert sie sich mit der Beschäftigungsdauer.",
+      },
+      en: {
+        simple: "After probation the normal statutory periods apply — four weeks for you.",
+        standard: "After probation the notice period follows the law: for employees four weeks to the 15th or the end of a month.",
+        detailed: "After probation the statutory base period is four weeks to the 15th or the end of a calendar month (§ 622 (1) BGB). For the employer it lengthens with your years of service.",
+      },
+    },
+    means: {
+      de: "Planen Sie nach der Probezeit mindestens vier Wochen Kündigungsfrist ein.",
+      en: "After probation, plan for at least four weeks’ notice.",
+    },
+    legal: {
+      de: "Die gesetzliche Grundkündigungsfrist beträgt vier Wochen zum 15. oder zum Monatsende (§ 622 Abs. 1 BGB).",
+      en: "The statutory base notice period is four weeks to the 15th or month end (§ 622 (1) BGB).",
+    },
+    legalRefs: [{ label: { de: "§ 622 BGB — Kündigungsfristen im Arbeitsverhältnis", en: "§ 622 BGB — Notice periods in employment relationships" }, law: "BGB", section: "§ 622" }],
+  },
+  {
+    id: "vacation",
+    page: 2,
+    level: "standard",
+    tags: ["responsibility"],
+    quote: "§ 7 Urlaub. Der Arbeitnehmer hat Anspruch auf 28 Urlaubstage pro Kalenderjahr.",
+    ref: { de: "§ 7 Urlaub · Seite 2", en: "§ 7 Urlaub · page 2" },
+    title: { de: "28 Urlaubstage pro Jahr", en: "28 holiday days per year" },
+    simple: {
+      de: {
+        simple: "Sie haben 28 bezahlte Urlaubstage im Jahr.",
+        standard: "Der Vertrag gibt 28 bezahlte Urlaubstage pro Kalenderjahr — mehr als das gesetzliche Minimum von 20 Tagen (bei 5-Tage-Woche).",
+        detailed: "28 bezahlte Urlaubstage pro Jahr liegen über dem gesetzlichen Mindesturlaub von 20 Tagen bei einer Fünf-Tage-Woche (§ 3 BUrlG). Anteilige Kürzung gilt bei unterjährigem Ein- oder Austritt.",
+      },
+      en: {
+        simple: "You get 28 paid holiday days a year.",
+        standard: "The contract gives 28 paid holiday days per calendar year — more than the statutory minimum of 20 days (on a 5-day week).",
+        detailed: "28 paid holiday days a year is above the statutory minimum of 20 days on a five-day week (§ 3 BUrlG). A pro-rata reduction applies if you join or leave mid-year.",
+      },
+    },
+    means: {
+      de: "Sie haben mehr Urlaub als gesetzlich vorgeschrieben — ein Pluspunkt des Vertrags.",
+      en: "You get more holiday than the law requires — a plus in this contract.",
+    },
+    legal: {
+      de: "Der gesetzliche Mindesturlaub beträgt 24 Werktage, also 20 Tage bei einer Fünf-Tage-Woche (§ 3 BUrlG).",
+      en: "The statutory minimum holiday is 24 working days, i.e. 20 days on a five-day week (§ 3 BUrlG).",
+    },
+    legalRefs: [{ label: { de: "§ 3 BUrlG — Dauer des Mindesturlaubs", en: "§ 3 BUrlG — Minimum holiday entitlement" }, law: "BUrlG", section: "§ 3" }],
+  },
+  {
+    id: "holiday",
+    page: 1,
+    level: "standard",
+    tags: ["money"],
+    quote: "§ 5 Sonderzahlung. Zusätzlich zum Gehalt wird ein Urlaubsgeld in Höhe von 1.200,00 EUR jährlich im Juni gezahlt.",
+    ref: { de: "§ 5 Sonderzahlung · Seite 1", en: "§ 5 Sonderzahlung · page 1" },
+    title: { de: "1.200 € Urlaubsgeld pro Jahr", en: "€1,200 holiday pay per year" },
+    simple: {
+      de: {
+        simple: "Sie bekommen zusätzlich 1.200 € Urlaubsgeld im Jahr, ausgezahlt im Juni.",
+        standard: "Zusätzlich zum Monatsgehalt zahlt der Arbeitgeber einmal im Jahr 1.200 € Urlaubsgeld, im Juni. Das kommt zum Jahresgehalt hinzu.",
+        detailed: "Das Urlaubsgeld von 1.200 € wird zusätzlich zum Grundgehalt einmal jährlich im Juni gezahlt. Zusammen mit 12 × 3.440 € ergibt sich eine mögliche Jahresvergütung von 42.480 € brutto.",
+      },
+      en: {
+        simple: "You also get €1,200 holiday pay a year, paid in June.",
+        standard: "On top of your monthly salary, the employer pays €1,200 holiday pay once a year, in June. It adds to your annual pay.",
+        detailed: "The €1,200 holiday pay is paid on top of base salary once a year in June. With 12 × €3,440 that gives a possible annual compensation of €42,480 gross.",
+      },
+    },
+    means: {
+      de: "Ihre mögliche Jahresvergütung liegt bei 42.480 € brutto (41.280 € Gehalt + 1.200 € Urlaubsgeld).",
+      en: "Your possible annual compensation is €42,480 gross (€41,280 salary + €1,200 holiday pay).",
+    },
+    legal: {
+      de: "Sonderzahlungen wie Urlaubsgeld sind nicht gesetzlich vorgeschrieben; sie ergeben sich aus dem Vertrag.",
+      en: "Special payments such as holiday pay are not required by law; they follow from the contract.",
+    },
+  },
+];
+
+const EMP_GLANCE: { key: L10n<string>; value: L10n<string>; derived?: boolean }[] = [
+  { key: { de: "Vertragsart", en: "Contract type" }, value: { de: "Arbeitsvertrag", en: "Employment agreement" } },
+  { key: { de: "Parteien", en: "Parties" }, value: { de: "Arbeitnehmer ↔ Arbeitgeber", en: "Employee ↔ Employer" } },
+  { key: { de: "Beginn", en: "Start date" }, value: { de: "01.11.2026", en: "01.11.2026" } },
+  { key: { de: "Laufzeit", en: "Duration" }, value: { de: "Unbefristet", en: "Indefinite" } },
+  { key: { de: "Bruttogehalt", en: "Gross salary" }, value: { de: "3.440 € / Monat", en: "€3,440 / month" } },
+  { key: { de: "Kündigungsfrist", en: "Notice period" }, value: { de: "2 Wochen (Probezeit)", en: "2 weeks (probation)" }, derived: true },
+];
+
+const EMP_DATES: typeof DATES = [
+  {
+    date: { de: "01. Nov 2026", en: "01 Nov 2026" },
+    title: { de: "Arbeitsverhältnis beginnt", en: "Employment begins" },
+    body: { de: "Beginn der sechsmonatigen Probezeit.", en: "Start of the six-month probation period." },
+    tone: "normal",
+    iso: "2026-11-01",
+  },
+  {
+    date: { de: "30. Apr 2027", en: "30 Apr 2027" },
+    title: { de: "Ende der Probezeit", en: "End of probation" },
+    body: {
+      de: "Danach gilt die längere gesetzliche Kündigungsfrist; in der Probezeit sind es nur zwei Wochen.",
+      en: "After this the longer statutory notice applies; during probation it is only two weeks.",
+    },
+    tone: "warning",
+    iso: "2027-04-30",
+  },
+];
+
+const EMP_RIGHTS: { clauseId: string; text: L10n<string> }[] = [
+  { clauseId: "vacation", text: { de: "28 bezahlte Urlaubstage pro Jahr", en: "28 paid holiday days per year" } },
+  { clauseId: "holiday", text: { de: "Zusätzliches Urlaubsgeld von 1.200 € jährlich", en: "Additional holiday pay of €1,200 per year" } },
+  { clauseId: "salary", text: { de: "Pünktliche Zahlung des vereinbarten Gehalts", en: "The agreed salary paid on time" } },
+];
+
+const EMP_DUTIES: { clauseId: string; text: L10n<string> }[] = [
+  { clauseId: "salary", text: { de: "Die vereinbarte Arbeitsleistung erbringen", en: "Perform the agreed work" } },
+  { clauseId: "probation", text: { de: "In der Probezeit gilt eine 2-Wochen-Frist", en: "A 2-week notice applies during probation" } },
+  { clauseId: "notice", text: { de: "Nach der Probezeit die Kündigungsfrist einhalten", en: "After probation, observe the notice period" } },
+];
+
+export const EMPLOYMENT_FILENAME = "Beispiel-Arbeitsvertrag.pdf";
+
+export function employmentAnalysis(lang: Lang): Analysis {
+  const clauses: Clause[] = EMP.map((c) => ({
+    id: c.id,
+    ref: pick(c.ref, lang),
+    page: c.page,
+    quote: c.quote,
+    verified: true,
+    level: c.level,
+    tags: c.tags,
+    title: pick(c.title, lang),
+    simple: pick(c.simple, lang),
+    means: pick(c.means, lang),
+    legal: pick(c.legal, lang),
+    legalRefs: c.legalRefs?.map((r) => ({ label: pick(r.label, lang), law: r.law, section: r.section })),
+  }));
+
+  return {
+    lang,
+    docLanguage: "de",
+    contractType: lang === "de" ? "Arbeitsvertrag" : "Employment agreement",
+    glance: EMP_GLANCE.map((g) => ({ key: pick(g.key, lang), value: pick(g.value, lang), derived: g.derived })),
+    money: {
+      direction: "incoming",
+      monthly: 3440,
+      yearly: 41280,
+      currency: "EUR",
+      oneTime: [
+        {
+          label: lang === "de" ? "Urlaubsgeld" : "Holiday pay",
+          amount: 1200,
+          freq: "annual",
+          timingMonth: 8, // paid in June; month index 8 in the Oct-anchored 12-month axis
+          kind: "holiday_pay",
+          ref: lang === "de" ? "§ 5 · Seite 1" : "§ 5 · page 1",
+        },
+      ],
+      variable: [
+        {
+          label: lang === "de" ? "Überstundenvergütung" : "Overtime pay",
+          note:
+            lang === "de"
+              ? "Nur nach vorheriger Anordnung vergütet — im Vertrag nicht beziffert."
+              : "Paid only if ordered in advance — not quantified in the contract.",
+        },
+      ],
+    },
+    dates: EMP_DATES.map((d) => ({ date: pick(d.date, lang), title: pick(d.title, lang), body: pick(d.body, lang), tone: d.tone, iso: d.iso })),
+    findings: ["salary", "probation", "notice", "vacation", "holiday"],
+    rights: EMP_RIGHTS.map((r) => ({ clauseId: r.clauseId, text: pick(r.text, lang) })),
+    duties: EMP_DUTIES.map((d) => ({ clauseId: d.clauseId, text: pick(d.text, lang) })),
+    clauses,
+    confidence: "high",
+    warnings: [],
+  };
+}
+
+export const EMPLOYMENT_DOC_TEXT = [
+  "Arbeitsvertrag",
+  "§ 1 Beginn. Das Arbeitsverhältnis beginnt am 01.11.2026 und wird auf unbestimmte Zeit geschlossen.",
+  EMP.find((c) => c.id === "probation")!.quote,
+  EMP.find((c) => c.id === "salary")!.quote,
+  EMP.find((c) => c.id === "holiday")!.quote,
+  EMP.find((c) => c.id === "vacation")!.quote,
+  EMP.find((c) => c.id === "notice")!.quote,
+  "§ 8 Mehrarbeit. Überstunden werden nur nach vorheriger Anordnung vergütet.",
+].join("\n\n");

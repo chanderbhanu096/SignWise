@@ -9,11 +9,13 @@ export function Upload({
   lang,
   onUpload,
   onExample,
+  onEmploymentExample,
   error,
 }: {
   lang: Lang;
   onUpload: (file: File) => void;
   onExample: () => void;
+  onEmploymentExample: () => void;
   error: string | null;
 }) {
   const s = t(lang);
@@ -108,6 +110,12 @@ export function Upload({
           {s.exampleBtn}
         </button>
         <span style={{ fontSize: 14, color: "var(--muted-2)" }}>{s.exampleNote}</span>
+      </div>
+      <div style={{ marginTop: 12 }}>
+        <button className="link-btn" onClick={onEmploymentExample}>
+          {s.employmentBtn}
+        </button>{" "}
+        <span style={{ fontSize: 14, color: "var(--muted-2)" }}>{s.employmentNote}</span>
       </div>
 
       <p className="disclaimer">{s.disclaimer}</p>

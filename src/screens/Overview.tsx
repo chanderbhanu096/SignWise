@@ -3,12 +3,8 @@ import type { Analysis, Depth } from "../types";
 import { DEPTHS } from "../types";
 import { t } from "../i18n";
 import { euro } from "../format";
+import { getContractCategory, getFinancialCopy, getContractSuggestions } from "../contract";
 import { Severity } from "../components/Severity";
-
-const SUGGESTIONS: Record<string, string[]> = {
-  de: ["Kann meine Miete steigen?", "Wie kündige ich?", "Was passiert, wenn ich früher ausziehe?", "Erkläre das einfacher."],
-  en: ["Can my rent increase?", "How do I cancel?", "What happens if I leave early?", "Explain this in simpler language."],
-};
 
 export function Overview({
   analysis,
@@ -34,25 +30,96 @@ export function Overview({
   onAsk: (q: string) => void;
   answer: { text: string; clauseId: string | null } | null;
   asking: boolean;
-  onAddCalendar: () => void;
+  onAddCalendar: (summary: string, iso: string) => void;
   calMsg: string;
 }) {
   const s = t(analysis.lang);
   const { money } = analysis;
   const [typed, setTyped] = useState("");
   const byId = (id: string) => analysis.clauses.find((c) => c.id === id);
-
-  // 12-month cost bars. First month carries the deposit, so it's taller.
-  const monthly = money.monthly ?? 0;
-  const deposit = money.oneTime.find((o) => o.amount != null)?.amount ?? 0;
-  const max = monthly + deposit || 1;
   const locale = analysis.lang === "de" ? "de-DE" : "en-GB";
+  const cur = money.currency;
+  const fmt = (n: number) => euro(n, analysis.lang, cur);
+
+  // Contract-type-aware financial framing.
+  const category = getContractCategory(analysis);
+  const fin = getFinancialCopy(category, analysis.lang);
+  const income = category === "income";
+  const mixed = category === "mixed";
+  const neutral = category === "neutral";
+
+  const monthly = money.monthly ?? 0;
+  const items = money.oneTime; // one-time costs (expense) or additional pay (income)
+
+  // Freq note appended to a line item, e.g. "/ year".
+  const freqNote = (freq?: string) =>
+    freq === "annual"
+      ? analysis.lang === "de"
+        ? " / Jahr"
+        : " / year"
+      : freq === "monthly"
+        ? analysis.lang === "de"
+          ? " / Monat"
+          : " / month"
+        : "";
+
+  // Chart overlays: a base monthly amount, plus any extra placed in a known month.
+  const placed = items
+    .filter((it) => it.amount != null && it.timingMonth != null)
+    .map((it) => ({ it, m: it.timingMonth as number }));
+  // Legacy/expense fallback: a deposit-like one-time cost lands in the first month.
+  let overlay = placed;
+  if (overlay.length === 0 && category === "expense") {
+    const dep = items.find((it) => it.amount != null && it.freq !== "annual" && it.freq !== "monthly");
+    if (dep) overlay = [{ it: dep, m: 0 }];
+  }
+  const bumpByMonth = Array(12).fill(0);
+  for (const o of overlay) if (o.m >= 0 && o.m < 12) bumpByMonth[o.m] += o.it.amount as number;
+
   const months = Array.from({ length: 12 }, (_, i) =>
     new Intl.DateTimeFormat(locale, { month: "short" }).format(new Date(2026, 9 + i, 1)),
   );
-  const suggestions = SUGGESTIONS[analysis.lang] ?? SUGGESTIONS.en;
+  const bars = months.map((m, i) => ({ label: m, value: monthly + bumpByMonth[i], bumped: bumpByMonth[i] > 0 }));
+  const maxBar = Math.max(...bars.map((b) => b.value), 1);
+  const showChart = !neutral && monthly > 0;
 
+  const depositOverlay = overlay.find((o) => o.it.kind === "deposit") || (category === "expense" ? overlay.find((o) => o.m === 0) : undefined);
+  const chartNote = income && overlay.length ? s.bonusBump : depositOverlay ? s.depositBump : "";
+
+  // Amounts we could not confidently place in a month.
+  const unplaced = items.filter(
+    (it) => it.amount != null && it.timingMonth == null && it.freq !== "monthly" && !overlay.some((o) => o.it === it),
+  );
+
+  // Income total (only when the document clearly adds an annual amount on top).
+  const annualExtras = items.filter((it) => it.freq === "annual" && it.amount != null);
+  const showTotal = income && money.yearly != null && annualExtras.length > 0;
+  const totalAnnual = (money.yearly ?? 0) + annualExtras.reduce((a, it) => a + (it.amount ?? 0), 0);
+
+  // "Possible additional costs" only reads right for expenses; income/mixed get a neutral label.
+  const variableHeading =
+    income || mixed
+      ? analysis.lang === "de"
+        ? "Weitere mögliche Zahlungen"
+        : "Other possible payments"
+      : s.possibleAddl;
+
+  const suggestions = getContractSuggestions(analysis.contractType, analysis.lang);
   const findings = analysis.findings.map((id, i) => ({ c: byId(id)!, n: i + 1 })).filter((x) => x.c);
+
+  // Calendar: the first warning-tone (or first available) date with a machine date.
+  const deadline = analysis.dates.find((d) => d.tone === "warning" && d.iso) ?? analysis.dates.find((d) => d.iso);
+
+  const itemRow = (label: string, amount: number | null, ref?: string, freq?: string, key?: string) => (
+    <div className="money-row" key={key ?? label}>
+      <span>
+        {label}
+        {freqNote(freq) && <span className="finding-ref">{freqNote(freq)}</span>}
+        {ref && <span className="finding-ref"> · {ref}</span>}
+      </span>
+      {amount != null ? <strong>{fmt(amount)}</strong> : <span className="na">{s.notMentioned}</span>}
+    </div>
+  );
 
   return (
     <section className="screen shell wide" aria-labelledby="ov-h">
@@ -122,67 +189,106 @@ export function Overview({
         </p>
       </div>
 
-      {/* Money */}
+      {/* Financial — heading, labels and chart adapt to the contract category */}
       <h2 className="section-h block" style={{ fontSize: 22 }}>
-        {s.costHeading}
+        {fin.heading}
       </h2>
-      <p className="section-sub">{s.costSub}</p>
+      <p className="section-sub">{fin.subheading}</p>
       <div className="money">
         <div className="card">
-          <div className="money-label">{s.everyMonth}</div>
-          <div className="money-big">{monthly ? euro(monthly, analysis.lang, money.currency) : s.notMentioned}</div>
+          <div className="money-label">{fin.monthly}</div>
+          <div className="money-big">{monthly ? fmt(monthly) : s.notMentioned}</div>
           <div className="money-year">
-            {s.overYear}: {money.yearly ? euro(money.yearly, analysis.lang, money.currency) : "—"}
+            {fin.yearly}: {money.yearly != null ? fmt(money.yearly) : "—"}
           </div>
         </div>
-        <div className="card">
-          <div className="money-label">{s.oneTimeHeading}</div>
-          {money.oneTime.map((o) => (
-            <div className="money-row" key={o.label}>
-              <span>
-                {o.label} {o.ref && <span className="finding-ref">· {o.ref}</span>}
-              </span>
-              {o.amount != null ? <strong>{euro(o.amount, analysis.lang, money.currency)}</strong> : <span className="na">{s.notMentioned}</span>}
+
+        {mixed ? (
+          <div className="card">
+            <div className="money-label">{fin.receiveHeading}</div>
+            {items
+              .filter((it) => ["salary", "bonus", "holiday_pay", "variable"].includes(it.kind ?? ""))
+              .map((it, i) => itemRow(it.label, it.amount, it.ref, it.freq, "r" + i))}
+            <div className="money-label" style={{ marginTop: 14 }}>
+              {fin.payHeading}
             </div>
-          ))}
-          {money.variable.map((v) => (
-            <div className="money-row" key={v.label}>
-              <span>
-                <div>{s.possibleAddl}</div>
-                <div style={{ fontWeight: 600 }}>{v.label}</div>
-                <div className="finding-ref">{v.note}</div>
-              </span>
-            </div>
-          ))}
-        </div>
+            {items
+              .filter((it) => ["rent", "deposit", "fee", "other"].includes(it.kind ?? "other"))
+              .map((it, i) => itemRow(it.label, it.amount, it.ref, it.freq, "p" + i))}
+          </div>
+        ) : (
+          <div className="card">
+            <div className="money-label">{fin.extrasHeading}</div>
+            {items.map((it, i) => itemRow(it.label, it.amount, it.ref, it.freq, "it" + i))}
+            {money.variable.map((v) => (
+              <div className="money-row" key={v.label}>
+                <span>
+                  <div>{variableHeading}</div>
+                  <div style={{ fontWeight: 600 }}>{v.label}</div>
+                  <div className="finding-ref">{v.note}</div>
+                </span>
+              </div>
+            ))}
+            {showTotal && (
+              <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--line)" }}>
+                <div className="money-row">
+                  <span>{s.baseAnnual}</span>
+                  <strong>{fmt(money.yearly as number)}</strong>
+                </div>
+                <div className="money-row">
+                  <span>{s.additionalAnnual}</span>
+                  <strong>{fmt(totalAnnual - (money.yearly as number))}</strong>
+                </div>
+                <div className="money-row">
+                  <span style={{ fontWeight: 700 }}>{s.totalAnnual}</span>
+                  <strong>{fmt(totalAnnual)}</strong>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
-      <div className="card block">
-        <div className="overview-head" style={{ alignItems: "center" }}>
-          <h3 style={{ fontSize: 18 }}>{s.first12}</h3>
-          <span className="finding-ref">{s.firstMonthHigher}</span>
-        </div>
-        <div
-          className="chart"
-          role="img"
-          aria-label={
-            analysis.lang === "de"
-              ? `Balkendiagramm: erster Monat ${euro(max, analysis.lang, money.currency)} inklusive Kaution, danach je ${euro(monthly, analysis.lang, money.currency)}.`
-              : `Bar chart: first month ${euro(max, analysis.lang, money.currency)} including the deposit, each following month ${euro(monthly, analysis.lang, money.currency)}.`
-          }
-        >
-          {months.map((m, i) => {
-            const value = i === 0 ? monthly + deposit : monthly;
-            return (
+      {showChart && (
+        <div className="card block">
+          <div className="overview-head" style={{ alignItems: "center" }}>
+            <h3 style={{ fontSize: 18 }}>{fin.chartTitle}</h3>
+            {chartNote && <span className="finding-ref">{chartNote}</span>}
+          </div>
+          <div
+            className="chart"
+            role="img"
+            aria-label={
+              analysis.lang === "de"
+                ? `Balkendiagramm über 12 Monate: Grundbetrag je ${fmt(monthly)}; hervorgehobene Monate enthalten eine zusätzliche Zahlung.`
+                : `Bar chart over 12 months: base amount ${fmt(monthly)} each; highlighted months include an extra payment.`
+            }
+          >
+            {bars.map((b, i) => (
               <div className="bar-col" key={i}>
-                <span className="bar-amt">{new Intl.NumberFormat(locale).format(value)}</span>
-                <div className={"bar" + (i === 0 ? " first" : "")} style={{ height: `${(value / max) * 100}%` }} />
-                <span className="bar-m">{m}</span>
+                <span className="bar-amt">{new Intl.NumberFormat(locale).format(b.value)}</span>
+                <div className={"bar" + (b.bumped ? " first" : "")} style={{ height: `${(b.value / maxBar) * 100}%` }} />
+                <span className="bar-m">{b.label}</span>
               </div>
-            );
-          })}
+            ))}
+          </div>
+          {unplaced.length > 0 && (
+            <ul className="rd-list" style={{ marginTop: 14 }}>
+              {unplaced.map((it, i) => (
+                <li className="rd-item" key={"u" + i}>
+                  <span className="rd-mark duty" aria-hidden="true">
+                    •
+                  </span>
+                  <span className="rd-text">
+                    {s.timingUnspecified}: {it.label}
+                    {it.amount != null && <> — {fmt(it.amount)}</>}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
-      </div>
+      )}
 
       {/* Dates */}
       <h2 className="section-h block" style={{ fontSize: 22 }}>
@@ -204,13 +310,15 @@ export function Overview({
           </li>
         ))}
       </ol>
-      <button className="btn" onClick={onAddCalendar}>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
-          <path d="M4 6h16v14H4z" />
-          <path d="M8 3v4M16 3v4M4 11h16" />
-        </svg>
-        {s.addCalendar}
-      </button>
+      {deadline && (
+        <button className="btn" onClick={() => onAddCalendar(deadline.title, deadline.iso as string)}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+            <path d="M4 6h16v14H4z" />
+            <path d="M8 3v4M16 3v4M4 11h16" />
+          </svg>
+          {s.addCalendar}
+        </button>
+      )}
       {calMsg && (
         <div className="banner-warn" style={{ marginTop: 12 }}>
           <div className="banner-in">{calMsg}</div>

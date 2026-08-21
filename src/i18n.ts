@@ -1,4 +1,17 @@
-import type { Depth, Lang, Level, Tag } from "./types";
+import type { ContractCategory, Depth, Lang, Level, Tag } from "./types";
+
+// Contract-type-aware financial copy. One reusable shape; the heading, labels and
+// chart title change with the category so salary is never framed as a "cost".
+export interface FinancialCopy {
+  heading: string;
+  subheading: string;
+  monthly: string;
+  yearly: string;
+  extrasHeading: string;
+  chartTitle: string;
+  receiveHeading: string;
+  payHeading: string;
+}
 
 // UI chrome strings. The contract's *content* is explained in the user's language
 // by the model (or the bilingual fixture); this file is only the surrounding UI.
@@ -105,13 +118,30 @@ interface Strings {
   lowConfidence: string;
   errorTitle: string;
   tryAgain: string;
+
+  // contract-type-aware financial section
+  financial: Record<ContractCategory, FinancialCopy>;
+  suggestions: Record<string, string[]>; // keyed by contract subtype
+  baseAnnual: string;
+  additionalAnnual: string;
+  totalAnnual: string;
+  timingUnspecified: string;
+  depositBump: string;
+  bonusBump: string;
+
+  // legal links
+  viewOfficialLaw: string;
+
+  // employment example (secondary upload option)
+  employmentBtn: string;
+  employmentNote: string;
 }
 
 const EN: Strings = {
   tagline: "Your contract. Explained clearly.",
   disclaimer: "This tool explains your contract; it does not replace legal advice.",
   disclaimerLong:
-    "This tool explains your contract; it does not replace legal advice. For a binding opinion, contact a lawyer or a tenants’ association (Mieterverein).",
+    "This tool explains your contract; it does not replace legal advice. For a binding opinion, contact a lawyer or an appropriate advice centre (e.g. a consumer or tenants’ association).",
   screens: { upload: "1 · Upload", analyzing: "2 · Analysis", overview: "3 · Overview", original: "4 · Original", decision: "5 · Before you sign" },
   mobileView: "Mobile view",
   mobileViewOn: "Mobile view ✓",
@@ -148,7 +178,7 @@ const EN: Strings = {
   first12: "Your first 12 months",
   firstMonthHigher: "First month is higher because of the deposit",
   datesHeading: "Important dates",
-  datesSub: "Missing a notice deadline can cost you several months of rent, so these matter most.",
+  datesSub: "Missing a deadline can have real financial consequences, so these matter most.",
   addCalendar: "Add deadline to calendar",
   calAdded: "A reminder file (.ics) has been downloaded — open it to add the deadline to your calendar.",
   rightsHeading: "Your rights",
@@ -188,7 +218,7 @@ const EN: Strings = {
   meansTitle: "What this means for you",
   whyTitle: "Why it matters",
   legalToggle: "Relevant legal context (general information)",
-  legalDisclaimer: "General information about German tenancy law — not a statement about your contract, and not legal advice.",
+  legalDisclaimer: "General information about German law — not a statement about your contract, and not legal advice.",
   showInDoc: "Show this in the original document",
   close: "Close",
   aiMeta: (d, l) => `AI explanation · ${d} · ${l}`,
@@ -199,13 +229,71 @@ const EN: Strings = {
     "SignWise is less certain about this contract than usual — the document may be scanned, unusual, or hard to read. Treat the summary as a first orientation and check the original wording.",
   errorTitle: "We couldn’t read that file",
   tryAgain: "Try another file",
+  financial: {
+    expense: {
+      heading: "What will this cost me?",
+      subheading: "Based on the amounts written in your contract.",
+      monthly: "Every month",
+      yearly: "Over one year",
+      extrasHeading: "One-time, at the start",
+      chartTitle: "Your cost over 12 months",
+      receiveHeading: "You receive",
+      payHeading: "You pay",
+    },
+    income: {
+      heading: "Your compensation",
+      subheading: "Based on the salary and payments stated in your contract.",
+      monthly: "Gross per month",
+      yearly: "Gross per year",
+      extrasHeading: "Additional compensation",
+      chartTitle: "Your compensation over 12 months",
+      receiveHeading: "You receive",
+      payHeading: "You pay",
+    },
+    mixed: {
+      heading: "Your financial overview",
+      subheading: "Based on the amounts stated in your contract.",
+      monthly: "Every month",
+      yearly: "Over one year",
+      extrasHeading: "Other amounts",
+      chartTitle: "Your money over 12 months",
+      receiveHeading: "You receive",
+      payHeading: "You pay",
+    },
+    neutral: {
+      heading: "Financial terms",
+      subheading: "The financial terms stated in your contract.",
+      monthly: "Amount",
+      yearly: "Per year",
+      extrasHeading: "Other amounts",
+      chartTitle: "",
+      receiveHeading: "You receive",
+      payHeading: "You pay",
+    },
+  },
+  suggestions: {
+    rental: ["Can my rent increase?", "How do I cancel?", "What happens if I move out early?", "What additional costs can I be charged?"],
+    employment: ["What is my salary?", "What is my notice period?", "Is there a probation period?", "How much vacation do I get?", "Are overtime hours paid?"],
+    subscription: ["When can I cancel?", "Does the contract renew automatically?", "Can the price increase?", "Are there additional fees?"],
+    loan: ["What is the interest rate?", "What are the monthly repayments?", "Can I repay early?", "What happens if I miss a payment?"],
+    generic: ["What are my main obligations?", "How and when can I cancel?", "What are the key dates?", "Explain this in simpler language."],
+  },
+  baseAnnual: "Base annual salary",
+  additionalAnnual: "Additional payments",
+  totalAnnual: "Potential total annual compensation",
+  timingUnspecified: "Additional payment — timing not specified",
+  depositBump: "The first month is higher because of the deposit.",
+  bonusBump: "A highlighted month includes a bonus or holiday payment.",
+  viewOfficialLaw: "View official law ↗",
+  employmentBtn: "Or try an employment contract",
+  employmentNote: "A sample employment agreement.",
 };
 
 const DE: Strings = {
   tagline: "Ihr Vertrag. Klar erklärt.",
   disclaimer: "Dieses Tool erklärt Ihren Vertrag; es ersetzt keine Rechtsberatung.",
   disclaimerLong:
-    "Dieses Tool erklärt Ihren Vertrag; es ersetzt keine Rechtsberatung. Für eine verbindliche Einschätzung wenden Sie sich an einen Anwalt oder einen Mieterverein.",
+    "Dieses Tool erklärt Ihren Vertrag; es ersetzt keine Rechtsberatung. Für eine verbindliche Einschätzung wenden Sie sich an einen Anwalt oder eine geeignete Beratungsstelle (z. B. Verbraucher- oder Mieterverein).",
   screens: { upload: "1 · Hochladen", analyzing: "2 · Analyse", overview: "3 · Überblick", original: "4 · Original", decision: "5 · Vor der Unterschrift" },
   mobileView: "Mobile Ansicht",
   mobileViewOn: "Mobile Ansicht ✓",
@@ -242,7 +330,7 @@ const DE: Strings = {
   first12: "Ihre ersten 12 Monate",
   firstMonthHigher: "Der erste Monat ist wegen der Kaution höher",
   datesHeading: "Wichtige Termine",
-  datesSub: "Eine verpasste Kündigungsfrist kann mehrere Monatsmieten kosten — deshalb zählen diese am meisten.",
+  datesSub: "Eine verpasste Frist kann echte finanzielle Folgen haben — deshalb zählen diese am meisten.",
   addCalendar: "Frist zum Kalender hinzufügen",
   calAdded: "Eine Erinnerungsdatei (.ics) wurde heruntergeladen — öffnen Sie sie, um die Frist in Ihren Kalender zu übernehmen.",
   rightsHeading: "Ihre Rechte",
@@ -282,7 +370,7 @@ const DE: Strings = {
   meansTitle: "Was das für Sie bedeutet",
   whyTitle: "Warum es wichtig ist",
   legalToggle: "Relevanter rechtlicher Kontext (allgemeine Information)",
-  legalDisclaimer: "Allgemeine Informationen zum deutschen Mietrecht — keine Aussage über Ihren Vertrag und keine Rechtsberatung.",
+  legalDisclaimer: "Allgemeine Informationen zum deutschen Recht — keine Aussage über Ihren Vertrag und keine Rechtsberatung.",
   showInDoc: "Dies im Originaldokument anzeigen",
   close: "Schließen",
   aiMeta: (d, l) => `KI-Erklärung · ${d} · ${l}`,
@@ -293,6 +381,64 @@ const DE: Strings = {
     "SignWise ist bei diesem Vertrag unsicherer als sonst — das Dokument ist vielleicht gescannt, ungewöhnlich oder schwer lesbar. Sehen Sie die Zusammenfassung als erste Orientierung und prüfen Sie den Originalwortlaut.",
   errorTitle: "Wir konnten diese Datei nicht lesen",
   tryAgain: "Andere Datei versuchen",
+  financial: {
+    expense: {
+      heading: "Was kostet mich das?",
+      subheading: "Basierend auf den in Ihrem Vertrag genannten Beträgen.",
+      monthly: "Jeden Monat",
+      yearly: "Über ein Jahr",
+      extrasHeading: "Einmalig, zu Beginn",
+      chartTitle: "Ihre Kosten über 12 Monate",
+      receiveHeading: "Sie erhalten",
+      payHeading: "Sie zahlen",
+    },
+    income: {
+      heading: "Ihre Vergütung",
+      subheading: "Basierend auf dem in Ihrem Vertrag genannten Gehalt und den Zahlungen.",
+      monthly: "Brutto pro Monat",
+      yearly: "Brutto pro Jahr",
+      extrasHeading: "Zusätzliche Vergütung",
+      chartTitle: "Ihre Vergütung über 12 Monate",
+      receiveHeading: "Sie erhalten",
+      payHeading: "Sie zahlen",
+    },
+    mixed: {
+      heading: "Ihre Finanzübersicht",
+      subheading: "Basierend auf den in Ihrem Vertrag genannten Beträgen.",
+      monthly: "Jeden Monat",
+      yearly: "Über ein Jahr",
+      extrasHeading: "Weitere Beträge",
+      chartTitle: "Ihr Geld über 12 Monate",
+      receiveHeading: "Sie erhalten",
+      payHeading: "Sie zahlen",
+    },
+    neutral: {
+      heading: "Finanzielle Bedingungen",
+      subheading: "Die in Ihrem Vertrag genannten finanziellen Bedingungen.",
+      monthly: "Betrag",
+      yearly: "Pro Jahr",
+      extrasHeading: "Weitere Beträge",
+      chartTitle: "",
+      receiveHeading: "Sie erhalten",
+      payHeading: "Sie zahlen",
+    },
+  },
+  suggestions: {
+    rental: ["Kann meine Miete steigen?", "Wie kündige ich?", "Was passiert, wenn ich früher ausziehe?", "Welche Zusatzkosten können anfallen?"],
+    employment: ["Wie hoch ist mein Gehalt?", "Wie lang ist meine Kündigungsfrist?", "Gibt es eine Probezeit?", "Wie viel Urlaub bekomme ich?", "Werden Überstunden bezahlt?"],
+    subscription: ["Wann kann ich kündigen?", "Verlängert sich der Vertrag automatisch?", "Kann der Preis steigen?", "Fallen Zusatzkosten an?"],
+    loan: ["Wie hoch ist der Zinssatz?", "Wie hoch sind die monatlichen Raten?", "Kann ich vorzeitig zurückzahlen?", "Was passiert, wenn ich eine Rate verpasse?"],
+    generic: ["Was sind meine wichtigsten Pflichten?", "Wie und wann kann ich kündigen?", "Was sind die wichtigen Termine?", "Erkläre das einfacher."],
+  },
+  baseAnnual: "Jahresgrundgehalt",
+  additionalAnnual: "Zusätzliche Zahlungen",
+  totalAnnual: "Mögliche Gesamtvergütung pro Jahr",
+  timingUnspecified: "Zusätzliche Zahlung — Zeitpunkt nicht angegeben",
+  depositBump: "Der erste Monat ist wegen der Kaution höher.",
+  bonusBump: "Ein hervorgehobener Monat enthält eine Bonus- oder Sonderzahlung.",
+  viewOfficialLaw: "Gesetz im Original ansehen ↗",
+  employmentBtn: "Oder einen Arbeitsvertrag testen",
+  employmentNote: "Ein Beispiel-Arbeitsvertrag.",
 };
 
 export function t(lang: Lang): Strings {
