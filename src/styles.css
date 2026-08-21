@@ -352,7 +352,7 @@ li.law-ref > .law-ref-label { display: inline-block; padding: 6px 2px; } /* plai
   .brand-name { font-size: 17px; }
   .brand-tag { display: none; }
   .langs { flex: none; gap: 4px; }
-  .pill { min-height: 44px; padding: 0 10px; font-size: 14px; }
+  .pill { min-width: 44px; min-height: 44px; padding: 0 10px; font-size: 14px; }
   section.screen.upload-screen { padding-top: 20px; }
   .upload-main-grid { gap: 22px; }
   .upload-eyebrow { font-size: 11px; }
