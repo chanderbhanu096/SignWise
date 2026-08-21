@@ -21,6 +21,14 @@ import { ClausePanel } from "./components/ClausePanel";
 import { Slogan } from "./components/Slogan";
 
 type Screen = "upload" | "analyzing" | "overview" | "original" | "decision";
+
+// Languages behind the globe button: code, menu label, and the badge shown in the
+// segmented control while that language is active.
+const OTHER_LANGS: [Lang, string, string][] = [
+  ["tr", "Türkçe", "TR"],
+  ["uk", "Українська", "UA"],
+  ["ar", "العربية", "AR"],
+];
 type Source = "sample" | "upload";
 
 function errMessage(code: string, lang: Lang): string {
@@ -224,21 +232,31 @@ export default function App() {
             {/* key={lang}: remount resets the rotation, so no slogan from the old language lingers. */}
             <Slogan key={lang} slogans={s.slogans} label={s.tagline} />
           </div>
+          {/* One compact segmented control. The third slot is a globe rather than the
+              word "More", which cost more width than the two languages next to it. */}
           <div className="langs" role="group" aria-label={s.languageSelector}>
             {langBtn("de", "DE")}
             {langBtn("en", "EN")}
-            <div style={{ position: "relative" }}>
-              <button className={"pill" + (["tr", "uk", "ar"].includes(lang) ? " on" : "")} aria-expanded={moreOpen} onClick={() => setMoreOpen((v) => !v)}>
-                {lang === "tr" ? "TR" : lang === "uk" ? "UA" : lang === "ar" ? "AR" : s.moreLanguages}
+            <div className="lang-more">
+              <button
+                className={"pill" + (OTHER_LANGS.some(([c]) => c === lang) ? " on" : "")}
+                aria-expanded={moreOpen}
+                aria-haspopup="true"
+                aria-label={s.moreLanguages}
+                onClick={() => setMoreOpen((v) => !v)}
+              >
+                {OTHER_LANGS.find(([c]) => c === lang)?.[2] ?? (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                    <circle cx="12" cy="12" r="9" />
+                    <path d="M3 12h18" />
+                    <path d="M12 3c2.5 3 2.5 15 0 18M12 3c-2.5 3-2.5 15 0 18" />
+                  </svg>
+                )}
               </button>
               {moreOpen && (
-                <div className="card" style={{ position: "absolute", right: 0, top: "52px", padding: 8, zIndex: 40, minWidth: 160 }}>
-                  {[
-                    ["tr", "Türkçe"],
-                    ["uk", "Українська"],
-                    ["ar", "العربية"],
-                  ].map(([code, label]) => (
-                    <button key={code} className="nav-btn" style={{ width: "100%", justifyContent: "flex-start", marginBottom: 4 }} onClick={() => changeLang(code)}>
+                <div className="lang-menu">
+                  {OTHER_LANGS.map(([code, label]) => (
+                    <button key={code} className="nav-btn" onClick={() => changeLang(code)}>
                       {label}
                     </button>
                   ))}

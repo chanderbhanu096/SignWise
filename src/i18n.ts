@@ -181,7 +181,7 @@ const EN: Strings = {
     "See the signs. Read between the lines.",
   ],
   languageSelector: "Language",
-  moreLanguages: "More",
+  moreLanguages: "More languages", // accessible name for the globe button
   disclaimer: "This tool explains your contract; it does not replace legal advice.",
   disclaimerLong:
     "This tool explains your contract; it does not replace legal advice. For a binding opinion, contact a lawyer or an appropriate advice centre (e.g. a consumer or tenants’ association).",
@@ -374,7 +374,7 @@ const DE: Strings = {
     "Verträge verständlich gemacht.",
   ],
   languageSelector: "Sprache",
-  moreLanguages: "Mehr",
+  moreLanguages: "Weitere Sprachen",
   disclaimer: "Dieses Tool erklärt Ihren Vertrag; es ersetzt keine Rechtsberatung.",
   disclaimerLong:
     "Dieses Tool erklärt Ihren Vertrag; es ersetzt keine Rechtsberatung. Für eine verbindliche Einschätzung wenden Sie sich an einen Anwalt oder eine geeignete Beratungsstelle (z. B. Verbraucher- oder Mieterverein).",
