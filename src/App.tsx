@@ -18,6 +18,7 @@ import { Overview } from "./screens/Overview";
 import { Original } from "./screens/Original";
 import { Decision } from "./screens/Decision";
 import { ClausePanel } from "./components/ClausePanel";
+import { Slogan } from "./components/Slogan";
 
 type Screen = "upload" | "analyzing" | "overview" | "original" | "decision";
 type Source = "sample" | "upload";
@@ -205,7 +206,10 @@ export default function App() {
             </div>
             <div>
               <div className="brand-name">SignWise</div>
-              <div className="brand-tag">{s.tagline}</div>
+              <div className="brand-tag">
+                {/* key={lang}: remount resets the rotation, so no slogan from the old language lingers. */}
+                <Slogan key={lang} slogans={s.slogans} label={s.tagline} />
+              </div>
             </div>
           </div>
           <div className="langs" role="group" aria-label={s.languageSelector}>

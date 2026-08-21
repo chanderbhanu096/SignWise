@@ -21,6 +21,7 @@ export interface FinancialCopy {
 
 interface Strings {
   tagline: string;
+  slogans: string[]; // rotate one at a time in the header
   languageSelector: string;
   moreLanguages: string;
   disclaimer: string;
@@ -164,6 +165,13 @@ interface Strings {
 
 const EN: Strings = {
   tagline: "Your contract. Explained clearly.",
+  slogans: [
+    "Know what you sign.",
+    "Contracts made clear.",
+    "Your contract, explained.",
+    "Spot the signs before you sign.",
+    "See the signs. Read between the lines.",
+  ],
   languageSelector: "Language",
   moreLanguages: "More",
   disclaimer: "This tool explains your contract; it does not replace legal advice.",
@@ -342,6 +350,12 @@ const EN: Strings = {
 
 const DE: Strings = {
   tagline: "Ihr Vertrag. Klar erklärt.",
+  // "Ihr", not "Dein": the rest of the product addresses the reader formally.
+  slogans: [
+    "Ihr Vertrag, einfach erklärt.",
+    "Erst verstehen, dann unterschreiben.",
+    "Verträge verständlich gemacht.",
+  ],
   languageSelector: "Sprache",
   moreLanguages: "Mehr",
   disclaimer: "Dieses Tool erklärt Ihren Vertrag; es ersetzt keine Rechtsberatung.",

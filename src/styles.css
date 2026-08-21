@@ -38,13 +38,20 @@ button { font: inherit; }
 
 .app { min-height: 100vh; padding-bottom: 64px; }
 
-/* Header */
-.hdr { position: sticky; top: 0; z-index: 30; background: var(--surface); border-bottom: 1px solid var(--line); }
+/* Header — translucent so the page visibly moves underneath while scrolling.
+   Kept subtle on purpose: this is a legal-tech tool, not a glass concept demo. */
+.hdr { position: sticky; top: 0; z-index: 30; background: rgba(255,255,255,0.72); backdrop-filter: saturate(165%) blur(14px); -webkit-backdrop-filter: saturate(165%) blur(14px); border-bottom: 1px solid rgba(220,228,227,0.85); box-shadow: 0 1px 22px rgba(18,38,43,0.055); }
+@supports not ((backdrop-filter: blur(4px)) or (-webkit-backdrop-filter: blur(4px))) {
+  .hdr { background: rgba(255,255,255,0.97); }
+}
 .hdr-in { max-width: var(--shell); margin: 0 auto; padding: 14px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px; justify-content: space-between; }
 .brand { display: flex; align-items: center; gap: 12px; }
 .brand-mark { width: 38px; height: 38px; border-radius: 10px; background: var(--brand); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 15px; font-weight: 700; letter-spacing: -0.5px; }
 .brand-name { font-size: 19px; font-weight: 700; letter-spacing: -0.3px; }
-.brand-tag { font-size: 13px; color: var(--muted); }
+.brand-tag { font-size: 13.5px; color: var(--ink-2); font-weight: 500; }
+.slogan { display: inline-flex; align-items: center; min-height: 20px; white-space: nowrap; }
+.slogan-caret { width: 2px; height: 15px; margin-left: 3px; background: var(--brand); animation: caret 1.05s steps(1) infinite; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .langs { display: flex; align-items: center; gap: 6px; }
 
 /* Buttons */
@@ -321,6 +328,7 @@ section.screen.upload-screen { padding-top: 52px; }
 .law-link-cta { font-size: 12.5px; font-weight: 600; color: var(--brand); white-space: nowrap; }
 li.law-ref > .law-ref-label { display: inline-block; padding: 6px 2px; } /* plain (no URL) citation */
 
+@keyframes caret { 50% { opacity: 0; } }
 @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
 @keyframes slide { from { transform: translateX(24px); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes sheet { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
@@ -389,6 +397,7 @@ li.law-ref > .law-ref-label { display: inline-block; padding: 6px 2px; } /* plai
 
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
+  .slogan-caret { display: none; }
 }
 
 @media print {
