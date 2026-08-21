@@ -57,7 +57,6 @@ export default function App() {
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [depth, setDepth] = useState<Depth>("standard");
   const [clauseId, setClauseId] = useState<string | null>(null);
-  const [checks, setChecks] = useState<Record<string, boolean>>({});
   const [answer, setAnswer] = useState<{ text: string; clauseId: string | null } | null>(null);
   const [asking, setAsking] = useState(false);
   const [calMsg, setCalMsg] = useState("");
@@ -316,9 +315,8 @@ export default function App() {
         {screen === "decision" && analysis && (
           <Decision
             analysis={analysis}
-            checks={checks}
-            onToggle={(id) => setChecks((c) => ({ ...c, [id]: !c[id] }))}
-            onReview={() => openClause(analysis.clauses.find((c) => analysis.findings.includes(c.id) && c.level === "check")?.id ?? analysis.findings[0])}
+            onOpenClause={openClause}
+            onOriginal={() => setScreen("original")}
             onDownload={() => {
               setDlMsg(s.summaryReady);
               setTimeout(() => window.print(), 200);

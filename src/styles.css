@@ -197,14 +197,23 @@ section.screen { padding-top: 40px; }
 .doc-clause .tag { font-size: 12px; font-weight: 600; color: var(--muted-2); }
 .doc-side { position: sticky; top: 84px; }
 
-/* Decision */
-.check-list { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
-.check { width: 100%; text-align: left; display: flex; gap: 14px; align-items: center; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); cursor: pointer; }
-.check:hover { border-color: var(--brand); }
-.check-box { flex: none; width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: #fff; background: #fff; border: 2px solid var(--line-2); }
-.check[aria-pressed="true"] .check-box { background: var(--std-fg); border-color: var(--std-fg); }
-.review-note { display: flex; gap: 12px; align-items: flex-start; margin-top: 18px; padding: 16px 18px; background: var(--chk-bg); border: 1px solid var(--chk-bd); border-radius: var(--radius); }
-.review-mark { flex: none; font-size: 20px; color: var(--chk-fg); }
+/* Decision — the "Before you sign" brief */
+.brief-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+.brief-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; display: flex; flex-direction: column; gap: 4px; }
+.brief-card.review { border-left: 3px solid #b8860b; }
+.brief-value { font-size: 30px; font-weight: 700; letter-spacing: -0.5px; color: var(--ink); }
+.brief-title { font-size: 16px; font-weight: 600; }
+.brief-exp { color: var(--muted); font-size: 14px; }
+.brief-reason { font-size: 14px; color: var(--ink-2); margin-top: 4px; }
+.brief-card .link-btn { align-self: flex-start; margin-top: 6px; }
+.brief-empty { margin-top: 14px; padding: 18px 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.state-badge { display: inline-flex; align-items: center; gap: 7px; padding: 4px 10px; border-radius: 99px; font-size: 13px; font-weight: 600; }
+.state-badge.check { color: var(--chk-fg); background: var(--chk-bg); border: 1px solid var(--chk-bd); }
+.state-badge.clear { color: var(--std-fg); background: var(--std-bg); border: 1px solid var(--std-bd); }
+.clarify-list { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
+.brief-card.clarify { border-left: 3px solid var(--brand); }
+.brief-card.clarify .brief-title { font-weight: 600; }
+.q-mark { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: var(--brand-tint); color: var(--brand-strong); font-weight: 700; font-size: 14px; }
 
 /* Clause panel / bottom sheet */
 .scrim { position: fixed; inset: 0; background: rgba(18,38,43,0.4); z-index: 40; }
@@ -241,7 +250,7 @@ li.law-ref > .law-ref-label { display: inline-block; padding: 6px 2px; } /* plai
 
 /* Mobile */
 @media (max-width: 860px) {
-  .money, .two, .split { grid-template-columns: 1fr; }
+  .money, .two, .split, .brief-grid { grid-template-columns: 1fr; }
   .glance { grid-template-columns: 1fr 1fr; }
   .hero { font-size: 34px; }
   .doc-side { position: static; }

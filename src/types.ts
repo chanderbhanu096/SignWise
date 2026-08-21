@@ -82,7 +82,23 @@ export const AnalysisSchema = z.object({
   clauses: z.array(ClauseSchema),
   confidence: z.enum(["high", "medium", "low"]),
   warnings: z.array(z.string()),
+  // Personalized "Before you sign" brief. Optional: the app derives one from the
+  // rest of the analysis when the model does not supply it.
+  decisionSummary: z
+    .object({
+      commitments: z.array(
+        z.object({ title: z.string(), value: z.string().optional(), explanation: z.string(), clauseId: z.string() }),
+      ),
+      reviewItems: z.array(
+        z.object({ title: z.string(), explanation: z.string(), reason: z.string(), clauseId: z.string() }),
+      ),
+      clarificationQuestions: z.array(
+        z.object({ question: z.string(), reason: z.string().optional(), clauseId: z.string().optional() }),
+      ),
+    })
+    .optional(),
 });
 
 export type Clause = z.infer<typeof ClauseSchema>;
 export type Analysis = z.infer<typeof AnalysisSchema>;
+export type DecisionSummary = NonNullable<Analysis["decisionSummary"]>;

@@ -46,7 +46,12 @@ Financial framing (from the user's perspective):
 Legal citations:
 - When a clause is governed by a specific German statute, add "legalRefs": a list of { "label", "law", "section" }, e.g. { "label": "§ 622 BGB — Kündigungsfristen", "law": "BGB", "section": "§ 622" }.
 - Give the citation only (law abbreviation + section). NEVER include a URL — the app maps citations to official sources itself.
-- Add a "iso" (YYYY-MM-DD) to a date when the document gives a concrete calendar date.`;
+- Add a "iso" (YYYY-MM-DD) to a date when the document gives a concrete calendar date.
+
+Decision brief ("decisionSummary") — the culmination of the analysis, contract-type aware:
+- "commitments": the essential things the user is agreeing to (key recurring amount, one-time amounts, duration, notice period). For income contracts these are compensation, not costs. Each links a clauseId.
+- "reviewItems": up to 3 clauses that most deserve a second look, ranked by financial consequence first, then termination/notice, then long-term obligations and penalties. Only genuine items — never pad. "reason" says why to look again, without judging validity.
+- "clarificationQuestions": questions the user could ask the OTHER party, ONLY where the contract genuinely leaves something open (unspecified/variable amounts, ambiguous terms). Never invent uncertainty to fill this list; return an empty list if nothing is justified.`;
 
 const ASK_SYSTEM = `You answer a question about one specific contract, for a non-lawyer, as a single JSON object.
 Answer only from the contract's contents. If the contract does not address it, say so and point to the closest clause.
@@ -85,9 +90,14 @@ const ANALYSIS_SHAPE = `Return a single JSON object with this exact shape:
     "legalRefs"?: [{ "label": string, "law": string, "section"?: string }]   // citation only, no URL
   }],
   "confidence": "high"|"medium"|"low",
-  "warnings": [string]                  // note if scanned/unusual/hard to read; else []
+  "warnings": [string],                 // note if scanned/unusual/hard to read; else []
+  "decisionSummary"?: {                 // the personalized "before you sign" brief
+    "commitments": [{ "title": string, "value"?: string, "explanation": string, "clauseId": string }],
+    "reviewItems": [{ "title": string, "explanation": string, "reason": string, "clauseId": string }],
+    "clarificationQuestions": [{ "question": string, "reason"?: string, "clauseId"?: string }]
+  }
 }
-Every id in findings/rights/duties must match a clause id.`;
+Every id in findings/rights/duties/decisionSummary must match a clause id.`;
 
 export interface AnalyzeInput {
   lang: Lang;

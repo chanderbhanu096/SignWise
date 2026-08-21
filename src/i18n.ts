@@ -88,12 +88,18 @@ interface Strings {
   selectFinding: string;
   selectHint: string;
 
-  // decision
+  // decision — the "Before you sign" brief
   decisionTitle: string;
   decisionSub: string;
-  checklist: { id: string; t: string }[];
-  reviewWarnTitle: string;
-  reviewWarnBody: string;
+  decisionAgreeHeading: string;
+  decisionReviewHeading: string;
+  decisionClarifyHeading: string;
+  whyLookAgain: string;
+  reviewEmptyTitle: string;
+  reviewEmptyBody: string;
+  missingInfo: string;
+  stateClear: string;
+  stateClarify: string;
   reviewClause: string;
   downloadSummary: string;
   summaryReady: string;
@@ -201,15 +207,16 @@ const EN: Strings = {
   selectFinding: "Select a finding",
   selectHint: "Choose one of the findings below and we’ll explain the passage next to it in plain language.",
   decisionTitle: "Before you sign",
-  decisionSub: "Tick what you feel sure about. We won’t tell you to sign or not to sign — that decision is yours.",
-  checklist: [
-    { id: "costs", t: "I understand my monthly and one-time costs" },
-    { id: "duration", t: "I understand the duration of the contract" },
-    { id: "cancel", t: "I know how and when I can cancel" },
-    { id: "duties", t: "I understand my main responsibilities" },
-  ],
-  reviewWarnTitle: "There is 1 clause you may want to review",
-  reviewWarnBody: "§ 13 puts small repairs on you. This may deserve closer review before you sign.",
+  decisionSub: "Here is what this contract means for you — and what may still deserve your attention.",
+  decisionAgreeHeading: "What you’re agreeing to",
+  decisionReviewHeading: "Worth another look",
+  decisionClarifyHeading: "Questions to clarify",
+  whyLookAgain: "Why look again?",
+  reviewEmptyTitle: "No additional review points were identified",
+  reviewEmptyBody: "This does not mean the contract has been legally reviewed. You can still inspect any clause in the original contract.",
+  missingInfo: "We couldn’t find this information in the contract.",
+  stateClear: "Clear",
+  stateClarify: "Clarify",
   reviewClause: "Review the clause",
   downloadSummary: "Download my contract summary",
   summaryReady: "Your summary is opening in a new tab — use your browser’s Print → Save as PDF.",
@@ -353,15 +360,16 @@ const DE: Strings = {
   selectFinding: "Einen Punkt auswählen",
   selectHint: "Wählen Sie unten einen der Punkte, und wir erklären die Passage daneben in einfacher Sprache.",
   decisionTitle: "Vor der Unterschrift",
-  decisionSub: "Haken Sie ab, was Ihnen sicher ist. Wir sagen Ihnen nicht, ob Sie unterschreiben sollen — das entscheiden Sie.",
-  checklist: [
-    { id: "costs", t: "Ich verstehe meine monatlichen und einmaligen Kosten" },
-    { id: "duration", t: "Ich verstehe die Laufzeit des Vertrags" },
-    { id: "cancel", t: "Ich weiß, wie und wann ich kündigen kann" },
-    { id: "duties", t: "Ich verstehe meine wichtigsten Pflichten" },
-  ],
-  reviewWarnTitle: "Es gibt 1 Klausel, die Sie prüfen sollten",
-  reviewWarnBody: "§ 13 überträgt Kleinreparaturen auf Sie. Das sollten Sie vor der Unterschrift genauer prüfen.",
+  decisionSub: "Das bedeutet dieser Vertrag für Sie — und das verdient vielleicht noch Ihre Aufmerksamkeit.",
+  decisionAgreeHeading: "Was Sie zusagen",
+  decisionReviewHeading: "Genauer ansehen",
+  decisionClarifyHeading: "Fragen, die Sie klären sollten",
+  whyLookAgain: "Warum nochmal ansehen?",
+  reviewEmptyTitle: "Keine zusätzlichen Prüfpunkte gefunden",
+  reviewEmptyBody: "Das bedeutet nicht, dass der Vertrag rechtlich geprüft wurde. Sie können jede Klausel im Originalvertrag ansehen.",
+  missingInfo: "Wir konnten diese Information im Vertrag nicht finden.",
+  stateClear: "Klar",
+  stateClarify: "Klären",
   reviewClause: "Klausel prüfen",
   downloadSummary: "Meine Zusammenfassung herunterladen",
   summaryReady: "Ihre Zusammenfassung öffnet sich in einem neuen Tab — nutzen Sie Drucken → Als PDF speichern.",

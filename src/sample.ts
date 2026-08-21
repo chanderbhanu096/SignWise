@@ -1,4 +1,4 @@
-import type { Analysis, Clause, Depth, Lang, Level, Tag } from "./types";
+import type { Analysis, Clause, DecisionSummary, Depth, Lang, Level, Tag } from "./types";
 import { euro } from "./format";
 
 // The demo fixture. Text is lifted from the Claude Design mockup (a real Berlin
@@ -255,6 +255,54 @@ const LEGAL_REFS: Record<string, RawLegalRef[]> = {
 const refsFor = (id: string, lang: Lang) =>
   LEGAL_REFS[id]?.map((r) => ({ label: pick(r.label, lang), law: r.law, section: r.section }));
 
+// Bilingual "Before you sign" briefs, built from the same clauses. The app derives
+// an equivalent brief for uploaded contracts that lack one.
+interface RawDecision {
+  commitments: { title: L10n<string>; value?: L10n<string>; explanation: L10n<string>; clauseId: string }[];
+  reviewItems: { title: L10n<string>; explanation: L10n<string>; reason: L10n<string>; clauseId: string }[];
+  clarificationQuestions: { question: L10n<string>; reason?: L10n<string>; clauseId?: string }[];
+}
+const buildDecision = (d: RawDecision, lang: Lang): DecisionSummary => ({
+  commitments: d.commitments.map((c) => ({ title: pick(c.title, lang), value: c.value ? pick(c.value, lang) : undefined, explanation: pick(c.explanation, lang), clauseId: c.clauseId })),
+  reviewItems: d.reviewItems.map((r) => ({ title: pick(r.title, lang), explanation: pick(r.explanation, lang), reason: pick(r.reason, lang), clauseId: r.clauseId })),
+  clarificationQuestions: d.clarificationQuestions.map((q) => ({ question: pick(q.question, lang), reason: q.reason ? pick(q.reason, lang) : undefined, clauseId: q.clauseId })),
+});
+
+const RENTAL_DECISION: RawDecision = {
+  commitments: [
+    { title: { de: "Jeden Monat", en: "Every month" }, value: { de: "1.240 €", en: "€1,240" }, explanation: { de: "Miete, monatlich im Voraus fällig.", en: "Rent, due monthly in advance." }, clauseId: "rent" },
+    { title: { de: "Kaution", en: "Deposit" }, value: { de: "3.000 €", en: "€3,000" }, explanation: { de: "Einmalig zu Beginn (in 3 Raten möglich).", en: "Once, at the start (up to 3 instalments)." }, clauseId: "deposit" },
+    { title: { de: "Kündigungsfrist", en: "Notice period" }, value: { de: "3 Monate", en: "3 months" }, explanation: { de: "So kündigen Sie die Wohnung.", en: "How you end the tenancy." }, clauseId: "notice" },
+    { title: { de: "Laufzeit", en: "Duration" }, value: { de: "Unbefristet", en: "Indefinite" }, explanation: { de: "Läuft bis zur Kündigung.", en: "Runs until cancelled." }, clauseId: "notice" },
+  ],
+  reviewItems: [
+    { title: { de: "Kleinreparaturen bis 150 €", en: "Small repairs up to €150" }, explanation: { de: "Sie tragen kleine Reparaturen bis 150 € je Fall, höchstens 8 % der Jahresmiete.", en: "You pay small repairs up to €150 per case, max 8% of the yearly rent." }, reason: { de: "Kann zusätzliche Kosten bedeuten — die Beträge liegen eher hoch.", en: "Could create additional costs — the amounts are on the high side." }, clauseId: "repairs" },
+    { title: { de: "Miete kann steigen", en: "Rent may increase" }, explanation: { de: "Ab 15 Monaten nach Beginn kann die Miete an die ortsübliche Vergleichsmiete angepasst werden.", en: "From 15 months after the start the rent may be raised to the local comparative rent." }, reason: { de: "Ihre Miete könnte später steigen.", en: "Your rent could rise later." }, clauseId: "increase" },
+  ],
+  clarificationQuestions: [
+    { question: { de: "Sind die Nebenkosten in den 1.240 € enthalten?", en: "Are utilities included in the €1,240?" }, reason: { de: "Der Vertrag beziffert die Nebenkosten nicht.", en: "The contract does not quantify utilities." }, clauseId: "rent" },
+    { question: { de: "Welche Kleinreparaturen muss ich genau zahlen?", en: "Which small repairs exactly must I pay for?" }, reason: { de: "§ 13 nennt Grenzen, aber keine konkrete Liste.", en: "§ 13 gives limits but no concrete list." }, clauseId: "repairs" },
+  ],
+};
+
+const EMP_DECISION: RawDecision = {
+  commitments: [
+    { title: { de: "Brutto pro Monat", en: "Gross per month" }, value: { de: "3.440 €", en: "€3,440" }, explanation: { de: "Ihr vertragliches Grundgehalt.", en: "Your contractual base salary." }, clauseId: "salary" },
+    { title: { de: "Urlaubsgeld", en: "Holiday pay" }, value: { de: "1.200 € / Jahr", en: "€1,200 / year" }, explanation: { de: "Zusätzlich, im Juni gezahlt.", en: "Additional, paid in June." }, clauseId: "holiday" },
+    { title: { de: "Urlaub", en: "Vacation" }, value: { de: "28 Tage", en: "28 days" }, explanation: { de: "Bezahlter Urlaub pro Jahr.", en: "Paid holiday per year." }, clauseId: "vacation" },
+    { title: { de: "Probezeit", en: "Probation" }, value: { de: "6 Monate", en: "6 months" }, explanation: { de: "In dieser Zeit 2 Wochen Kündigungsfrist.", en: "2 weeks' notice during this time." }, clauseId: "probation" },
+    { title: { de: "Kündigungsfrist", en: "Notice period" }, value: { de: "2 Wochen (Probezeit)", en: "2 weeks (probation)" }, explanation: { de: "Danach gilt die gesetzliche Frist.", en: "Then the statutory period applies." }, clauseId: "notice" },
+  ],
+  reviewItems: [
+    { title: { de: "Kurze Frist in der Probezeit", en: "Short notice during probation" }, explanation: { de: "In den ersten sechs Monaten kann mit nur zwei Wochen gekündigt werden.", en: "In the first six months either side can cancel with just two weeks' notice." }, reason: { de: "Wenig Sicherheit in den ersten Monaten.", en: "Little security in the first months." }, clauseId: "probation" },
+    { title: { de: "Kündigung nach der Probezeit", en: "Notice after probation" }, explanation: { de: "Danach gilt die gesetzliche Frist von vier Wochen zum 15. oder Monatsende.", en: "After that the statutory four-week period to the 15th or month end applies." }, reason: { de: "Betrifft, wie schnell Sie wechseln können.", en: "Affects how quickly you can move on." }, clauseId: "notice" },
+  ],
+  clarificationQuestions: [
+    { question: { de: "Werden Überstunden vergütet oder sind sie mit dem Gehalt abgegolten?", en: "Is overtime paid, or already covered by the salary?" }, reason: { de: "Der Vertrag vergütet Überstunden nur nach Anordnung — Details fehlen.", en: "The contract pays overtime only if ordered — details are missing." } },
+    { question: { de: "Hängt das Urlaubsgeld davon ab, im Juni noch angestellt zu sein?", en: "Does the holiday pay depend on still being employed in June?" }, reason: { de: "Der Vertrag nennt keine Bedingung.", en: "The contract states no condition." }, clauseId: "holiday" },
+  ],
+};
+
 const GLANCE: { key: L10n<string>; value: L10n<string>; derived?: boolean }[] = [
   { key: { de: "Vertragsart", en: "Contract type" }, value: { de: "Mietvertrag", en: "Rental Agreement" } },
   { key: { de: "Parteien", en: "Parties" }, value: { de: "Mieter ↔ Vermieter", en: "Tenant ↔ Landlord" } },
@@ -402,6 +450,7 @@ export function sampleAnalysis(lang: Lang): Analysis {
     clauses,
     confidence: "high",
     warnings: [],
+    decisionSummary: buildDecision(RENTAL_DECISION, lang),
   };
 }
 
@@ -679,6 +728,7 @@ export function employmentAnalysis(lang: Lang): Analysis {
     clauses,
     confidence: "high",
     warnings: [],
+    decisionSummary: buildDecision(EMP_DECISION, lang),
   };
 }
 
