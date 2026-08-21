@@ -238,13 +238,13 @@ export default function App() {
         <nav className="nav" aria-label={s.mockupLabel}>
           <span className="nav-label">{s.mockupLabel}</span>
           <div className="nav-btns">
-            <button className={"nav-btn" + (screen === "overview" ? " on" : "")} onClick={() => setScreen("overview")}>
+            <button className={"nav-btn" + (screen === "overview" ? " on" : "")} aria-current={screen === "overview" ? "page" : undefined} onClick={() => setScreen("overview")}>
               {s.screens.overview}
             </button>
-            <button className={"nav-btn" + (screen === "original" ? " on" : "")} onClick={() => setScreen("original")}>
+            <button className={"nav-btn" + (screen === "original" ? " on" : "")} aria-current={screen === "original" ? "page" : undefined} onClick={() => setScreen("original")}>
               {s.screens.original}
             </button>
-            <button className={"nav-btn" + (screen === "decision" ? " on" : "")} onClick={() => setScreen("decision")}>
+            <button className={"nav-btn" + (screen === "decision" ? " on" : "")} aria-current={screen === "decision" ? "page" : undefined} onClick={() => setScreen("decision")}>
               {s.screens.decision}
             </button>
             <button className="nav-btn" onClick={() => { setScreen("upload"); setAnalysis(null); }}>

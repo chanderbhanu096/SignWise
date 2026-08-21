@@ -89,11 +89,19 @@ interface Strings {
   selectHint: string;
 
   // decision — the "Before you sign" brief
+  decisionBriefLabel: string;
   decisionTitle: string;
   decisionSub: string;
+  decisionSourceHint: string;
   decisionAgreeHeading: string;
+  decisionAgreeSub: string;
   decisionReviewHeading: string;
+  decisionReviewSub: string;
+  decisionUnderstandHeading: string;
+  decisionUnderstandSub: string;
   decisionClarifyHeading: string;
+  decisionClarifySub: string;
+  decisionAnswerLabel: string;
   whyLookAgain: string;
   reviewEmptyTitle: string;
   reviewEmptyBody: string;
@@ -206,20 +214,28 @@ const EN: Strings = {
   explanationLabel: "Explanation",
   selectFinding: "Select a finding",
   selectHint: "Choose one of the findings below and we’ll explain the passage next to it in plain language.",
+  decisionBriefLabel: "Your decision brief",
   decisionTitle: "Before you sign",
   decisionSub: "Here is what this contract means for you — and what may still deserve your attention.",
+  decisionSourceHint: "Use the available source links to return to the wording in your contract.",
   decisionAgreeHeading: "What you’re agreeing to",
+  decisionAgreeSub: "The most important practical consequences stated in this contract.",
   decisionReviewHeading: "Worth another look",
+  decisionReviewSub: "Consequential clauses to inspect once more before deciding.",
+  decisionUnderstandHeading: "Check your understanding",
+  decisionUnderstandSub: "Open each question and make sure you can explain the answer in your own words.",
   decisionClarifyHeading: "Questions to clarify",
+  decisionClarifySub: "The contract leaves these points open or does not give a complete amount.",
+  decisionAnswerLabel: "Answer from your contract",
   whyLookAgain: "Why look again?",
   reviewEmptyTitle: "No additional review points were identified",
   reviewEmptyBody: "This does not mean the contract has been legally reviewed. You can still inspect any clause in the original contract.",
   missingInfo: "We couldn’t find this information in the contract.",
-  stateClear: "Clear",
-  stateClarify: "Clarify",
+  stateClear: "Clear from contract",
+  stateClarify: "Clarify with the other party",
   reviewClause: "Review the clause",
-  downloadSummary: "Download my contract summary",
-  summaryReady: "Your summary is opening in a new tab — use your browser’s Print → Save as PDF.",
+  downloadSummary: "Print / save my summary",
+  summaryReady: "The print window is opening — choose Save as PDF to keep a copy.",
   fromContract: "From your contract",
   explainedBy: "Explained by SignWise",
   meansTitle: "What this means for you",
@@ -282,6 +298,7 @@ const EN: Strings = {
     rental: ["Can my rent increase?", "How do I cancel?", "What happens if I move out early?", "What additional costs can I be charged?"],
     employment: ["What is my salary?", "What is my notice period?", "Is there a probation period?", "How much vacation do I get?", "Are overtime hours paid?"],
     subscription: ["When can I cancel?", "Does the contract renew automatically?", "Can the price increase?", "Are there additional fees?"],
+    insurance: ["What does the policy cover?", "What is excluded?", "What deductible applies?", "When can I cancel?"],
     loan: ["What is the interest rate?", "What are the monthly repayments?", "Can I repay early?", "What happens if I miss a payment?"],
     generic: ["What are my main obligations?", "How and when can I cancel?", "What are the key dates?", "Explain this in simpler language."],
   },
@@ -359,20 +376,28 @@ const DE: Strings = {
   explanationLabel: "Erklärung",
   selectFinding: "Einen Punkt auswählen",
   selectHint: "Wählen Sie unten einen der Punkte, und wir erklären die Passage daneben in einfacher Sprache.",
+  decisionBriefLabel: "Ihre Entscheidungshilfe",
   decisionTitle: "Vor der Unterschrift",
   decisionSub: "Das bedeutet dieser Vertrag für Sie — und das verdient vielleicht noch Ihre Aufmerksamkeit.",
+  decisionSourceHint: "Über die verfügbaren Quellenlinks gelangen Sie zurück zum Wortlaut in Ihrem Vertrag.",
   decisionAgreeHeading: "Was Sie zusagen",
+  decisionAgreeSub: "Die wichtigsten praktischen Folgen, die in diesem Vertrag stehen.",
   decisionReviewHeading: "Genauer ansehen",
+  decisionReviewSub: "Folgenreiche Klauseln, die Sie vor Ihrer Entscheidung noch einmal prüfen sollten.",
+  decisionUnderstandHeading: "Prüfen Sie Ihr Verständnis",
+  decisionUnderstandSub: "Öffnen Sie jede Frage und prüfen Sie, ob Sie die Antwort mit eigenen Worten erklären können.",
   decisionClarifyHeading: "Fragen, die Sie klären sollten",
+  decisionClarifySub: "Diese Punkte lässt der Vertrag offen oder nennt keinen vollständigen Betrag.",
+  decisionAnswerLabel: "Antwort aus Ihrem Vertrag",
   whyLookAgain: "Warum nochmal ansehen?",
   reviewEmptyTitle: "Keine zusätzlichen Prüfpunkte gefunden",
   reviewEmptyBody: "Das bedeutet nicht, dass der Vertrag rechtlich geprüft wurde. Sie können jede Klausel im Originalvertrag ansehen.",
   missingInfo: "Wir konnten diese Information im Vertrag nicht finden.",
-  stateClear: "Klar",
-  stateClarify: "Klären",
+  stateClear: "Im Vertrag klar genannt",
+  stateClarify: "Mit der anderen Partei klären",
   reviewClause: "Klausel prüfen",
-  downloadSummary: "Meine Zusammenfassung herunterladen",
-  summaryReady: "Ihre Zusammenfassung öffnet sich in einem neuen Tab — nutzen Sie Drucken → Als PDF speichern.",
+  downloadSummary: "Zusammenfassung drucken / speichern",
+  summaryReady: "Das Druckfenster öffnet sich — wählen Sie Als PDF speichern, um eine Kopie zu behalten.",
   fromContract: "Aus Ihrem Vertrag",
   explainedBy: "Von SignWise erklärt",
   meansTitle: "Was das für Sie bedeutet",
@@ -435,6 +460,7 @@ const DE: Strings = {
     rental: ["Kann meine Miete steigen?", "Wie kündige ich?", "Was passiert, wenn ich früher ausziehe?", "Welche Zusatzkosten können anfallen?"],
     employment: ["Wie hoch ist mein Gehalt?", "Wie lang ist meine Kündigungsfrist?", "Gibt es eine Probezeit?", "Wie viel Urlaub bekomme ich?", "Werden Überstunden bezahlt?"],
     subscription: ["Wann kann ich kündigen?", "Verlängert sich der Vertrag automatisch?", "Kann der Preis steigen?", "Fallen Zusatzkosten an?"],
+    insurance: ["Was deckt die Versicherung ab?", "Was ist ausgeschlossen?", "Welcher Selbstbehalt gilt?", "Wann kann ich kündigen?"],
     loan: ["Wie hoch ist der Zinssatz?", "Wie hoch sind die monatlichen Raten?", "Kann ich vorzeitig zurückzahlen?", "Was passiert, wenn ich eine Rate verpasse?"],
     generic: ["Was sind meine wichtigsten Pflichten?", "Wie und wann kann ich kündigen?", "Was sind die wichtigen Termine?", "Erkläre das einfacher."],
   },

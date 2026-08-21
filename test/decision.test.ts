@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import type { Analysis } from "../src/types.ts";
+import { AnalysisSchema } from "../src/types.ts";
 import { sampleAnalysis, employmentAnalysis } from "../src/sample.ts";
 import { getDecisionSummary } from "../src/decision.ts";
 
@@ -13,6 +14,8 @@ test("fixture briefs are present and every clauseId is real", () => {
     assert.ok(b.commitments.length >= 3);
     for (const c of b.commitments) assert.ok(ids.has(c.clauseId), `commitment -> ${c.clauseId}`);
     for (const r of b.reviewItems) assert.ok(ids.has(r.clauseId), `review -> ${r.clauseId}`);
+    assert.ok(b.understandingQuestions.length >= 3 && b.understandingQuestions.length <= 5);
+    for (const q of b.understandingQuestions) assert.ok(ids.has(q.clauseId), `understanding -> ${q.clauseId}`);
     for (const q of b.clarificationQuestions) if (q.clauseId) assert.ok(ids.has(q.clauseId), `clarify -> ${q.clauseId}`);
   }
 });
@@ -30,14 +33,126 @@ test("deriver runs when the model gives no brief, and caps review items at 3", (
   const b = getDecisionSummary(withoutBrief as Analysis);
   assert.ok(b.commitments.some((c) => c.value === "€3,440"));
   assert.ok(b.reviewItems.length <= 3);
+  assert.ok(b.understandingQuestions.length >= 3 && b.understandingQuestions.length <= 5);
   const ids = clauseIds(withoutBrief as Analysis);
   for (const r of b.reviewItems) assert.ok(ids.has(r.clauseId));
 });
 
 test("deriver only asks clarification questions the contract justifies", () => {
-  // Rental: utilities (variable) + admin fee (null amount) are the only open items.
+  // Utilities are explicitly mentioned but unquantified. The fixture's synthetic
+  // null admin-fee row has no source clause, so it must not imply that a fee exists.
   const { decisionSummary, ...rental } = sampleAnalysis("de");
   void decisionSummary;
   const b = getDecisionSummary(rental as Analysis);
-  assert.equal(b.clarificationQuestions.length, rental.money.variable.length + rental.money.oneTime.filter((o) => o.amount == null).length);
+  assert.equal(b.clarificationQuestions.length, 1);
+  assert.equal(b.clarificationQuestions[0].clauseId, "rent");
+  assert.doesNotMatch(JSON.stringify(b.clarificationQuestions), /Bearbeitungsgebühr/i);
+});
+
+test("derived commitments use exact source clauses", () => {
+  const { decisionSummary: rentalBrief, ...rental } = sampleAnalysis("en");
+  const { decisionSummary: employmentBrief, ...employment } = employmentAnalysis("en");
+  void rentalBrief;
+  void employmentBrief;
+
+  const rentalDerived = getDecisionSummary(rental as Analysis);
+  assert.equal(rentalDerived.commitments.find((c) => c.title === "Deposit")?.clauseId, "deposit");
+  assert.equal(rentalDerived.commitments.find((c) => c.title === "Notice period")?.clauseId, "notice");
+
+  const employmentDerived = getDecisionSummary(employment as Analysis);
+  assert.equal(employmentDerived.commitments.find((c) => c.title === "Holiday pay")?.clauseId, "holiday");
+  assert.equal(employmentDerived.commitments.find((c) => c.title === "Duration")?.clauseId, "duration");
+  assert.equal(employmentDerived.clarificationQuestions[0]?.clauseId, "overtime");
+});
+
+test("model review order is preserved while output counts are capped and deduplicated", () => {
+  const analysis = sampleAnalysis("en");
+  const original = analysis.decisionSummary!;
+  analysis.decisionSummary = {
+    commitments: [...original.commitments, ...original.commitments],
+    reviewItems: [...original.reviewItems].reverse(),
+    understandingQuestions: [
+      ...original.understandingQuestions!,
+      original.understandingQuestions![0],
+    ],
+    clarificationQuestions: [
+      ...original.clarificationQuestions,
+      ...original.clarificationQuestions,
+    ],
+  };
+
+  const brief = getDecisionSummary(analysis);
+  assert.deepEqual(brief.reviewItems.map((item) => item.clauseId), ["increase", "repairs", "notice"]);
+  assert.equal(brief.commitments.length, 4);
+  assert.equal(brief.understandingQuestions.length, 5);
+  assert.equal(brief.clarificationQuestions.length, 2);
+});
+
+test("derived review list is not padded with routine standard clauses", () => {
+  const analysis = sampleAnalysis("en");
+  delete analysis.decisionSummary;
+  analysis.clauses = analysis.clauses.map((clause) => ({ ...clause, level: "standard", tags: [] }));
+  const brief = getDecisionSummary(analysis);
+  assert.equal(brief.reviewItems.length, 0);
+});
+
+test("yearly-only insurance premiums remain visible without rental or salary wording", () => {
+  const base = sampleAnalysis("en");
+  const premium = {
+    ...base.clauses[0],
+    id: "premium",
+    title: "Annual insurance premium",
+    quote: "The annual premium is EUR 1,200.",
+    means: "You pay the stated premium once per year.",
+    tags: ["money"] as const,
+    level: "important" as const,
+  };
+  const insurance = {
+    ...base,
+    contractType: "Insurance policy",
+    clauses: [premium],
+    findings: ["premium"],
+    rights: [],
+    duties: [],
+    glance: [],
+    money: {
+      monthly: null,
+      yearly: 1200,
+      yearlyClauseId: "premium",
+      oneTime: [],
+      variable: [],
+      currency: "EUR",
+      direction: "outgoing" as const,
+    },
+    decisionSummary: undefined,
+  } as Analysis;
+
+  const brief = getDecisionSummary(insurance);
+  assert.equal(brief.commitments[0].value, "€1,200");
+  assert.equal(brief.commitments[0].clauseId, "premium");
+  assert.doesNotMatch(JSON.stringify(brief.commitments), /rent|salary/i);
+});
+
+test("repairable model brief issues do not reject the analysis and never reach the UI", () => {
+  const broken = structuredClone(sampleAnalysis("en"));
+  broken.decisionSummary!.commitments[0].clauseId = "missing-clause";
+  assert.equal(AnalysisSchema.safeParse(broken).success, true);
+  const repaired = getDecisionSummary(broken);
+  assert.ok(repaired.commitments.length > 0);
+  assert.ok(repaired.commitments.every((item) => clauseIds(broken).has(item.clauseId)));
+
+  const oversized = structuredClone(sampleAnalysis("en"));
+  oversized.decisionSummary!.reviewItems = [
+    ...oversized.decisionSummary!.reviewItems,
+    oversized.decisionSummary!.reviewItems[0],
+    oversized.decisionSummary!.reviewItems[1],
+  ];
+  assert.equal(AnalysisSchema.safeParse(oversized).success, true);
+  assert.equal(getDecisionSummary(oversized).reviewItems.length, 3);
+});
+
+test("schema rejects duplicate clause ids because source links would be ambiguous", () => {
+  const analysis = structuredClone(sampleAnalysis("en"));
+  analysis.clauses[1].id = analysis.clauses[0].id;
+  assert.equal(AnalysisSchema.safeParse(analysis).success, false);
 });

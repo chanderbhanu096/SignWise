@@ -44,6 +44,7 @@ export const MoneyItemSchema = z.object({
   label: z.string(),
   amount: z.number().nullable(), // null = not stated in the contract (never render as 0)
   ref: z.string().optional(),
+  clauseId: z.string().optional(), // exact source when this item is stated in a surfaced clause
   freq: z.enum(["once", "monthly", "annual"]).optional(), // default "once"
   timingMonth: z.number().int().min(0).max(11).nullable().optional(), // 0-11 if a known month
   kind: z.enum(["salary", "rent", "deposit", "bonus", "holiday_pay", "fee", "variable", "other"]).optional(),
@@ -55,13 +56,15 @@ export const AnalysisSchema = z.object({
   docLanguage: z.string(),
   contractType: z.string(),
   glance: z.array(
-    z.object({ key: z.string(), value: z.string(), derived: z.boolean().optional() }),
+    z.object({ key: z.string(), value: z.string(), derived: z.boolean().optional(), clauseId: z.string().optional() }),
   ),
   money: z.object({
     monthly: z.number().nullable(),
     yearly: z.number().nullable(),
+    monthlyClauseId: z.string().optional(),
+    yearlyClauseId: z.string().optional(),
     oneTime: z.array(MoneyItemSchema), // one-time costs (expense) or additional pay (income)
-    variable: z.array(z.object({ label: z.string(), note: z.string() })),
+    variable: z.array(z.object({ label: z.string(), note: z.string(), clauseId: z.string().optional() })),
     currency: z.string(),
     // Semantic framing (optional; the app falls back to keyword detection).
     direction: z.enum(["incoming", "outgoing", "mixed", "neutral"]).optional(),
@@ -92,11 +95,51 @@ export const AnalysisSchema = z.object({
       reviewItems: z.array(
         z.object({ title: z.string(), explanation: z.string(), reason: z.string(), clauseId: z.string() }),
       ),
+      understandingQuestions: z
+        .array(
+          z.object({
+            question: z.string().min(1),
+            answer: z.string().min(1),
+            clauseId: z.string(),
+          }),
+        )
+        .optional(),
       clarificationQuestions: z.array(
         z.object({ question: z.string(), reason: z.string().optional(), clauseId: z.string().optional() }),
       ),
     })
     .optional(),
+}).superRefine((analysis, ctx) => {
+  // Source traceability is part of the data contract, not just a prompt request.
+  // Core analysis references must point at an unambiguous clause. The optional
+  // decision brief stays tolerant because the UI drops invalid links, fills from
+  // the core analysis, and caps every list before display.
+  const clauseIds = new Set(analysis.clauses.map((clause) => clause.id));
+  if (clauseIds.size !== analysis.clauses.length) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Clause ids must be unique",
+      path: ["clauses"],
+    });
+  }
+  const check = (clauseId: string | undefined, path: (string | number)[]) => {
+    if (clauseId && !clauseIds.has(clauseId)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `Unknown clauseId: ${clauseId}`,
+        path,
+      });
+    }
+  };
+
+  analysis.findings.forEach((id, i) => check(id, ["findings", i]));
+  analysis.glance.forEach((item, i) => check(item.clauseId, ["glance", i, "clauseId"]));
+  analysis.money.oneTime.forEach((item, i) => check(item.clauseId, ["money", "oneTime", i, "clauseId"]));
+  analysis.money.variable.forEach((item, i) => check(item.clauseId, ["money", "variable", i, "clauseId"]));
+  check(analysis.money.monthlyClauseId, ["money", "monthlyClauseId"]);
+  check(analysis.money.yearlyClauseId, ["money", "yearlyClauseId"]);
+  analysis.rights.forEach((item, i) => check(item.clauseId, ["rights", i, "clauseId"]));
+  analysis.duties.forEach((item, i) => check(item.clauseId, ["duties", i, "clauseId"]));
 });
 
 export type Clause = z.infer<typeof ClauseSchema>;

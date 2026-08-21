@@ -28,7 +28,7 @@ const RAW: RawClause[] = [
     level: "important",
     tags: ["money", "deadline"],
     quote:
-      "§ 4 Miete. Die monatliche Grundmiete beträgt 1.240,00 EUR und ist spätestens am dritten Werktag eines Monats im Voraus kostenfrei auf das Konto des Vermieters zu zahlen.",
+      "§ 4 Miete. Die monatliche Grundmiete beträgt 1.240,00 EUR und ist spätestens am dritten Werktag eines Monats im Voraus kostenfrei auf das Konto des Vermieters zu zahlen. Nebenkosten werden gesondert nach Verbrauch abgerechnet.",
     ref: { de: "§ 4 Miete · Seite 3", en: "§ 4 Miete · page 3" },
     title: { de: "Sie zahlen jeden Monat 1.240 € Miete", en: "You will pay €1,240 every month" },
     simple: {
@@ -260,11 +260,13 @@ const refsFor = (id: string, lang: Lang) =>
 interface RawDecision {
   commitments: { title: L10n<string>; value?: L10n<string>; explanation: L10n<string>; clauseId: string }[];
   reviewItems: { title: L10n<string>; explanation: L10n<string>; reason: L10n<string>; clauseId: string }[];
+  understandingQuestions: { question: L10n<string>; answer: L10n<string>; clauseId: string }[];
   clarificationQuestions: { question: L10n<string>; reason?: L10n<string>; clauseId?: string }[];
 }
 const buildDecision = (d: RawDecision, lang: Lang): DecisionSummary => ({
   commitments: d.commitments.map((c) => ({ title: pick(c.title, lang), value: c.value ? pick(c.value, lang) : undefined, explanation: pick(c.explanation, lang), clauseId: c.clauseId })),
   reviewItems: d.reviewItems.map((r) => ({ title: pick(r.title, lang), explanation: pick(r.explanation, lang), reason: pick(r.reason, lang), clauseId: r.clauseId })),
+  understandingQuestions: d.understandingQuestions.map((q) => ({ question: pick(q.question, lang), answer: pick(q.answer, lang), clauseId: q.clauseId })),
   clarificationQuestions: d.clarificationQuestions.map((q) => ({ question: pick(q.question, lang), reason: q.reason ? pick(q.reason, lang) : undefined, clauseId: q.clauseId })),
 });
 
@@ -279,8 +281,15 @@ const RENTAL_DECISION: RawDecision = {
     { title: { de: "Kleinreparaturen bis 150 €", en: "Small repairs up to €150" }, explanation: { de: "Sie tragen kleine Reparaturen bis 150 € je Fall, höchstens 8 % der Jahresmiete.", en: "You pay small repairs up to €150 per case, max 8% of the yearly rent." }, reason: { de: "Kann zusätzliche Kosten bedeuten — die Beträge liegen eher hoch.", en: "Could create additional costs — the amounts are on the high side." }, clauseId: "repairs" },
     { title: { de: "Miete kann steigen", en: "Rent may increase" }, explanation: { de: "Ab 15 Monaten nach Beginn kann die Miete an die ortsübliche Vergleichsmiete angepasst werden.", en: "From 15 months after the start the rent may be raised to the local comparative rent." }, reason: { de: "Ihre Miete könnte später steigen.", en: "Your rent could rise later." }, clauseId: "increase" },
   ],
+  understandingQuestions: [
+    { question: { de: "Wie viel zahle ich regelmäßig?", en: "How much will I pay regularly?" }, answer: { de: "1.240 € Grundmiete pro Monat, im Voraus bis zum dritten Werktag.", en: "€1,240 basic rent per month, paid in advance by the third working day." }, clauseId: "rent" },
+    { question: { de: "Was muss ich zu Beginn für die Kaution einplanen?", en: "What must I budget for the deposit at the start?" }, answer: { de: "3.000 €; der Vertrag erlaubt drei gleiche Monatsraten.", en: "€3,000; the contract allows three equal monthly instalments." }, clauseId: "deposit" },
+    { question: { de: "Wie kann ich den Mietvertrag beenden?", en: "How can I end the tenancy?" }, answer: { de: "Mit drei Monaten Frist und in schriftlicher Form.", en: "With three months’ notice and in written form." }, clauseId: "notice" },
+    { question: { de: "Kann sich meine Miete später ändern?", en: "Can my rent change later?" }, answer: { de: "Ja. Frühestens 15 Monate nach Beginn kann sie an die ortsübliche Vergleichsmiete angepasst werden.", en: "Yes. No earlier than 15 months after the start, it may be adjusted to the local comparative rent." }, clauseId: "increase" },
+    { question: { de: "Welche Reparaturen könnten mich etwas kosten?", en: "Which repairs could I have to pay for?" }, answer: { de: "Bestimmte Kleinreparaturen bis 150 € je Fall, insgesamt höchstens 8 % der Jahresgrundmiete.", en: "Certain small repairs up to €150 per case, capped at 8% of the annual basic rent." }, clauseId: "repairs" },
+  ],
   clarificationQuestions: [
-    { question: { de: "Sind die Nebenkosten in den 1.240 € enthalten?", en: "Are utilities included in the €1,240?" }, reason: { de: "Der Vertrag beziffert die Nebenkosten nicht.", en: "The contract does not quantify utilities." }, clauseId: "rent" },
+    { question: { de: "Mit welchen monatlichen Nebenkosten sollte ich rechnen?", en: "What monthly utilities should I budget for?" }, reason: { de: "Sie werden laut Vertrag zusätzlich nach Verbrauch abgerechnet, aber nicht beziffert.", en: "The contract bills them separately by consumption but gives no amount." }, clauseId: "rent" },
     { question: { de: "Welche Kleinreparaturen muss ich genau zahlen?", en: "Which small repairs exactly must I pay for?" }, reason: { de: "§ 13 nennt Grenzen, aber keine konkrete Liste.", en: "§ 13 gives limits but no concrete list." }, clauseId: "repairs" },
   ],
 };
@@ -294,25 +303,34 @@ const EMP_DECISION: RawDecision = {
     { title: { de: "Kündigungsfrist", en: "Notice period" }, value: { de: "2 Wochen (Probezeit)", en: "2 weeks (probation)" }, explanation: { de: "Danach gilt die gesetzliche Frist.", en: "Then the statutory period applies." }, clauseId: "notice" },
   ],
   reviewItems: [
+    { title: { de: "Überstundenvergütung bleibt offen", en: "Overtime compensation remains open" }, explanation: { de: "Nur vorab angeordnete Überstunden werden vergütet; Betrag oder Freizeitausgleich nennt der Vertrag nicht.", en: "Only overtime ordered in advance is paid; the contract states neither an amount nor a time-off arrangement." }, reason: { de: "Kann Ihre tatsächliche Arbeitszeit und Vergütung beeinflussen.", en: "Could affect your actual working time and compensation." }, clauseId: "overtime" },
     { title: { de: "Kurze Frist in der Probezeit", en: "Short notice during probation" }, explanation: { de: "In den ersten sechs Monaten kann mit nur zwei Wochen gekündigt werden.", en: "In the first six months either side can cancel with just two weeks' notice." }, reason: { de: "Wenig Sicherheit in den ersten Monaten.", en: "Little security in the first months." }, clauseId: "probation" },
     { title: { de: "Kündigung nach der Probezeit", en: "Notice after probation" }, explanation: { de: "Danach gilt die gesetzliche Frist von vier Wochen zum 15. oder Monatsende.", en: "After that the statutory four-week period to the 15th or month end applies." }, reason: { de: "Betrifft, wie schnell Sie wechseln können.", en: "Affects how quickly you can move on." }, clauseId: "notice" },
   ],
+  understandingQuestions: [
+    { question: { de: "Welche regelmäßige Vergütung nennt der Vertrag?", en: "What recurring compensation does the contract state?" }, answer: { de: "3.440 € brutto pro Monat, jeweils zum Monatsende.", en: "€3,440 gross per month, paid at the end of each month." }, clauseId: "salary" },
+    { question: { de: "Was gilt während der Probezeit?", en: "What applies during the probation period?" }, answer: { de: "Sie dauert sechs Monate; in dieser Zeit können beide Seiten mit zwei Wochen Frist kündigen.", en: "It lasts six months; during that time either side can give two weeks’ notice." }, clauseId: "probation" },
+    { question: { de: "Welche Kündigungsfrist gilt danach?", en: "What notice period applies afterward?" }, answer: { de: "Vier Wochen zum 15. oder zum Ende eines Kalendermonats.", en: "Four weeks to the 15th or the end of a calendar month." }, clauseId: "notice" },
+    { question: { de: "Wie viel bezahlten Urlaub erhalte ich?", en: "How much paid vacation do I receive?" }, answer: { de: "28 Urlaubstage pro Kalenderjahr.", en: "28 vacation days per calendar year." }, clauseId: "vacation" },
+    { question: { de: "Welche zusätzliche Zahlung nennt der Vertrag?", en: "What additional payment does the contract state?" }, answer: { de: "1.200 € Urlaubsgeld pro Jahr, ausgezahlt im Juni.", en: "€1,200 holiday pay per year, paid in June." }, clauseId: "holiday" },
+  ],
   clarificationQuestions: [
-    { question: { de: "Werden Überstunden vergütet oder sind sie mit dem Gehalt abgegolten?", en: "Is overtime paid, or already covered by the salary?" }, reason: { de: "Der Vertrag vergütet Überstunden nur nach Anordnung — Details fehlen.", en: "The contract pays overtime only if ordered — details are missing." } },
+    { question: { de: "Wie werden angeordnete Überstunden genau vergütet?", en: "How exactly is ordered overtime compensated?" }, reason: { de: "Der Vertrag verspricht Vergütung, nennt aber weder Betrag noch Freizeitausgleich.", en: "The contract promises compensation but states neither an amount nor a time-off arrangement." }, clauseId: "overtime" },
     { question: { de: "Hängt das Urlaubsgeld davon ab, im Juni noch angestellt zu sein?", en: "Does the holiday pay depend on still being employed in June?" }, reason: { de: "Der Vertrag nennt keine Bedingung.", en: "The contract states no condition." }, clauseId: "holiday" },
   ],
 };
 
-const GLANCE: { key: L10n<string>; value: L10n<string>; derived?: boolean }[] = [
+const GLANCE: { key: L10n<string>; value: L10n<string>; derived?: boolean; clauseId?: string }[] = [
   { key: { de: "Vertragsart", en: "Contract type" }, value: { de: "Mietvertrag", en: "Rental Agreement" } },
   { key: { de: "Parteien", en: "Parties" }, value: { de: "Mieter ↔ Vermieter", en: "Tenant ↔ Landlord" } },
   { key: { de: "Beginn", en: "Start date" }, value: { de: "01.10.2026", en: "01.10.2026" } },
-  { key: { de: "Laufzeit", en: "Duration" }, value: { de: "Unbefristet", en: "Indefinite" } },
-  { key: { de: "Monatliche Kosten", en: "Monthly cost" }, value: { de: "1.240 €", en: "€1,240" } },
+  { key: { de: "Laufzeit", en: "Duration" }, value: { de: "Unbefristet", en: "Indefinite" }, clauseId: "notice" },
+  { key: { de: "Monatliche Kosten", en: "Monthly cost" }, value: { de: "1.240 €", en: "€1,240" }, clauseId: "rent" },
   {
     key: { de: "Kündigungsfrist", en: "Cancellation notice" },
     value: { de: "3 Monate", en: "3 months" },
     derived: true,
+    clauseId: "notice",
   },
 ];
 
@@ -416,16 +434,19 @@ export function sampleAnalysis(lang: Lang): Analysis {
     lang,
     docLanguage: "de",
     contractType: lang === "de" ? "Mietvertrag" : "Rental Agreement",
-    glance: GLANCE.map((g) => ({ key: pick(g.key, lang), value: pick(g.value, lang), derived: g.derived })),
+    glance: GLANCE.map((g) => ({ key: pick(g.key, lang), value: pick(g.value, lang), derived: g.derived, clauseId: g.clauseId })),
     money: {
       direction: "outgoing",
       monthly: 1240,
       yearly: 14880,
+      monthlyClauseId: "rent",
+      yearlyClauseId: "rent",
       oneTime: [
         {
           label: lang === "de" ? "Kaution" : "Deposit",
           amount: 3000,
           ref: lang === "de" ? "§ 6 · Seite 3" : "§ 6 · page 3",
+          clauseId: "deposit",
           kind: "deposit",
           timingMonth: 0, // due in the first month → the first bar is taller
         },
@@ -435,6 +456,7 @@ export function sampleAnalysis(lang: Lang): Analysis {
       variable: [
         {
           label: lang === "de" ? "Nebenkosten" : "Utilities (Nebenkosten)",
+          clauseId: "rent",
           note:
             lang === "de"
               ? "Im Vertrag nicht beziffert — nach Verbrauch. Fragen Sie nach der letzten Abrechnung."
@@ -460,7 +482,7 @@ export const SAMPLE_DOC_TEXT = [
   "Mietvertrag über Wohnraum",
   "§ 1 Mietsache. Vermietet werden die im Anwesen Kastanienallee 14, 10435 Berlin, gelegene Wohnung im 3. Obergeschoss, bestehend aus 3 Zimmern, Küche, Bad, Balkon, sowie ein Kellerabteil.",
   RAW.find((c) => c.id === "condition")!.quote,
-  RAW.find((c) => c.id === "rent")!.quote + " Nebenkosten werden gesondert nach Verbrauch abgerechnet.",
+  RAW.find((c) => c.id === "rent")!.quote,
   "§ 7 Hausordnung. Der Mieter verpflichtet sich, die als Anlage beigefügte Hausordnung einzuhalten. Ruhezeiten gelten von 22:00 bis 6:00 Uhr sowie sonn- und feiertags.",
   RAW.find((c) => c.id === "deposit")!.quote +
     " Die erste Teilzahlung ist zu Beginn des Mietverhältnisses fällig.",
@@ -481,6 +503,35 @@ export const sampleYearlyLabel = (lang: Lang) => euro(14880, lang);
 type EmpClause = RawClause & { legalRefs?: RawLegalRef[] };
 
 const EMP: EmpClause[] = [
+  {
+    id: "duration",
+    page: 1,
+    level: "standard",
+    tags: ["deadline"],
+    quote: "§ 1 Beginn. Das Arbeitsverhältnis beginnt am 01.11.2026 und wird auf unbestimmte Zeit geschlossen.",
+    ref: { de: "§ 1 Beginn · Seite 1", en: "§ 1 Beginn · page 1" },
+    title: { de: "Beginn am 1. November — unbefristet", en: "Starts 1 November — indefinite" },
+    simple: {
+      de: {
+        simple: "Das Arbeitsverhältnis beginnt am 1. November 2026 und ist unbefristet.",
+        standard: "Ihr Arbeitsverhältnis beginnt am 1. November 2026. Es hat kein festes Enddatum und läuft bis zu einer Kündigung.",
+        detailed: "Der Vertrag beginnt am 1. November 2026 und ist auf unbestimmte Zeit geschlossen. Er endet daher nicht automatisch an einem bestimmten Datum; für eine Beendigung gelten die Kündigungsregeln.",
+      },
+      en: {
+        simple: "Employment starts on 1 November 2026 and is indefinite.",
+        standard: "Your employment starts on 1 November 2026. It has no fixed end date and continues until it is terminated.",
+        detailed: "The agreement starts on 1 November 2026 and is indefinite. It therefore does not end automatically on a fixed date; the notice provisions govern termination.",
+      },
+    },
+    means: {
+      de: "Es gibt kein automatisches Vertragsende; für einen Austritt müssen die Kündigungsfristen beachtet werden.",
+      en: "There is no automatic end date; leaving requires compliance with the notice periods.",
+    },
+    legal: {
+      de: "Ein unbefristetes Arbeitsverhältnis läuft bis zu einer wirksamen Beendigung fort.",
+      en: "An indefinite employment relationship continues until it is effectively terminated.",
+    },
+  },
   {
     id: "salary",
     page: 1,
@@ -630,15 +681,44 @@ const EMP: EmpClause[] = [
       en: "Special payments such as holiday pay are not required by law; they follow from the contract.",
     },
   },
+  {
+    id: "overtime",
+    page: 2,
+    level: "check",
+    tags: ["money", "responsibility", "risk"],
+    quote: "§ 8 Mehrarbeit. Überstunden werden nur nach vorheriger Anordnung vergütet.",
+    ref: { de: "§ 8 Mehrarbeit · Seite 2", en: "§ 8 Mehrarbeit · page 2" },
+    title: { de: "Überstunden nur nach Anordnung vergütet", en: "Overtime is paid only when ordered in advance" },
+    simple: {
+      de: {
+        simple: "Überstunden werden nur bezahlt, wenn sie vorher angeordnet wurden.",
+        standard: "Der Vertrag verspricht eine Vergütung für Überstunden nur, wenn der Arbeitgeber sie vorher angeordnet hat. Die Höhe der Vergütung wird nicht genannt.",
+        detailed: "Nur vorab angeordnete Überstunden werden laut Vertrag vergütet. Es bleibt offen, mit welchem Stundenbetrag oder Freizeitausgleich und wie nicht angeordnete, aber notwendige Mehrarbeit behandelt wird.",
+      },
+      en: {
+        simple: "Overtime is paid only when it was ordered in advance.",
+        standard: "The contract promises payment for overtime only when the employer ordered it in advance. It does not state the payment amount.",
+        detailed: "The contract pays only overtime ordered in advance. It leaves open the hourly amount or time-off arrangement and how necessary but unapproved extra work is treated.",
+      },
+    },
+    means: {
+      de: "Klären Sie vorab, wie angeordnete Überstunden berechnet oder durch Freizeit ausgeglichen werden.",
+      en: "Clarify in advance how ordered overtime is calculated or compensated with time off.",
+    },
+    legal: {
+      de: "Ob und wie Überstunden vergütet werden, hängt von der konkreten Vereinbarung und den Umständen ab.",
+      en: "Whether and how overtime is compensated depends on the specific agreement and circumstances.",
+    },
+  },
 ];
 
-const EMP_GLANCE: { key: L10n<string>; value: L10n<string>; derived?: boolean }[] = [
+const EMP_GLANCE: { key: L10n<string>; value: L10n<string>; derived?: boolean; clauseId?: string }[] = [
   { key: { de: "Vertragsart", en: "Contract type" }, value: { de: "Arbeitsvertrag", en: "Employment agreement" } },
   { key: { de: "Parteien", en: "Parties" }, value: { de: "Arbeitnehmer ↔ Arbeitgeber", en: "Employee ↔ Employer" } },
   { key: { de: "Beginn", en: "Start date" }, value: { de: "01.11.2026", en: "01.11.2026" } },
-  { key: { de: "Laufzeit", en: "Duration" }, value: { de: "Unbefristet", en: "Indefinite" } },
-  { key: { de: "Bruttogehalt", en: "Gross salary" }, value: { de: "3.440 € / Monat", en: "€3,440 / month" } },
-  { key: { de: "Kündigungsfrist", en: "Notice period" }, value: { de: "2 Wochen (Probezeit)", en: "2 weeks (probation)" }, derived: true },
+  { key: { de: "Laufzeit", en: "Duration" }, value: { de: "Unbefristet", en: "Indefinite" }, clauseId: "duration" },
+  { key: { de: "Bruttogehalt", en: "Gross salary" }, value: { de: "3.440 € / Monat", en: "€3,440 / month" }, clauseId: "salary" },
+  { key: { de: "Kündigungsfrist", en: "Notice period" }, value: { de: "2 Wochen (Probezeit)", en: "2 weeks (probation)" }, derived: true, clauseId: "probation" },
 ];
 
 const EMP_DATES: typeof DATES = [
@@ -695,16 +775,19 @@ export function employmentAnalysis(lang: Lang): Analysis {
     lang,
     docLanguage: "de",
     contractType: lang === "de" ? "Arbeitsvertrag" : "Employment agreement",
-    glance: EMP_GLANCE.map((g) => ({ key: pick(g.key, lang), value: pick(g.value, lang), derived: g.derived })),
+    glance: EMP_GLANCE.map((g) => ({ key: pick(g.key, lang), value: pick(g.value, lang), derived: g.derived, clauseId: g.clauseId })),
     money: {
       direction: "incoming",
       monthly: 3440,
       yearly: 41280,
+      monthlyClauseId: "salary",
+      yearlyClauseId: "salary",
       currency: "EUR",
       oneTime: [
         {
           label: lang === "de" ? "Urlaubsgeld" : "Holiday pay",
           amount: 1200,
+          clauseId: "holiday",
           freq: "annual",
           timingMonth: 8, // paid in June; month index 8 in the Oct-anchored 12-month axis
           kind: "holiday_pay",
@@ -714,6 +797,7 @@ export function employmentAnalysis(lang: Lang): Analysis {
       variable: [
         {
           label: lang === "de" ? "Überstundenvergütung" : "Overtime pay",
+          clauseId: "overtime",
           note:
             lang === "de"
               ? "Nur nach vorheriger Anordnung vergütet — im Vertrag nicht beziffert."
@@ -722,7 +806,7 @@ export function employmentAnalysis(lang: Lang): Analysis {
       ],
     },
     dates: EMP_DATES.map((d) => ({ date: pick(d.date, lang), title: pick(d.title, lang), body: pick(d.body, lang), tone: d.tone, iso: d.iso })),
-    findings: ["salary", "probation", "notice", "vacation", "holiday"],
+    findings: ["salary", "overtime", "probation", "notice", "vacation"],
     rights: EMP_RIGHTS.map((r) => ({ clauseId: r.clauseId, text: pick(r.text, lang) })),
     duties: EMP_DUTIES.map((d) => ({ clauseId: d.clauseId, text: pick(d.text, lang) })),
     clauses,
@@ -734,11 +818,11 @@ export function employmentAnalysis(lang: Lang): Analysis {
 
 export const EMPLOYMENT_DOC_TEXT = [
   "Arbeitsvertrag",
-  "§ 1 Beginn. Das Arbeitsverhältnis beginnt am 01.11.2026 und wird auf unbestimmte Zeit geschlossen.",
+  EMP.find((c) => c.id === "duration")!.quote,
   EMP.find((c) => c.id === "probation")!.quote,
   EMP.find((c) => c.id === "salary")!.quote,
   EMP.find((c) => c.id === "holiday")!.quote,
   EMP.find((c) => c.id === "vacation")!.quote,
   EMP.find((c) => c.id === "notice")!.quote,
-  "§ 8 Mehrarbeit. Überstunden werden nur nach vorheriger Anordnung vergütet.",
+  EMP.find((c) => c.id === "overtime")!.quote,
 ].join("\n\n");

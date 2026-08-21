@@ -28,6 +28,8 @@ test("unknown contract type falls back to neutral", () => {
 test("suggested questions adapt to contract type", () => {
   assert.ok(getContractSuggestions("Arbeitsvertrag", "de").some((q) => /Gehalt/i.test(q)));
   assert.ok(getContractSuggestions("Mietvertrag", "de").some((q) => /Miete/i.test(q)));
+  assert.equal(getContractSubtype("Private health insurance policy"), "insurance");
+  assert.ok(getContractSuggestions("Insurance policy", "en").some((q) => /cover|exclud/i.test(q)));
   assert.ok(getContractSuggestions("Something odd", "en").length > 0); // generic fallback
 });
 

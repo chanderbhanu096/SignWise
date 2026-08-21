@@ -5,17 +5,19 @@ import { t, type FinancialCopy } from "./i18n";
 // on the (model-provided, localized) contractType string, with graceful fallbacks
 // so an unfamiliar type never breaks the UI.
 
-export type Subtype = "rental" | "employment" | "subscription" | "loan" | "generic";
+export type Subtype = "rental" | "employment" | "subscription" | "insurance" | "loan" | "generic";
 
 const EMPLOYMENT = /arbeitsvertrag|arbeitsverh|anstellung|dienstvertrag|freier mitarbeiter|honorar|employ|freelance|service agreement/i;
 const RENTAL = /miet|wohnraum|pacht|rental|tenan|lease/i;
-const SUBSCRIPTION = /mobilfunk|handy|mobile|abo\b|abonnement|tarif|streaming|fitness|gym|versicherung|insurance|internet|dsl|subscription/i;
+const SUBSCRIPTION = /mobilfunk|handy|mobile|abo\b|abonnement|tarif|streaming|fitness|gym|internet|dsl|subscription/i;
+const INSURANCE = /versicherung|insurance|policy|police\b/i;
 const LOAN = /darlehen|kredit|finanzierung|loan|credit/i;
 
 export function getContractSubtype(contractType: string): Subtype {
   const c = (contractType || "").toLowerCase();
   if (EMPLOYMENT.test(c)) return "employment";
   if (RENTAL.test(c)) return "rental";
+  if (INSURANCE.test(c)) return "insurance";
   if (SUBSCRIPTION.test(c)) return "subscription";
   if (LOAN.test(c)) return "loan";
   return "generic";
@@ -41,6 +43,7 @@ export function getContractCategory(analysis: Pick<Analysis, "contractType" | "m
       return "income";
     case "rental":
     case "subscription":
+    case "insurance":
     case "loan":
       return "expense";
     default:
