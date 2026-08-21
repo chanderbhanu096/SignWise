@@ -349,6 +349,7 @@ export function Overview({
               <div
                 className="chart"
                 role="img"
+                tabIndex={0}
                 aria-label={
                   analysis.lang === "de"
                     ? `Balkendiagramm über 12 Monate: Grundbetrag je ${fmt(monthly)}; hervorgehobene Monate enthalten eine zusätzliche Zahlung.`

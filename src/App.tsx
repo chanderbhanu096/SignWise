@@ -216,13 +216,13 @@ export default function App() {
             <div className="brand-mark" aria-hidden="true">
               SW
             </div>
-            <div>
-              <div className="brand-name">SignWise</div>
-              <div className="brand-tag">
-                {/* key={lang}: remount resets the rotation, so no slogan from the old language lingers. */}
-                <Slogan key={lang} slogans={s.slogans} label={s.tagline} />
-              </div>
-            </div>
+            <div className="brand-name">SignWise</div>
+          </div>
+          {/* Own grid cell, not nested under the name: on a phone it becomes its own
+              row instead of being squeezed next to the language buttons. */}
+          <div className="brand-tag">
+            {/* key={lang}: remount resets the rotation, so no slogan from the old language lingers. */}
+            <Slogan key={lang} slogans={s.slogans} label={s.tagline} />
           </div>
           <div className="langs" role="group" aria-label={s.languageSelector}>
             {langBtn("de", "DE")}

@@ -44,8 +44,10 @@ button { font: inherit; }
 @supports not ((backdrop-filter: blur(4px)) or (-webkit-backdrop-filter: blur(4px))) {
   .hdr { background: rgba(255,255,255,0.97); }
 }
-.hdr-in { max-width: var(--shell); margin: 0 auto; padding: 14px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px; justify-content: space-between; }
-.brand { display: flex; align-items: center; gap: 12px; }
+.hdr-in { max-width: var(--shell); margin: 0 auto; padding: 12px 20px; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "brand langs" "tag tag"; align-items: center; column-gap: 16px; }
+.brand { grid-area: brand; display: flex; align-items: center; gap: 12px; min-width: 0; }
+.langs { grid-area: langs; }
+.brand-tag { grid-area: tag; min-width: 0; overflow: hidden; padding-left: 50px; } /* a long slogan can never widen the header */ /* aligns under the wordmark, not the badge */
 .brand-mark { width: 38px; height: 38px; border-radius: 10px; background: var(--brand); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 15px; font-weight: 700; letter-spacing: -0.5px; }
 .brand-name { font-size: 19px; font-weight: 700; letter-spacing: -0.3px; }
 .brand-tag { font-size: 13.5px; color: var(--ink-2); font-weight: 500; }
@@ -186,8 +188,8 @@ section.screen.upload-screen { padding-top: 52px; }
 .money-row { display: flex; justify-content: space-between; align-items: baseline; padding: 12px 0; border-top: 1px solid var(--line); gap: 12px; }
 .money-row:first-of-type { border-top: none; }
 .money-row .na { color: var(--muted-2); font-weight: 500; font-style: italic; }
-.chart { display: flex; align-items: flex-end; gap: 8px; height: 160px; margin-top: 16px; }
-.bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
+.chart { display: flex; align-items: flex-end; gap: 8px; height: 160px; margin-top: 16px; overflow-x: auto; overflow-y: hidden; }
+.bar-col { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
 .bar-amt { font-size: 11px; color: var(--muted-2); }
 .bar { width: 100%; border-radius: 6px 6px 3px 3px; background: #a9d3d6; }
 .bar.first { background: var(--brand); }
@@ -247,7 +249,7 @@ section.screen.upload-screen { padding-top: 52px; }
 .attn-chip.on[data-level="standard"] { background: var(--std-bg); border-color: var(--std-bd); color: var(--std-fg); }
 .attn-chip.on .attn-n { color: inherit; }
 .attn-note { margin-top: 12px; }
-.attn-note summary { display: inline-flex; align-items: center; min-height: 34px; color: var(--brand); font-size: 13.5px; font-weight: 600; cursor: pointer; }
+.attn-note summary { display: inline-flex; align-items: center; min-height: 44px; color: var(--brand); font-size: 13.5px; font-weight: 600; cursor: pointer; }
 .attn-note p { margin-top: 8px; max-width: 62em; color: var(--muted); font-size: 13.5px; }
 
 /* Collapsible secondary sections — detail one click away, never hidden on hover */
@@ -278,13 +280,14 @@ section.screen.upload-screen { padding-top: 52px; }
 .doc-clause { border-left: 3px solid var(--brand); background: var(--brand-tint); padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 12px 0; cursor: pointer; }
 .doc-clause[data-tone="warning"] { border-left-color: #b8860b; background: var(--chk-bg); }
 .doc-clause .tag { font-size: 12px; font-weight: 600; color: var(--muted-2); }
+.doc-clause { scroll-margin-top: 84px; } /* clears the sticky header when the page scrolls to a passage */
 .doc-clause:hover { box-shadow: inset 0 0 0 1px var(--line-2); }
 /* The passage the explanation currently describes. Ring + weight, not colour alone. */
 .doc-clause.on { box-shadow: 0 0 0 2px var(--brand); }
 .doc-clause[data-tone="warning"].on { box-shadow: 0 0 0 2px var(--chk-fg); }
 .finding.on { border-color: var(--brand); background: var(--brand-tint); }
 .expl-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
-.doc-side { position: sticky; top: 84px; scroll-margin-top: 76px; } /* margin clears the sticky header when stacked */
+.doc-side { position: sticky; top: 84px; }
 
 /* Decision — compact personalized Clear / Review / Clarify brief */
 .decision-screen { max-width: 1180px; }
@@ -348,11 +351,11 @@ section.screen.upload-screen { padding-top: 52px; }
 
 /* Clause panel / bottom sheet */
 .scrim { position: fixed; inset: 0; background: rgba(18,38,43,0.4); z-index: 40; }
-.panel { position: fixed; top: 0; right: 0; bottom: 0; width: min(520px, 92vw); overflow-y: auto; background: var(--surface); border-left: 1px solid var(--line); z-index: 50; animation: slide 0.2s ease-out; }
+.panel { position: fixed; top: 0; right: 0; bottom: 0; width: min(520px, 92vw); overflow-y: auto; overscroll-behavior: contain; background: var(--surface); border-left: 1px solid var(--line); z-index: 50; animation: slide 0.2s ease-out; }
 .panel-head { display: flex; justify-content: space-between; gap: 12px; padding: 20px 22px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--surface); }
 .panel-ref { font-size: 13px; color: var(--muted-2); }
 .panel-title { font-size: 20px; font-weight: 700; margin: 4px 0 8px; }
-.panel-close { flex: none; width: 40px; height: 40px; border-radius: 9px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; font-size: 16px; }
+.panel-close { flex: none; width: 44px; height: 44px; border-radius: 9px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; font-size: 16px; }
 .panel-body { padding: 20px 22px; display: flex; flex-direction: column; gap: 18px; }
 .pane { border-radius: var(--radius); padding: 14px 16px; }
 .pane-contract { background: #f0f8f8; border: 1px solid var(--line); }
@@ -401,13 +404,46 @@ li.law-ref > .law-ref-label { display: inline-block; padding: 6px 2px; } /* plai
 }
 
 @media (max-width: 540px) {
-  .hdr-in { padding: 10px 12px; flex-wrap: nowrap; gap: 8px; }
+  .hdr-in { padding: 9px 12px; column-gap: 8px; }
   .brand { min-width: 0; gap: 8px; }
   .brand-mark { width: 34px; height: 34px; border-radius: 9px; font-size: 13px; }
   .brand-name { font-size: 17px; }
-  .brand-tag { display: none; }
+  /* Second row of its own — the slogan is the personality, don't hide it on a phone. */
+  .brand-tag { padding: 2px 0 0 42px; font-size: 12.5px; }
+  .slogan { min-height: 17px; }
+  .slogan-caret { height: 13px; }
   .langs { flex: none; gap: 4px; }
   .pill { min-width: 44px; min-height: 44px; padding: 0 10px; font-size: 14px; }
+  /* The screen switcher wrapped onto four rows and ate the first screenful.
+     One swipeable row instead; the nav keeps its accessible name without the label. */
+  .nav { padding: 10px 12px 0; gap: 8px; }
+  .nav-label { display: none; }
+  .nav-btns { width: 100%; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
+  .nav-btn { flex: none; padding: 0 12px; font-size: 13px; }
+  /* Cards, rows and controls that were a few pixels over the edge */
+  .card { padding: 18px; }
+  .money-row { gap: 10px; }
+  .money-row > span { min-width: 0; overflow-wrap: anywhere; }
+  .money-big { font-size: 34px; }
+  .seg { width: 100%; }
+  .seg button { flex: 1; min-width: 0; padding: 0 10px; font-size: 14px; }
+  .ask-row { flex-wrap: wrap; }
+  .ask-row input { flex: 1 1 100%; min-width: 0; }
+  .ask-row .btn { width: 100%; }
+  /* Twelve months don't fit a phone: scroll the chart, keep the labels readable. */
+  .chart { gap: 6px; height: 150px; padding-bottom: 6px; }
+  .bar-col { flex: 0 0 40px; }
+  /* Title + count + chevron on one line, description full width beneath, instead
+     of a five-line description squeezed into a narrow column. */
+  .sec-head { padding: 12px 16px; grid-template-areas: "title count chevron" "sub sub sub"; row-gap: 6px; }
+  .sec-titles { display: contents; }
+  .sec-title { grid-area: title; font-size: 19px; }
+  .sec-sub { grid-area: sub; }
+  .sec-count { grid-area: count; }
+  .sec-chevron { grid-area: chevron; }
+  .sec-body { padding: 16px; }
+  .attn { padding: 12px; }
+  .pane-label { flex-wrap: wrap; gap: 2px 10px; } /* label and meta stack instead of forming two ragged columns */
   section.screen.upload-screen { padding-top: 20px; }
   .upload-main-grid { gap: 22px; }
   .upload-eyebrow { font-size: 11px; }
@@ -440,6 +476,10 @@ li.law-ref > .law-ref-label { display: inline-block; padding: 6px 2px; } /* plai
 @media (max-width: 360px) {
   .upload-eyebrow { display: none; }
   .upload-hero { margin-top: 0; }
+  .brand-mark { width: 30px; height: 30px; border-radius: 8px; font-size: 12px; }
+  .brand-name { font-size: 15.5px; }
+  .brand-tag { padding-left: 38px; font-size: 12px; }
+  .pill { padding: 0 8px; font-size: 13px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

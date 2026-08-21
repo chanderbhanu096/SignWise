@@ -37,13 +37,21 @@ export function Original({
   useEffect(() => {
     if (!selected || !docRef.current) return;
     const el = docRef.current.querySelector<HTMLElement>(`[data-clause="${selected.id}"]`);
-    // .doc is position:relative, so a clause block's offsetTop is relative to it.
-    if (el) docRef.current.scrollTop = Math.max(0, el.offsetTop - 12);
-    // Stacked layout: the explanation sits below the document, so bring it into view.
-    if (selectedClauseId && window.matchMedia("(max-width: 860px)").matches) {
-      sideRef.current?.scrollIntoView({ block: "start" });
+    if (!el) return;
+    if (docRef.current.scrollHeight > docRef.current.clientHeight) {
+      // Side-by-side: the document pane scrolls on its own. .doc is position:relative,
+      // so a clause block's offsetTop is relative to it.
+      docRef.current.scrollTop = Math.max(0, el.offsetTop - 12);
+    } else if (selectedClauseId) {
+      // Stacked: the document is full height, so the page scrolls to the passage.
+      el.scrollIntoView({ block: "center" });
     }
   }, [selected, selectedClauseId]);
+
+  // Stacked layout has no side pane to update, so a tap opens the sheet — which is
+  // the same explanation, and leaves the reader's place in the document intact.
+  const pick = (id: string) =>
+    window.matchMedia("(max-width: 860px)").matches ? onOpenClause(id) : onSelectClause(id);
 
   return (
     <section className="screen shell wide" aria-labelledby="or-h">
@@ -75,8 +83,8 @@ export function Original({
               role="button"
               tabIndex={0}
               aria-current={selected?.id === c.id ? "true" : undefined}
-              onClick={() => onSelectClause(c.id)}
-              onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), onSelectClause(c.id))}
+              onClick={() => pick(c.id)}
+              onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), pick(c.id))}
             >
               <span className="tag" lang={analysis.lang}>
                 {c.ref} — {analysis.lang === "de" ? "Punkt" : "Finding"} {i + 1}
@@ -125,7 +133,7 @@ export function Original({
                   <button
                     className={"finding" + (selected?.id === id ? " on" : "")}
                     aria-current={selected?.id === id ? "true" : undefined}
-                    onClick={() => onSelectClause(id)}
+                    onClick={() => pick(id)}
                     style={{ padding: "12px 14px" }}
                   >
                     <span className="finding-n" aria-hidden="true">
