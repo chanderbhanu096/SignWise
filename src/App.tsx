@@ -18,7 +18,7 @@ import { Overview } from "./screens/Overview";
 import { Original } from "./screens/Original";
 import { Decision } from "./screens/Decision";
 import { ClausePanel } from "./components/ClausePanel";
-import { Slogan } from "./components/Slogan";
+import logoSrc from "./assets/signwise-logo.svg";
 
 type Screen = "upload" | "analyzing" | "overview" | "original" | "decision";
 
@@ -222,15 +222,9 @@ export default function App() {
         <div className="hdr-in">
           <div className="brand">
             <div className="brand-mark" aria-hidden="true">
-              SW
+              <img className="brand-logo" src={logoSrc} alt="" />
             </div>
             <div className="brand-name">SignWise</div>
-          </div>
-          {/* Own grid cell, not nested under the name: on a phone it becomes its own
-              row instead of being squeezed next to the language buttons. */}
-          <div className="brand-tag">
-            {/* key={lang}: remount resets the rotation, so no slogan from the old language lingers. */}
-            <Slogan key={lang} slogans={s.slogans} label={s.tagline} />
           </div>
           {/* One compact segmented control. The third slot is a globe rather than the
               word "More", which cost more width than the two languages next to it. */}

@@ -174,11 +174,11 @@ interface Strings {
 const EN: Strings = {
   tagline: "Your contract. Explained clearly.",
   slogans: [
-    "Know what you sign.",
-    "Contracts made clear.",
-    "Your contract, explained.",
-    "Spot the signs before you sign.",
-    "See the signs. Read between the lines.",
+    "Know what you sign",
+    "Contracts made clear",
+    "Your contract, explained",
+    "Spot the signs before you sign",
+    "See the signs. Read between the lines",
   ],
   languageSelector: "Language",
   moreLanguages: "More languages", // accessible name for the globe button
@@ -369,9 +369,9 @@ const DE: Strings = {
   tagline: "Ihr Vertrag. Klar erklärt.",
   // "Ihr", not "Dein": the rest of the product addresses the reader formally.
   slogans: [
-    "Ihr Vertrag, einfach erklärt.",
-    "Erst verstehen, dann unterschreiben.",
-    "Verträge verständlich gemacht.",
+    "Ihr Vertrag, einfach erklärt",
+    "Erst verstehen, dann unterschreiben",
+    "Verträge verständlich gemacht",
   ],
   languageSelector: "Sprache",
   moreLanguages: "Weitere Sprachen",
