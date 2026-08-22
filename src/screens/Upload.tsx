@@ -43,17 +43,19 @@ export function Upload({
 
   return (
     <section className="screen shell upload-screen" aria-labelledby="hero-h">
-      <div className="upload-main-grid">
-        <div className="upload-intro">
-          <span className="upload-eyebrow">{s.uploadEyebrow}</span>
-          {/* The slogan is the headline: key={lang} remounts it so no slogan from
-              the old language lingers, and s.hero is what a screen reader gets. */}
-          <h1 className="upload-hero" id="hero-h">
-            <Slogan key={lang} slogans={s.slogans} label={s.hero} />
-          </h1>
-          <p className="upload-hero-sub">{s.heroSub}</p>
-        </div>
+      {/* Full-width band across the top: the slogan types in the centre, above the
+          upload card rather than beside it. */}
+      <div className="upload-intro">
+        <span className="upload-eyebrow">{s.uploadEyebrow}</span>
+        {/* key={lang} remounts the slogan so none from the old language lingers;
+            s.hero is the stable headline a screen reader gets. */}
+        <h1 className="upload-hero" id="hero-h">
+          <Slogan key={lang} slogans={s.slogans} label={s.hero} />
+        </h1>
+        <p className="upload-hero-sub">{s.heroSub}</p>
+      </div>
 
+      <div className="upload-main-grid">
         <div className="upload-card" aria-labelledby="upload-h">
           <div className="upload-card-head">
             <div>
