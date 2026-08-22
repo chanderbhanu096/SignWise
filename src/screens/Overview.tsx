@@ -84,6 +84,19 @@ export function Overview({
   );
   const bars = months.map((m, i) => ({ label: m, base: monthly, extra: bumpByMonth[i], value: monthly + bumpByMonth[i] }));
   const maxBar = Math.max(...bars.map((b) => b.value), 1);
+  // A deposit can be several times the rent. Drawn to a literal scale that flattens
+  // the other eleven months into stubs, so past ~1.8x the recurring amount the axis
+  // is compressed: the recurring months keep a readable share and the tall month is
+  // clearly taller without being tall in proportion. Every bar is still labelled
+  // with its real figure, and the compression is disclosed under the chart.
+  const RECUR_SHARE = 0.58;
+  const compressed = monthly > 0 && maxBar > monthly * 1.8;
+  const barPct = (v: number) =>
+    !compressed
+      ? (v / maxBar) * 100
+      : v <= monthly
+        ? (v / monthly) * RECUR_SHARE * 100
+        : (RECUR_SHARE + ((v - monthly) / (maxBar - monthly)) * (1 - RECUR_SHARE)) * 100;
   const showChart = !neutral && monthly > 0;
 
   const depositOverlay = overlay.find((o) => o.it.kind === "deposit") || (category === "expense" ? overlay.find((o) => o.m === 0) : undefined);
@@ -327,15 +340,6 @@ export function Overview({
                 <div className="card">
                   <div className="money-label">{fin.extrasHeading}</div>
                   {items.map((it, i) => itemRow(it.label, it.amount, it.ref, it.freq, "it" + i))}
-                  {money.variable.map((v) => (
-                    <div className="money-row" key={v.label}>
-                      <span>
-                        <div>{variableHeading}</div>
-                        <div style={{ fontWeight: 600 }}>{v.label}</div>
-                        <div className="finding-ref">{v.note}</div>
-                      </span>
-                    </div>
-                  ))}
                   {showTotal && (
                     <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--line)" }}>
                       <div className="money-row">
@@ -354,6 +358,23 @@ export function Overview({
                   )}
                 </div>
               ))}
+
+            {/* Amounts the contract never fixes have no figure to put in the right
+                column, so they get their own card instead of sitting in rows that
+                are aligned around a number they do not have. */}
+            {money.variable.length > 0 && (
+              <div className="card">
+                <div className="money-label">{variableHeading}</div>
+                <ul className="money-notes">
+                  {money.variable.map((v) => (
+                    <li key={v.label}>
+                      <strong>{v.label}</strong>
+                      <p>{v.note}</p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
 
           {showChart && (
@@ -378,9 +399,12 @@ export function Overview({
                     {/* The track is the grid's only flexible row, so a percentage height
                         on the bar resolves against the space the bars actually have. */}
                     <div className="bar-track">
-                      <div className="bar" style={{ height: `${(b.value / maxBar) * 100}%` }}>
+                      <div className="bar" style={{ height: `${barPct(b.value)}%` }}>
                         {b.extra > 0 && (
-                          <div className="bar-extra" style={{ height: `${(b.extra / b.value) * 100}%` }} />
+                          <div
+                            className="bar-extra"
+                            style={{ height: `${((barPct(b.value) - barPct(b.base)) / barPct(b.value)) * 100}%` }}
+                          />
                         )}
                       </div>
                     </div>
@@ -388,6 +412,7 @@ export function Overview({
                   </div>
                 ))}
               </div>
+              {compressed && <p className="chart-scale-note">{s.chartScaleNote}</p>}
               {unplaced.length > 0 && (
                 <ul className="rd-list" style={{ marginTop: 14 }}>
                   {unplaced.map((it, i) => (

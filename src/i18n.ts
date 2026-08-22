@@ -24,6 +24,7 @@ interface Strings {
   slogans: string[]; // rotate one at a time in the header
   languageSelector: string;
   askThinking: string;
+  chartScaleNote: string;
   newContractTitle: string;
   newContractBody: string;
   newContractCancel: string;
@@ -186,6 +187,7 @@ const EN: Strings = {
   ],
   languageSelector: "Language",
   askThinking: "Reading your contract for an answer…",
+  chartScaleNote: "Bar heights are compressed so the regular months stay readable. The figures above each bar are exact.",
   newContractTitle: "Start with a new contract?",
   newContractBody: "This explanation will be discarded. Download the summary first if you want to keep it.",
   newContractCancel: "Keep this contract",
@@ -387,6 +389,7 @@ const DE: Strings = {
   ],
   languageSelector: "Sprache",
   askThinking: "Der Vertrag wird nach einer Antwort durchsucht…",
+  chartScaleNote: "Die Balkenhöhen sind gestaucht, damit die regulären Monate lesbar bleiben. Die Beträge über den Balken sind exakt.",
   newContractTitle: "Mit einem neuen Vertrag beginnen?",
   newContractBody: "Diese Erklärung wird verworfen. Laden Sie die Zusammenfassung vorher herunter, wenn Sie sie behalten möchten.",
   newContractCancel: "Diesen Vertrag behalten",

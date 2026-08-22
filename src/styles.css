@@ -302,9 +302,10 @@ section.screen.upload-screen::after {
 .money-big { font-size: clamp(32px, 3.4vw, 40px); font-weight: 700; letter-spacing: -1px; line-height: 1.1; }
 .money-year { color: var(--muted); margin-top: 4px; }
 .money-label { font-size: 13px; color: var(--muted-2); text-transform: uppercase; letter-spacing: 0.04em; }
-.money-row { display: flex; justify-content: space-between; align-items: baseline; padding: 12px 0; border-top: 1px solid var(--line); gap: 12px; }
+.money-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; padding: 12px 0; border-top: 1px solid var(--line); gap: 2px 12px; }
+.money-row > :first-child { min-width: 0; }
 .money-row:first-of-type { border-top: none; }
-.money-row .na { color: var(--muted-2); font-weight: 500; font-style: italic; }
+.money-row .na { color: var(--muted-2); font-weight: 500; font-style: italic; font-size: 13px; }
 .chart { display: flex; align-items: flex-end; gap: 8px; height: 160px; margin-top: 16px; overflow-x: auto; overflow-y: hidden; }
 .bar-col { flex: 1; min-width: 0; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; justify-items: center; gap: 6px; height: 100%; }
 .bar-amt { font-size: 11px; color: var(--muted-2); }
@@ -314,6 +315,12 @@ section.screen.upload-screen::after {
    bar, so its size is readable against a salary that dwarfs it. */
 .bar-extra { width: 100%; background: var(--brand); }
 .bar-m { font-size: 12px; color: var(--muted-2); }
+.chart-scale-note { margin-top: 12px; color: var(--muted-2); font-size: 12px; line-height: 1.5; }
+.money-notes { list-style: none; display: grid; gap: 12px; }
+.money-notes li { padding-top: 12px; border-top: 1px solid var(--line); }
+.money-notes li:first-child { padding-top: 10px; border-top: none; }
+.money-notes strong { display: block; font-size: 15px; }
+.money-notes p { margin-top: 4px; color: var(--muted); font-size: 13px; line-height: 1.55; }
 
 /* Timeline */
 .timeline { list-style: none; margin-top: 16px; }
