@@ -252,7 +252,19 @@ export function Overview({
             </button>
           ))}
         </div>
-        {answer && (
+        {/* The model can take a while; without this the card looks inert and people
+            press the button again. */}
+        {asking && (
+          <div className="ask-thinking" role="status">
+            <span className="ask-dots" aria-hidden="true">
+              <i />
+              <i />
+              <i />
+            </span>
+            {s.askThinking}
+          </div>
+        )}
+        {answer && !asking && (
           <div className="answer" aria-live="polite">
             <div className="answer-label">{s.askExplanation}</div>
             <p style={{ marginTop: 6 }}>{answer.text}</p>
