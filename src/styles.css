@@ -51,7 +51,9 @@ button { font: inherit; }
 .brand-logo { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; display: block; }
 .brand-name { font-size: 19px; font-weight: 700; letter-spacing: -0.3px; }
 .slogan { display: inline-flex; align-items: center; min-height: 20px; white-space: nowrap; }
-.slogan-caret { width: 2px; height: 15px; margin-left: 3px; background: var(--brand); animation: caret 1.05s steps(1) infinite; }
+.slogan-text { display: inline; }
+.slogan-caret { display: inline-block; width: 2px; height: 0.9em; margin-left: 0.12em; vertical-align: -0.06em; background: var(--brand); border-radius: 2px; box-shadow: 0 0 10px rgba(15,95,107,0.3); animation: caret 1.05s steps(1, end) infinite; }
+.slogan-caret.idle { animation-duration: 1.3s; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .langs { display: flex; align-items: center; gap: 3px; padding: 3px; border: 1px solid var(--line); border-radius: 12px; background: #edf2f1; }
 .lang-more { position: relative; display: flex; }
@@ -474,7 +476,10 @@ section.screen.upload-screen { padding-top: 52px; }
 .law-link-cta { font-size: 12.5px; font-weight: 600; color: var(--brand); white-space: nowrap; }
 li.law-ref > .law-ref-label { display: inline-block; padding: 6px 2px; } /* plain (no URL) citation */
 
-@keyframes caret { 50% { opacity: 0; } }
+@keyframes caret {
+  0%, 48% { opacity: 1; }
+  49%, 100% { opacity: 0; }
+}
 @keyframes rise-in {
   from { transform: translateY(12px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
