@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import type { Lang } from "../types";
 import { t } from "../i18n";
 import { validateContractFile, type UploadValidationError } from "../upload";
+import { Slogan } from "../components/Slogan";
 
 export function Upload({
   lang,
@@ -45,8 +46,10 @@ export function Upload({
       <div className="upload-main-grid">
         <div className="upload-intro">
           <span className="upload-eyebrow">{s.uploadEyebrow}</span>
+          {/* The slogan is the headline: key={lang} remounts it so no slogan from
+              the old language lingers, and s.hero is what a screen reader gets. */}
           <h1 className="upload-hero" id="hero-h">
-            {s.hero}
+            <Slogan key={lang} slogans={s.slogans} label={s.hero} />
           </h1>
           <p className="upload-hero-sub">{s.heroSub}</p>
         </div>
