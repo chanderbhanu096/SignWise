@@ -215,7 +215,11 @@ export function Overview({
         <ol className="findings">
           {shown.map(({ c, n }) => (
             <li key={c.id}>
-              <button className={"finding" + (c.verified ? "" : " unverified")} onClick={() => onOpenClause(c.id)}>
+              <button
+                className={"finding" + (c.verified ? "" : " unverified")}
+                data-level={c.level}
+                onClick={() => onOpenClause(c.id)}
+              >
                 <span className="finding-n" aria-hidden="true">
                   {n}
                 </span>

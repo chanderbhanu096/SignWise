@@ -202,6 +202,17 @@ section.screen.upload-screen { padding-top: 52px; }
 .finding-caret { flex: none; color: var(--muted-2); font-size: 22px; }
 .finding.unverified { opacity: 0.6; }
 
+/* Elevation carries importance. The clauses that move money, obligations or
+   cancellation lift off the page; everything else stays flat, so the eye sorts
+   the list before the reader has read a word of it. Shadow only — the severity
+   chip still does the naming, so this never becomes colour-as-meaning. */
+.finding { transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease; }
+.finding[data-level="important"] { border-color: rgba(168,200,203,0.95); box-shadow: 0 10px 26px rgba(15,95,107,0.11); }
+.finding[data-level="check"] { box-shadow: 0 5px 15px rgba(15,95,107,0.06); }
+.finding:hover { transform: translateY(-2px); box-shadow: 0 16px 34px rgba(15,95,107,0.15); }
+.finding:active { transform: translateY(0); box-shadow: 0 6px 16px rgba(15,95,107,0.12); }
+.finding:focus-visible { transform: translateY(-2px); }
+
 /* Severity badge */
 .sev { display: inline-flex; align-items: center; gap: 7px; padding: 4px 10px; border-radius: 99px; font-size: 13px; font-weight: 600; }
 .sev-mark { font-weight: 700; }
@@ -338,7 +349,8 @@ section.screen.upload-screen { padding-top: 52px; }
 .decision-section-head p, .decision-panel-head p { margin-top: 4px; color: var(--muted); font-size: 14px; }
 .commitment-grid { list-style: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
 .commitment-card { min-width: 0; padding: 18px; border: 1px solid var(--line); border-top: 3px solid var(--brand); border-radius: var(--radius); background: var(--surface); display: flex; flex-direction: column; align-items: flex-start; }
-.commitment-card:hover { border-color: #b9dbdd; box-shadow: 0 6px 22px rgba(18,38,43,0.06); }
+.commitment-card { box-shadow: 0 8px 22px rgba(18,38,43,0.05); transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease; }
+.commitment-card:hover { border-color: #b9dbdd; transform: translateY(-2px); box-shadow: 0 16px 32px rgba(18,38,43,0.09); }
 .commitment-value { max-width: 100%; font-size: clamp(25px, 2.4vw, 34px); line-height: 1.08; font-weight: 700; letter-spacing: -0.7px; overflow-wrap: anywhere; }
 .commitment-card h3 { margin-top: 7px; font-size: 16px; }
 .commitment-card p { margin-top: 6px; color: var(--muted); font-size: 14px; }
@@ -521,6 +533,7 @@ li.law-ref > .law-ref-label { display: inline-block; padding: 6px 2px; } /* plai
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
   .slogan-caret { display: none; }
+  .finding:hover, .finding:focus-visible, .commitment-card:hover { transform: none; }
 }
 
 @media print {
