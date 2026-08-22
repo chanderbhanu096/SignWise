@@ -296,18 +296,23 @@ section.screen.upload-screen::after {
 [data-level="standard"] .sev, .sev[data-level="standard"] { color: var(--std-fg); background: var(--std-bg); border: 1px solid var(--std-bd); }
 
 /* Money */
-.money { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 18px; margin-top: 16px; }
-.money-big { font-size: 40px; font-weight: 700; letter-spacing: -1px; }
+/* align-items: start — grid items stretch by default, which padded the headline
+   card out to the height of the detail card beside it. */
+.money { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 18px; margin-top: 16px; align-items: start; }
+.money-big { font-size: clamp(32px, 3.4vw, 40px); font-weight: 700; letter-spacing: -1px; line-height: 1.1; }
 .money-year { color: var(--muted); margin-top: 4px; }
 .money-label { font-size: 13px; color: var(--muted-2); text-transform: uppercase; letter-spacing: 0.04em; }
 .money-row { display: flex; justify-content: space-between; align-items: baseline; padding: 12px 0; border-top: 1px solid var(--line); gap: 12px; }
 .money-row:first-of-type { border-top: none; }
 .money-row .na { color: var(--muted-2); font-weight: 500; font-style: italic; }
 .chart { display: flex; align-items: flex-end; gap: 8px; height: 160px; margin-top: 16px; overflow-x: auto; overflow-y: hidden; }
-.bar-col { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
+.bar-col { flex: 1; min-width: 0; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; justify-items: center; gap: 6px; height: 100%; }
 .bar-amt { font-size: 11px; color: var(--muted-2); }
-.bar { width: 100%; border-radius: 6px 6px 3px 3px; background: #a9d3d6; }
-.bar.first { background: var(--brand); }
+.bar-track { width: 100%; display: flex; align-items: flex-end; }
+.bar { width: 100%; min-height: 3px; border-radius: 6px 6px 3px 3px; background: #a9d3d6; overflow: hidden; }
+/* The extra payment sits on top of the base rather than recolouring the whole
+   bar, so its size is readable against a salary that dwarfs it. */
+.bar-extra { width: 100%; background: var(--brand); }
 .bar-m { font-size: 12px; color: var(--muted-2); }
 
 /* Timeline */

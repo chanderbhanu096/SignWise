@@ -82,7 +82,7 @@ export function Overview({
   const months = Array.from({ length: 12 }, (_, i) =>
     new Intl.DateTimeFormat(locale, { month: "short" }).format(new Date(2026, 9 + i, 1)),
   );
-  const bars = months.map((m, i) => ({ label: m, value: monthly + bumpByMonth[i], bumped: bumpByMonth[i] > 0 }));
+  const bars = months.map((m, i) => ({ label: m, base: monthly, extra: bumpByMonth[i], value: monthly + bumpByMonth[i] }));
   const maxBar = Math.max(...bars.map((b) => b.value), 1);
   const showChart = !neutral && monthly > 0;
 
@@ -375,7 +375,15 @@ export function Overview({
                 {bars.map((b, i) => (
                   <div className="bar-col" key={i}>
                     <span className="bar-amt">{new Intl.NumberFormat(locale).format(b.value)}</span>
-                    <div className={"bar" + (b.bumped ? " first" : "")} style={{ height: `${(b.value / maxBar) * 100}%` }} />
+                    {/* The track is the grid's only flexible row, so a percentage height
+                        on the bar resolves against the space the bars actually have. */}
+                    <div className="bar-track">
+                      <div className="bar" style={{ height: `${(b.value / maxBar) * 100}%` }}>
+                        {b.extra > 0 && (
+                          <div className="bar-extra" style={{ height: `${(b.extra / b.value) * 100}%` }} />
+                        )}
+                      </div>
+                    </div>
                     <span className="bar-m">{b.label}</span>
                   </div>
                 ))}
