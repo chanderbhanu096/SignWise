@@ -2,7 +2,6 @@ import { useRef, useState } from "react";
 import type { Lang } from "../types";
 import { t } from "../i18n";
 import { validateContractFile, type UploadValidationError } from "../upload";
-import { Slogan } from "../components/Slogan";
 
 export function Upload({
   lang,
@@ -47,8 +46,7 @@ export function Upload({
         <div className="upload-intro">
           <span className="upload-eyebrow">{s.uploadEyebrow}</span>
           <h1 className="upload-hero" id="hero-h">
-            {/* key={lang}: restart the cycle when switching UI language. */}
-            <Slogan key={lang} slogans={s.slogans} label={s.tagline} />
+            {s.hero}
           </h1>
           <p className="upload-hero-sub">{s.heroSub}</p>
         </div>
