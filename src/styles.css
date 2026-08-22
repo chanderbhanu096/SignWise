@@ -170,6 +170,18 @@ section.screen.upload-screen::after {
   box-shadow: 0 0 14px rgba(15,95,107,0.16);
 }
 .upload-eyebrow, .example-eyebrow { display: inline-block; color: var(--brand-strong); font-size: 12px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; }
+/* The eyebrow opens the band the way the hairline closes it — same lit gradient,
+   mirrored either side of the words, so the two mark the start and the end. */
+.upload-eyebrow { display: inline-flex; align-items: center; gap: clamp(10px, 1.4cqw, 16px); }
+.upload-eyebrow::before, .upload-eyebrow::after {
+  content: "";
+  flex: none;
+  width: clamp(26px, 7cqw, 72px);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(15,95,107,0.45));
+  box-shadow: 0 0 8px rgba(15,95,107,0.14);
+}
+.upload-eyebrow::after { transform: scaleX(-1); }
 .upload-hero { margin-top: 14px; font-size: clamp(26px, 5cqw, 52px); line-height: 1.1; letter-spacing: -1.5px; }
 .upload-hero-sub { max-width: 36em; margin: 20px auto 0; color: var(--ink-2); font-size: 18px; line-height: 1.62; }
 .upload-main-grid { position: relative; z-index: 1; margin-top: 30px; display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.65fr); grid-template-areas: "card benefits"; column-gap: clamp(28px, 4vw, 48px); row-gap: 28px; align-items: start; }
@@ -577,8 +589,8 @@ li.law-ref > .law-ref-label { display: inline-block; padding: 6px 2px; } /* plai
 }
 
 @media (max-width: 360px) {
-  .upload-eyebrow { display: none; }
-  .upload-hero { margin-top: 0; }
+  .upload-eyebrow::before, .upload-eyebrow::after { width: 20px; }
+  .upload-hero { margin-top: 6px; }
   .upload-intro { padding: 14px 0 0; }
   .upload-intro::after { margin-top: 16px; }
   .brand-mark { width: 30px; height: 30px; border-radius: 8px; font-size: 12px; }
