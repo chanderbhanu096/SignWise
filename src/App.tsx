@@ -18,17 +18,11 @@ import { Overview } from "./screens/Overview";
 import { Original } from "./screens/Original";
 import { Decision } from "./screens/Decision";
 import { ClausePanel } from "./components/ClausePanel";
+import { ConfirmDialog } from "./components/ConfirmDialog";
 import logoSrc from "./assets/signwise-logo.svg";
 
 type Screen = "upload" | "analyzing" | "overview" | "original" | "decision";
 
-// Languages behind the globe button: code, menu label, and the badge shown in the
-// segmented control while that language is active.
-const OTHER_LANGS: [Lang, string, string][] = [
-  ["tr", "Türkçe", "TR"],
-  ["uk", "Українська", "UA"],
-  ["ar", "العربية", "AR"],
-];
 type Source = "sample" | "upload";
 
 function errMessage(code: string, lang: Lang): string {
@@ -71,7 +65,7 @@ export default function App() {
   const [calMsg, setCalMsg] = useState("");
   const [dlMsg, setDlMsg] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [moreOpen, setMoreOpen] = useState(false);
+  const [confirmNew, setConfirmNew] = useState(false);
 
   const pendingRef = useRef<Promise<{ a: Analysis; text: string | null }> | null>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
@@ -202,7 +196,6 @@ export default function App() {
   }
 
   async function changeLang(l: Lang) {
-    setMoreOpen(false);
     if (l === lang) return;
     setLang(l);
     if (!analysis) return;
@@ -238,37 +231,9 @@ export default function App() {
             </div>
             <div className="brand-name">SignWise</div>
           </div>
-          {/* One compact segmented control. The third slot is a globe rather than the
-              word "More", which cost more width than the two languages next to it. */}
           <div className="langs" role="group" aria-label={s.languageSelector}>
             {langBtn("de", "DE")}
             {langBtn("en", "EN")}
-            <div className="lang-more">
-              <button
-                className={"pill" + (OTHER_LANGS.some(([c]) => c === lang) ? " on" : "")}
-                aria-expanded={moreOpen}
-                aria-haspopup="true"
-                aria-label={s.moreLanguages}
-                onClick={() => setMoreOpen((v) => !v)}
-              >
-                {OTHER_LANGS.find(([c]) => c === lang)?.[2] ?? (
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                    <circle cx="12" cy="12" r="9" />
-                    <path d="M3 12h18" />
-                    <path d="M12 3c2.5 3 2.5 15 0 18M12 3c-2.5 3-2.5 15 0 18" />
-                  </svg>
-                )}
-              </button>
-              {moreOpen && (
-                <div className="lang-menu">
-                  {OTHER_LANGS.map(([code, label]) => (
-                    <button key={code} className="nav-btn" onClick={() => changeLang(code)}>
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
           </div>
         </div>
       </header>
@@ -287,7 +252,7 @@ export default function App() {
             <button className={"nav-btn" + (screen === "decision" ? " on" : "")} aria-current={screen === "decision" ? "page" : undefined} onClick={() => setScreen("decision")}>
               {s.screens.decision}
             </button>
-            <button className="nav-btn" onClick={() => { setScreen("upload"); setAnalysis(null); }}>
+            <button className="nav-btn" onClick={() => setConfirmNew(true)}>
               {lang === "de" ? "+ Neuer Vertrag" : "+ New contract"}
             </button>
           </div>
@@ -372,6 +337,22 @@ export default function App() {
       {openClauseObj && analysis && (
         <ClausePanel key={openClauseObj.id} clause={openClauseObj} analysis={analysis} depth={depth} onClose={closePanel} onShowInDoc={showInDoc} />
       )}
+
+      {/* Starting over throws the whole explanation away, so it asks first. */}
+      <ConfirmDialog
+        open={confirmNew}
+        title={s.newContractTitle}
+        body={s.newContractBody}
+        cancelLabel={s.newContractCancel}
+        confirmLabel={s.newContractConfirm}
+        onCancel={() => setConfirmNew(false)}
+        onConfirm={() => {
+          setConfirmNew(false);
+          setScreen("upload");
+          setAnalysis(null);
+          setAnswer(null);
+        }}
+      />
     </div>
   );
 }

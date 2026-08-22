@@ -23,7 +23,11 @@ interface Strings {
   tagline: string;
   slogans: string[]; // rotate one at a time in the header
   languageSelector: string;
-  moreLanguages: string;
+  askThinking: string;
+  newContractTitle: string;
+  newContractBody: string;
+  newContractCancel: string;
+  newContractConfirm: string;
   disclaimer: string;
   disclaimerLong: string;
   screens: { upload: string; analyzing: string; overview: string; original: string; decision: string };
@@ -181,7 +185,11 @@ const EN: Strings = {
     "See the signs. Read between the lines.",
   ],
   languageSelector: "Language",
-  moreLanguages: "More languages", // accessible name for the globe button
+  askThinking: "Reading your contract for an answer…",
+  newContractTitle: "Start with a new contract?",
+  newContractBody: "This explanation will be discarded. Download the summary first if you want to keep it.",
+  newContractCancel: "Keep this contract",
+  newContractConfirm: "Start over",
   disclaimer: "This tool explains your contract; it does not replace legal advice.",
   disclaimerLong:
     "This tool explains your contract; it does not replace legal advice. For a binding opinion, contact a lawyer or an appropriate advice centre (e.g. a consumer or tenants’ association).",
@@ -378,7 +386,11 @@ const DE: Strings = {
     "Verträge verständlich gemacht.",
   ],
   languageSelector: "Sprache",
-  moreLanguages: "Weitere Sprachen",
+  askThinking: "Der Vertrag wird nach einer Antwort durchsucht…",
+  newContractTitle: "Mit einem neuen Vertrag beginnen?",
+  newContractBody: "Diese Erklärung wird verworfen. Laden Sie die Zusammenfassung vorher herunter, wenn Sie sie behalten möchten.",
+  newContractCancel: "Diesen Vertrag behalten",
+  newContractConfirm: "Neu beginnen",
   disclaimer: "Dieses Tool erklärt Ihren Vertrag; es ersetzt keine Rechtsberatung.",
   disclaimerLong:
     "Dieses Tool erklärt Ihren Vertrag; es ersetzt keine Rechtsberatung. Für eine verbindliche Einschätzung wenden Sie sich an einen Anwalt oder eine geeignete Beratungsstelle (z. B. Verbraucher- oder Mieterverein).",
