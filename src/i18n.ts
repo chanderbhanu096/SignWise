@@ -55,7 +55,9 @@ interface Strings {
   analyzingTitle: string;
   analyzingSub: string;
   steps: [string, string, string, string];
-  skip: string;
+  analyzingElapsed: (clock: string) => string;
+  analyzingPatience: [string, string]; // shown after 15s, then after 40s
+  cancelAnalysis: string;
 
   // overview
   glanceHeading: string;
@@ -216,7 +218,12 @@ const EN: Strings = {
   analyzingTitle: "We’re turning the legal language into something easier to understand.",
   analyzingSub: "This usually takes under a minute. You can stay on this page.",
   steps: ["Reading your contract", "Finding important clauses", "Checking costs and deadlines", "Preparing your summary"],
-  skip: "Skip ahead to my summary",
+  analyzingElapsed: (c) => `Running for ${c}`,
+  analyzingPatience: [
+    "Longer contracts take more time — yours is still being read.",
+    "Still working. A long or scanned contract can take a while; you can keep waiting or cancel and try again.",
+  ],
+  cancelAnalysis: "Cancel and go back",
   glanceHeading: "Your contract at a glance",
   fileMeta: (p) => `${p} pages · explained in English`,
   explanationLevel: "Explanation level",
@@ -409,7 +416,12 @@ const DE: Strings = {
   analyzingTitle: "Wir übersetzen die Rechtssprache in etwas Verständlicheres.",
   analyzingSub: "Das dauert meist unter einer Minute. Sie können auf dieser Seite bleiben.",
   steps: ["Vertrag wird gelesen", "Wichtige Klauseln werden gesucht", "Kosten und Fristen werden geprüft", "Ihre Zusammenfassung wird erstellt"],
-  skip: "Direkt zur Zusammenfassung",
+  analyzingElapsed: (c) => `Läuft seit ${c}`,
+  analyzingPatience: [
+    "Längere Verträge brauchen mehr Zeit — Ihrer wird noch gelesen.",
+    "Wird weiter bearbeitet. Ein langer oder gescannter Vertrag kann dauern; Sie können warten oder abbrechen und es erneut versuchen.",
+  ],
+  cancelAnalysis: "Abbrechen und zurück",
   glanceHeading: "Ihr Vertrag auf einen Blick",
   fileMeta: (p) => `${p} Seiten · erklärt auf Deutsch`,
   explanationLevel: "Erklärungstiefe",

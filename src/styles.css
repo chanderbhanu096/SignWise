@@ -170,8 +170,14 @@ section.screen.upload-screen { padding-top: 52px; }
 .step[data-state="active"] .step-dot { color: var(--brand); background: var(--brand-tint); animation: pulse 1.2s ease-in-out infinite; }
 .step-text { font-size: 17px; color: var(--muted-2); }
 .step[data-state="done"] .step-text, .step[data-state="active"] .step-text { color: var(--ink); font-weight: 600; }
-.progress { margin-top: 24px; height: 8px; background: #e4ebea; border-radius: 99px; overflow: hidden; }
-.progress > i { display: block; height: 100%; background: var(--brand); border-radius: 99px; transition: width 0.5s ease; }
+.progress { position: relative; margin-top: 24px; height: 8px; background: #e4ebea; border-radius: 99px; overflow: hidden; }
+.progress > i { display: block; height: 100%; background: linear-gradient(90deg, #0f5f6b, #2f8d97 60%, #7ab8be); border-radius: 99px; transition: width 0.6s linear; }
+/* A sheen travelling over the filled part: proof of life while the model thinks,
+   even during the long stretch where the width barely moves. */
+.progress-fill::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent); animation: progress-sheen 1.6s ease-in-out infinite; }
+.analyzing-meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; margin-top: 12px; min-height: 44px; }
+.analyzing-clock { color: var(--muted-2); font-size: 14px; font-variant-numeric: tabular-nums; }
+.analyzing-patience { margin-top: 4px; color: var(--muted); font-size: 14px; max-width: 46em; min-height: 1.5em; }
 
 /* Glance */
 .overview-head { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: flex-end; }
@@ -402,6 +408,7 @@ section.screen.upload-screen { padding-top: 52px; }
 li.law-ref > .law-ref-label { display: inline-block; padding: 6px 2px; } /* plain (no URL) citation */
 
 @keyframes caret { 50% { opacity: 0; } }
+@keyframes progress-sheen { 0% { transform: translateX(-100%); } 60%, 100% { transform: translateX(100%); } }
 @keyframes prism-drift { from { transform: translate3d(0, 0, 0) scale(1); } to { transform: translate3d(-2.5vmax, 1.6vmax, 0) scale(1.05); } }
 @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
 @keyframes slide { from { transform: translateX(24px); opacity: 0; } to { transform: none; opacity: 1; } }

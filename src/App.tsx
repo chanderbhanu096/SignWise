@@ -13,7 +13,7 @@ import { extractPdfText, verifyQuote } from "./pdf";
 import { analyze, ask, translate, ApiError } from "./api";
 import { downloadDeadlineIcs } from "./ics";
 import { Upload } from "./screens/Upload";
-import { Analyzing } from "./screens/Analyzing";
+import { Analyzing, type Phase } from "./screens/Analyzing";
 import { Overview } from "./screens/Overview";
 import { Original } from "./screens/Original";
 import { Decision } from "./screens/Decision";
@@ -60,7 +60,7 @@ function verifyAnalysis(a: Analysis, docText: string | null): Analysis {
 export default function App() {
   const [lang, setLang] = useState<Lang>("de");
   const [screen, setScreen] = useState<Screen>("upload");
-  const [step, setStep] = useState(0);
+  const [phase, setPhase] = useState<Phase>("read");
   const [source, setSource] = useState<Source>("sample");
   const [sampleKind, setSampleKind] = useState<"rental" | "employment">("rental");
   const [filename, setFilename] = useState(SAMPLE_FILENAME);
@@ -78,13 +78,10 @@ export default function App() {
   const triggerRef = useRef<HTMLElement | null>(null);
   const s = t(lang);
 
-  // Analysis progress: advance the four steps, then resolve into the overview.
+  // Wait for the real work. The screen reports whichever phase the job is in;
+  // leaving this screen (cancel included) makes any late result a no-op.
   useEffect(() => {
     if (screen !== "analyzing") return;
-    if (step < 4) {
-      const id = setTimeout(() => setStep((n) => n + 1), 650);
-      return () => clearTimeout(id);
-    }
     let cancelled = false;
     pendingRef.current
       ?.then(({ a, text }) => {
@@ -100,7 +97,7 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, [screen, step, lang]);
+  }, [screen, lang]);
 
   // Esc closes the clause panel and returns focus to whatever opened it.
   useEffect(() => {
@@ -114,22 +111,35 @@ export default function App() {
   function begin(p: Promise<{ a: Analysis; text: string | null }>) {
     pendingRef.current = p;
     setError(null);
-    setStep(0);
+    setPhase("read");
     setScreen("analyzing");
+  }
+
+  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+  // The bundled examples need no work at all. Walk them through the same phases so
+  // the screen reads the same way, without pretending it took as long as a real one.
+  async function runExample(a: Analysis, text: string) {
+    await sleep(600);
+    setPhase("model");
+    await sleep(1100);
+    setPhase("verify");
+    await sleep(450);
+    return { a, text };
   }
 
   function startExample() {
     setSource("sample");
     setSampleKind("rental");
     setFilename(SAMPLE_FILENAME);
-    begin(Promise.resolve({ a: sampleAnalysis(lang), text: SAMPLE_DOC_TEXT }));
+    begin(runExample(sampleAnalysis(lang), SAMPLE_DOC_TEXT));
   }
 
   function startEmploymentExample() {
     setSource("sample");
     setSampleKind("employment");
     setFilename(EMPLOYMENT_FILENAME);
-    begin(Promise.resolve({ a: employmentAnalysis(lang), text: EMPLOYMENT_DOC_TEXT }));
+    begin(runExample(employmentAnalysis(lang), EMPLOYMENT_DOC_TEXT));
   }
 
   function startUpload(file: File) {
@@ -139,7 +149,9 @@ export default function App() {
       (async () => {
         const buf = await file.arrayBuffer();
         const text = await extractPdfText(buf.slice(0)); // slice: keep our own copy
+        setPhase("model");
         const a = await analyze(file, lang, text);
+        setPhase("verify");
         return { a, text };
       })(),
     );
@@ -318,7 +330,7 @@ export default function App() {
         {screen === "upload" && (
           <Upload lang={lang} onUpload={startUpload} onExample={startExample} onEmploymentExample={startEmploymentExample} error={error} />
         )}
-        {screen === "analyzing" && <Analyzing lang={lang} step={step} filename={filename} onSkip={() => setStep(4)} />}
+        {screen === "analyzing" && <Analyzing lang={lang} phase={phase} filename={filename} onCancel={() => setScreen("upload")} />}
         {screen === "overview" && analysis && (
           <Overview
             analysis={analysis}
