@@ -177,9 +177,7 @@ const EN: Strings = {
   tagline: "Your contract. Explained clearly.",
   slogans: [
     "Know what you sign.",
-    "Contracts made clear.",
     "Your contract, explained.",
-    "Spot the signs before you sign.",
     "See the signs. Read between the lines.",
   ],
   languageSelector: "Language",
@@ -374,9 +372,8 @@ const EN: Strings = {
 
 const DE: Strings = {
   tagline: "Ihr Vertrag. Klar erklärt.",
-  // "Ihr", not "Dein": the rest of the product addresses the reader formally.
   slogans: [
-    "Ihr Vertrag, einfach erklärt.",
+    "Dein Vertrag, einfach erklärt.",
     "Erst verstehen, dann unterschreiben.",
     "Verträge verständlich gemacht.",
   ],
