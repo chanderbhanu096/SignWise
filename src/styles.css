@@ -165,7 +165,7 @@ section.screen.upload-screen::after {
   display: block;
   width: min(720px, 100%);
   height: 1px;
-  margin: 34px auto 0;
+  margin: 26px auto 0;
   background: linear-gradient(90deg, transparent 0%, rgba(15,95,107,0.12) 18%, rgba(15,95,107,0.55) 50%, rgba(15,95,107,0.12) 82%, transparent 100%);
   box-shadow: 0 0 14px rgba(15,95,107,0.16);
 }
@@ -184,7 +184,7 @@ section.screen.upload-screen::after {
 .upload-eyebrow::after { transform: scaleX(-1); }
 .upload-hero { margin-top: 14px; font-size: clamp(26px, 5cqw, 52px); line-height: 1.1; letter-spacing: -1.5px; }
 .upload-hero-sub { max-width: 36em; margin: 20px auto 0; color: var(--ink-2); font-size: 18px; line-height: 1.62; }
-.upload-main-grid { position: relative; z-index: 1; margin-top: 30px; display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.65fr); grid-template-areas: "card benefits"; column-gap: clamp(28px, 4vw, 48px); row-gap: 28px; align-items: start; }
+.upload-main-grid { position: relative; z-index: 1; margin-top: 40px; display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.65fr); grid-template-areas: "card benefits"; column-gap: clamp(28px, 4vw, 48px); row-gap: 28px; align-items: start; }
 .upload-benefits { grid-area: benefits; padding: 16px 18px; border-radius: 16px; border: 1px solid rgba(220,228,227,0.78); background: rgba(255,255,255,0.52); backdrop-filter: saturate(130%) blur(9px); -webkit-backdrop-filter: saturate(130%) blur(9px); }
 .upload-benefits-label { margin-bottom: 12px; color: var(--muted); font-size: 13px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
 .upload-benefits ul { list-style: none; display: grid; gap: 10px; }
@@ -207,7 +207,7 @@ section.screen.upload-screen::after {
 .drop-cta { min-height: 52px; margin-top: 6px; padding: 0 24px; border-radius: 10px; background: var(--brand); color: #fff; font-size: 16px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 9px; transition: background 0.16s ease; }
 .upload-handling { display: flex; align-items: flex-start; gap: 10px; padding: 14px 3px 0; color: var(--muted); font-size: 13px; }
 .upload-handling svg { flex: none; margin-top: 1px; color: var(--brand); }
-.example-strip { margin-top: 42px; padding: 24px 26px; display: grid; grid-template-columns: minmax(250px, 0.8fr) minmax(420px, 1.2fr); gap: 34px; align-items: center; border: 1px solid rgba(210,224,223,0.9); border-radius: 18px; background: linear-gradient(142deg, rgba(237,243,242,0.86), rgba(246,250,249,0.66)); backdrop-filter: saturate(130%) blur(10px); -webkit-backdrop-filter: saturate(130%) blur(10px); box-shadow: 0 14px 34px rgba(15,95,107,0.1); }
+.example-strip { margin-top: 56px; padding: 24px 26px; display: grid; grid-template-columns: minmax(250px, 0.8fr) minmax(420px, 1.2fr); gap: 34px; align-items: center; border: 1px solid rgba(210,224,223,0.9); border-radius: 18px; background: linear-gradient(142deg, rgba(237,243,242,0.86), rgba(246,250,249,0.66)); backdrop-filter: saturate(130%) blur(10px); -webkit-backdrop-filter: saturate(130%) blur(10px); box-shadow: 0 14px 34px rgba(15,95,107,0.1); }
 .example-copy h2 { margin-top: 6px; font-size: 22px; }
 .example-copy p { max-width: 520px; margin-top: 7px; color: var(--muted); font-size: 14px; }
 .example-actions { min-width: 0; }
@@ -494,9 +494,9 @@ li.law-ref > .law-ref-label { display: inline-block; padding: 6px 2px; } /* plai
 /* Mobile */
 @media (max-width: 900px) {
   section.screen.upload-screen { padding-top: 14px; }
-  .upload-main-grid { grid-template-columns: 1fr; grid-template-areas: "card" "benefits"; gap: 26px; }
+  .upload-main-grid { margin-top: 34px; grid-template-columns: 1fr; grid-template-areas: "card" "benefits"; gap: 24px; }
   .upload-intro { padding: 26px 0 0; }
-  .upload-intro::after { margin-top: 26px; }
+  .upload-intro::after { margin-top: 22px; }
   section.screen.upload-screen::before { top: -80px; left: -140px; }
   section.screen.upload-screen::after { right: -140px; }
   .upload-card { width: 100%; }
@@ -556,9 +556,9 @@ li.law-ref > .law-ref-label { display: inline-block; padding: 6px 2px; } /* plai
   .example-strip { background: linear-gradient(142deg, rgba(237,243,242,0.95), rgba(246,250,249,0.88)); }
   .pane-label { flex-wrap: wrap; gap: 2px 10px; } /* label and meta stack instead of forming two ragged columns */
   section.screen.upload-screen { padding-top: 8px; }
-  .upload-main-grid { margin-top: 22px; gap: 22px; }
+  .upload-main-grid { margin-top: 30px; gap: 20px; }
   .upload-intro { padding: 18px 0 0; }
-  .upload-intro::after { margin-top: 20px; }
+  .upload-intro::after { margin-top: 16px; }
   /* The auras cost a repaint on every scroll frame and add nothing at this size. */
   section.screen.upload-screen::before, section.screen.upload-screen::after { display: none; }
   .upload-eyebrow { font-size: 11px; }
@@ -576,7 +576,7 @@ li.law-ref > .law-ref-label { display: inline-block; padding: 6px 2px; } /* plai
   .drop-cta { width: 100%; min-height: 50px; padding: 0 14px; font-size: 15px; }
   .upload-handling { padding-top: 12px; font-size: 12px; }
   .upload-benefits-label { font-size: 12px; }
-  .example-strip { margin-top: 30px; padding: 19px; border-radius: 15px; }
+  .example-strip { margin-top: 40px; padding: 19px; border-radius: 15px; }
   .example-copy h2 { font-size: 20px; }
   .rental-example { min-height: 82px; padding: 12px; grid-template-columns: 44px minmax(0, 1fr) 20px; gap: 10px; }
   .example-icon { width: 44px; height: 44px; }
