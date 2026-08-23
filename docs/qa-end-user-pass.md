@@ -57,3 +57,61 @@ server keys are included.
 banner does say "Demo-Modus", and a hackathon demo that dies on a missing key is
 worse than one that shows a sample. But see finding 3: the page around the banner
 still claimed the sample was *your* contract, and that part I did fix.
+
+---
+
+## 2 — "Screens · 3 · Overview & answers · 4 · Original · 5 · Before you sign"
+
+**Seen.** The bar above every document screen read `BILDSCHIRME` and then three
+buttons numbered **3, 4 and 5**. On a 375px phone it was worse: the label is
+hidden at that width, so the numbers had nothing to explain them, the active tab
+was **clipped mid-word** by the right edge, and `+ Neuer Vertrag` was entirely
+off-screen behind a horizontal scroll nobody would think to try.
+
+**What was actually wrong.** Three separate things wearing one coat of paint:
+
+1. **The numbers were leftovers.** They came from a five-screen mockup where 1
+   was Upload and 2 was Analysis. Those two screens never show the bar, so the
+   numbering permanently starts at 3. A number that starts at 3 promises a
+   sequence and then doesn't deliver one.
+2. **"Screens" is our word, not the reader's.** It describes the artefact
+   (a mockup made of screens), not the thing (one contract, looked at three ways).
+3. **`+ New contract` was pretending to be a fourth screen.** It isn't a view of
+   this contract — it discards this contract. Same shape, same size, same row as
+   its three neighbours, completely different consequence. That is also why it
+   was the one that fell off the phone: as the last of four equal children in a
+   scroller, it is always the first to go.
+
+**Worth fixing?** Yes. It is the only persistent navigation in the product, it is
+on screen for the entire session, and on a phone it was both unreadable and
+missing a control.
+
+**Fix.**
+
+- Numbers dropped. The three views are destinations you can visit in any order,
+  not steps — so they are tabs, and tabs don't count.
+- Labels say what you get: **Überblick / Vertragstext / Vor der Unterschrift**
+  (*Overview / Contract text / Before you sign*). "Original" became
+  "Vertragstext" because "Original" describes provenance; a reader wants to know
+  it is the contract's own words.
+- The visible `BILDSCHIRME` label is gone. The information it carried is now in
+  `aria-label="Ansichten dieses Vertrags"`, where it helps a screen reader and
+  costs a sighted reader nothing.
+- The three tabs are a `grid-template-columns: repeat(3, 1fr)` — equal width,
+  always the full row, never a scroller. On a phone they tighten and wrap to two
+  lines rather than overflow.
+- `+ New contract` left the tab group. It sits outside it, `flex: 0 0 auto` so it
+  never shrinks, with a **dashed** border so it reads as "leave here" rather than
+  "another tab". On a phone it collapses to `+` and keeps its name via a
+  visually-hidden span.
+
+**Why not a numbered wizard instead?** Because the app doesn't work that way —
+every screen links to every other, and "Before you sign" is a place you go back
+to. Numbering would have been a promise the product breaks.
+
+**Also fixed here, spotted in the same screenshot.** The `<h1>` on "Vor der
+Unterschrift" was wearing a 3px teal box. The screen focuses its heading on mount
+so a screen reader announces the new view — a good pattern — but the global
+`:focus-visible` rule then painted a ring around a non-interactive heading, which
+looks like a text field. `[tabindex="-1"]:focus { outline: none }` keeps the
+announcement and drops the box.
