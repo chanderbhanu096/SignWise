@@ -14,6 +14,7 @@ export function Original({
   depth,
   setDepth,
   docText,
+  pages,
   selectedClauseId,
   onSelectClause,
   onOpenClause,
@@ -23,6 +24,7 @@ export function Original({
   depth: Depth;
   setDepth: (d: Depth) => void;
   docText: string | null;
+  pages: number | null;
   selectedClauseId: string | null;
   onSelectClause: (id: string) => void;
   onOpenClause: (id: string) => void;
@@ -84,7 +86,7 @@ export function Original({
       <div className="split">
         <div className="doc" ref={docRef} lang={analysis.docLanguage}>
           <p className="doc-page">
-            {analysis.contractType} · {s.fileMeta(14)}
+            {analysis.contractType} · {s.fileMeta(pages)}
           </p>
           {(blocks ?? ordered.map((c) => ({ text: c.quote, clauseId: c.id }))).map((block, i) => {
             const c = block.clauseId ? analysis.clauses.find((x) => x.id === block.clauseId) : undefined;

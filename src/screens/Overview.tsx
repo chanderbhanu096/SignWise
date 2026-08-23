@@ -10,6 +10,7 @@ import { Section } from "../components/Section";
 export function Overview({
   analysis,
   filename,
+  pages,
   onOpenClause,
   onOriginal,
   onDecision,
@@ -21,6 +22,7 @@ export function Overview({
 }: {
   analysis: Analysis;
   filename: string;
+  pages: number | null;
   onOpenClause: (id: string) => void;
   onOriginal: () => void;
   onDecision: () => void;
@@ -155,7 +157,7 @@ export function Overview({
             {s.glanceHeading}
           </h1>
           <p className="section-sub" style={{ marginBottom: 0 }}>
-            {filename} · {s.fileMeta(14)}
+            {filename} · {s.fileMeta(pages)}
           </p>
         </div>
       </div>

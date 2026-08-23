@@ -115,3 +115,37 @@ so a screen reader announces the new view — a good pattern — but the global
 `:focus-visible` rule then painted a ring around a non-interactive heading, which
 looks like a text field. `[tabindex="-1"]:focus { outline: none }` keeps the
 announcement and drops the box.
+
+---
+
+## 3 — The app told me my 6-page contract had 14 pages
+
+**Seen.** Under the heading *"Ihr Vertrag auf einen Blick"*:
+
+    Mietvertrag_Aberlestrasse_27 (1).pdf · 14 Seiten · erklärt auf Deutsch
+
+The file is six pages. The same line, with the same 14, also appears at the top
+of the contract-text view.
+
+**Cause.** Literally this, in two files:
+
+    {filename} · {s.fileMeta(14)}
+
+A mockup value that was never wired up.
+
+**Worth fixing?** This is the one finding I did not have to think about. The
+entire promise of SignWise is "we only tell you what your document says", and the
+very first line under your own filename was a number we invented. A juror who
+opens their own PDF and counts the pages finds it in ten seconds. Everything else
+on the screen becomes suspect at that point.
+
+**Fix.** `extractPdfText` already walks `doc.numPages` to pull the text — the
+count was sitting right there and being thrown away. It now returns
+`{ text, pages }`, and the count travels with the analysis to both screens.
+
+**The interesting half: what to show when there is no count.** Image uploads have
+no pages, and the two bundled examples are TypeScript fixtures, not PDFs. The
+tempting move is a plausible constant. That is the same bug again with a nicer
+number. So `pages` is `number | null`, and `fileMeta(null)` simply drops the
+segment — *"Beispiel-Mietvertrag.pdf · erklärt auf Deutsch"*. Nothing invented,
+nothing missing. Singular/plural handled while I was in there.

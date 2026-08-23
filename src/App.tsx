@@ -69,6 +69,8 @@ export default function App() {
   // The extracted contract text, kept so the "original contract" screen can show the
   // document itself rather than a list of the passages the model happened to quote.
   const [docText, setDocText] = useState<string | null>(null);
+  // Real page count, or null when we have no PDF to count (image upload, sample).
+  const [docPages, setDocPages] = useState<number | null>(null);
   const [depth, setDepth] = useState<Depth>("standard");
   const [clauseId, setClauseId] = useState<string | null>(null);
   const [answer, setAnswer] = useState<{ text: string; clauseId: string | null } | null>(null);
@@ -79,7 +81,7 @@ export default function App() {
   const [confirmNew, setConfirmNew] = useState(false);
   const [translating, setTranslating] = useState(false);
 
-  const pendingRef = useRef<Promise<{ a: Analysis; text: string | null }> | null>(null);
+  const pendingRef = useRef<Promise<{ a: Analysis; text: string | null; pages: number | null }> | null>(null);
   // One translated copy per language, kept for the life of this contract. Switching
   // back is then instant instead of a second round-trip for text we already have.
   const langCacheRef = useRef<Map<Lang, Analysis>>(new Map());
@@ -92,10 +94,11 @@ export default function App() {
     if (screen !== "analyzing") return;
     let cancelled = false;
     pendingRef.current
-      ?.then(({ a, text }) => {
+      ?.then(({ a, text, pages }) => {
         if (cancelled) return;
         setAnalysis(verifyAnalysis(a, text));
         setDocText(text);
+        setDocPages(pages);
         setScreen("overview");
       })
       .catch((e) => {
@@ -117,7 +120,7 @@ export default function App() {
     return () => window.removeEventListener("keydown", onKey);
   }, [clauseId]);
 
-  function begin(p: Promise<{ a: Analysis; text: string | null }>) {
+  function begin(p: Promise<{ a: Analysis; text: string | null; pages: number | null }>) {
     pendingRef.current = p;
     setError(null);
     setPhase("read");
@@ -134,7 +137,9 @@ export default function App() {
     await sleep(1100);
     setPhase("verify");
     await sleep(450);
-    return { a, text };
+    // A bundled fixture is not a PDF, so there is no page count to report — and an
+    // invented one is exactly the kind of number this app exists to catch.
+    return { a, text, pages: null };
   }
 
   function startExample() {
@@ -157,11 +162,11 @@ export default function App() {
     begin(
       (async () => {
         const buf = await file.arrayBuffer();
-        const text = await extractPdfText(buf.slice(0)); // slice: keep our own copy
+        const { text, pages } = await extractPdfText(buf.slice(0)); // slice: keep our own copy
         setPhase("model");
         const a = await analyze(file, lang, text);
         setPhase("verify");
-        return { a, text };
+        return { a, text, pages };
       })(),
     );
   }
@@ -356,6 +361,7 @@ export default function App() {
           <Overview
             analysis={analysis}
             filename={filename}
+            pages={docPages}
             onOpenClause={openClause}
             onOriginal={goOriginal}
             onDecision={() => setScreen("decision")}
@@ -375,6 +381,7 @@ export default function App() {
             depth={depth}
             setDepth={setDepth}
             docText={docText}
+            pages={docPages}
             selectedClauseId={selectedInDoc}
             onSelectClause={selectClause}
             onOpenClause={openClause}
@@ -414,6 +421,7 @@ export default function App() {
           setScreen("upload");
           setAnalysis(null);
           setDocText(null);
+          setDocPages(null);
           setAnswer(null);
         }}
       />

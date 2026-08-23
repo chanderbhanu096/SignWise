@@ -67,7 +67,7 @@ interface Strings {
 
   // overview
   glanceHeading: string;
-  fileMeta: (pages: number) => string;
+  fileMeta: (pages: number | null) => string;
   explanationLevel: string;
   depth: Record<Depth, string>;
   findingsHeading: (n: number) => string;
@@ -234,7 +234,7 @@ const EN: Strings = {
   ],
   cancelAnalysis: "Cancel and go back",
   glanceHeading: "Your contract at a glance",
-  fileMeta: (p) => `${p} pages · explained in English`,
+  fileMeta: (p) => (p ? `${p} page${p === 1 ? "" : "s"} · explained in English` : "explained in English"),
   explanationLevel: "Explanation level",
   depth: { simple: "Simple", standard: "Standard", detailed: "Detailed" },
   findingsHeading: (n) => `${n} things to know before you sign`,
@@ -437,7 +437,7 @@ const DE: Strings = {
   ],
   cancelAnalysis: "Abbrechen und zurück",
   glanceHeading: "Ihr Vertrag auf einen Blick",
-  fileMeta: (p) => `${p} Seiten · erklärt auf Deutsch`,
+  fileMeta: (p) => (p ? `${p} Seite${p === 1 ? "" : "n"} · erklärt auf Deutsch` : "erklärt auf Deutsch"),
   explanationLevel: "Erklärungstiefe",
   depth: { simple: "Einfach", standard: "Standard", detailed: "Ausführlich" },
   findingsHeading: (n) => `${n} Dinge, die Sie vor der Unterschrift wissen sollten`,

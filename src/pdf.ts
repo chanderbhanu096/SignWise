@@ -10,7 +10,7 @@ export { verifyQuote } from "./verify";
 //  2. verifying that every quote the model returns actually exists in the document.
 // Non-PDF uploads (DOCX, images) return null — verification is then skipped and the
 // UI says so, rather than pretending a quote was checked.
-export async function extractPdfText(data: ArrayBuffer): Promise<string | null> {
+export async function extractPdfText(data: ArrayBuffer): Promise<{ text: string | null; pages: number | null }> {
   try {
     const doc = await pdfjs.getDocument({ data }).promise;
     const pages: string[] = [];
@@ -19,8 +19,8 @@ export async function extractPdfText(data: ArrayBuffer): Promise<string | null> 
       const content = await page.getTextContent();
       pages.push(content.items.map((it: any) => ("str" in it ? it.str : "")).join(" "));
     }
-    return pages.join("\n\n");
+    return { text: pages.join("\n\n"), pages: doc.numPages };
   } catch {
-    return null;
+    return { text: null, pages: null };
   }
 }
