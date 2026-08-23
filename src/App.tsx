@@ -11,6 +11,7 @@ import {
 } from "./sample";
 import { extractPdfText, verifyQuote } from "./pdf";
 import { narrowRef } from "./document";
+import { styleCurrencyDeep } from "./format";
 import { analyze, ask, translate, ApiError } from "./api";
 import { downloadDeadlineIcs } from "./ics";
 import { Upload } from "./screens/Upload";
@@ -47,10 +48,13 @@ function errMessage(code: string, lang: Lang): string {
 // Client-side provenance check. Only meaningful for real model output — the stub
 // fixture verifies itself, so we trust its flags and skip.
 function verifyAnalysis(a: Analysis, docText: string | null): Analysis {
-  if (a.warnings.includes("stub") || !docText) return a;
+  // One currency notation across the whole screen, including the amounts the model
+  // wrote into its own sentences. Quotes and refs are excluded by styleCurrencyDeep.
+  const styled = styleCurrencyDeep(a, a.money.currency);
+  if (a.warnings.includes("stub") || !docText) return styled;
   return {
-    ...a,
-    clauses: a.clauses.map((c) => ({
+    ...styled,
+    clauses: styled.clauses.map((c) => ({
       ...c,
       verified: verifyQuote(docText, c.quote),
       ref: narrowRef(c.ref, c.quote),
@@ -237,7 +241,7 @@ export default function App() {
     }
     setTranslating(true);
     try {
-      const translated = await translate(analysis, l);
+      const translated = styleCurrencyDeep(await translate(analysis, l), analysis.money.currency);
       langCacheRef.current.set(l, translated);
       setAnalysis(translated);
       setAnswer(null);

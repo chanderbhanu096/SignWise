@@ -187,3 +187,47 @@ renumbered those nine clauses 1–9 — inventing a *third* set of numbers, and
 implying a ranking that filter doesn't produce. A filtered list is every clause at
 a level in document order, so it now carries no rank badge at all. Each row still
 shows its severity chip and its section reference, which is what identifies it.
+
+---
+
+## 5 — Two notations for the same money, sometimes in adjacent cards
+
+**Seen.** On the overview:
+
+    MONATLICHE GESAMTZAHLUNG    1.480,00 EUR      <- model prose
+    JEDEN MONAT                 1.480 €           <- app-formatted
+
+And on "Vor der Unterschrift", the deposit had two cards side by side reading
+`3.540,00 EUR` and `3.540 €`. I had to stop and check whether those were two
+different charges. They are the same charge.
+
+**Cause.** Two writers. Amounts the app computes go through `euro()` → `Intl`
+→ `1.480 €`. Amounts the model writes into its own sentences copy the contract's
+own style → `1.480,00 EUR`. Both are correct German. Together they look like two
+different numbers.
+
+**Worth fixing?** Yes — on a page whose whole job is "here is what this costs",
+making a reader compare two renderings of one figure is the most expensive kind
+of small inconsistency. And it is systemic: every model sentence that names an
+amount was affected.
+
+**Fix, and why this one.** The obvious move is to ask the model for "€". Prompt
+requests are unenforceable and do nothing for an analysis already on screen. So
+this is a rule the app applies, not a request: `styleCurrencyDeep` walks the
+analysis once, on arrival, and rewrites the currency word in every prose field.
+
+Three details that make it safe:
+
+- **`quote` and `ref` are excluded**, along with ids, codes and enum values. A
+  quote must stay exactly as the contract wrote it — that is the thing the
+  verifier checks against the PDF, and the thing a reader compares by eye. Skip
+  by key name, so a field added later is prose by default and only opted out
+  deliberately.
+- **Zero cents only.** `1.480,00 EUR → 1.480 €`, but `12,50 EUR → 12,50 €`.
+  Dropping real cents would be an accuracy loss, not a formatting change.
+- **Non-breaking space** between figure and symbol, so `1.480` and `€` never end
+  up on different lines.
+
+A currency with no symbol in the table (CHF) is left exactly as written rather
+than mangled. Four tests cover the cases above, including the "quotes stay
+verbatim" one, which is the one that would actually hurt if it regressed.
