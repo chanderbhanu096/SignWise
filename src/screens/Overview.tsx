@@ -397,8 +397,8 @@ export function Overview({
                 tabIndex={0}
                 aria-label={
                   analysis.lang === "de"
-                    ? `Balkendiagramm über 12 Monate: Grundbetrag je ${fmt(monthly)}; hervorgehobene Monate enthalten eine zusätzliche Zahlung.`
-                    : `Bar chart over 12 months: base amount ${fmt(monthly)} each; highlighted months include an extra payment.`
+                    ? `Hochrechnung über 12 Monate: Grundbetrag je ${fmt(monthly)}; hervorgehobene Monate enthalten eine zusätzliche Zahlung. Mögliche Erhöhungen sind nicht enthalten.`
+                    : `Projection over 12 months: base amount ${fmt(monthly)} each; highlighted months include an extra payment. Possible increases are not included.`
                 }
               >
                 {bars.map((b, i) => (
@@ -420,6 +420,10 @@ export function Overview({
                   </div>
                 ))}
               </div>
+              {/* The chart holds today's amounts flat for a year. On a contract that
+                  allows an increase — and one of the findings on this very page may
+                  say so — that is a projection, not a forecast. Said, not implied. */}
+              <p className="chart-scale-note">{s.chartProjectionNote}</p>
               {compressed && <p className="chart-scale-note">{s.chartScaleNote}</p>}
               {unplaced.length > 0 && (
                 <ul className="rd-list" style={{ marginTop: 14 }}>

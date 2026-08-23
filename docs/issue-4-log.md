@@ -128,3 +128,26 @@ contents line. `stateClear` and `stateClarify` were then unreferenced and are de
 Standard to grey would have quietly greyed out a positive state. It now has its own
 `--ok-*` green: "clear" is a good outcome, "standard" is a neutral one, and they are
 no longer the same colour by accident.
+
+## 5 · "your cost over 12 months could be misleading as the landlord could increase the money"
+
+**Worth fixing: yes, and this one is not cosmetic.** The chart holds today's rent
+flat across twelve months. On the bundled rental example, one of the five findings
+on the same page is *"Miete kann steigen"* — the page contradicted itself, and the
+half that looked authoritative was the chart.
+
+A tool that tells people what a contract commits them to cannot present a projection
+as if it were a schedule. That is the kind of detail a Ministry of Justice jury reads
+closely.
+
+**Fix.** A line under every chart: *"A projection from the amounts written in your
+contract, assuming they stay the same. Any increase or change your contract allows is
+not included here."* The chart's `aria-label` says "projection" rather than "bar
+chart" for the same reason.
+
+**Why always, not only when an increase clause is detected.** Detecting one means
+keyword-matching a model-written, localized clause title, and the failure mode is
+silent: a contract that permits an increase, matched wrongly, shows a chart that
+claims more certainty than it has. The sentence is true of every projection, so it
+is shown for every projection. One line of copy beats a heuristic that can be wrong
+in the direction that costs the reader money.

@@ -26,6 +26,7 @@ interface Strings {
   translating: string;
   askThinking: string;
   chartScaleNote: string;
+  chartProjectionNote: string;
   newContractTitle: string;
   newContractBody: string;
   newContractCancel: string;
@@ -189,6 +190,8 @@ const EN: Strings = {
   translating: "Translating your analysis…",
   askThinking: "Reading your contract for an answer…",
   chartScaleNote: "Bar heights are compressed so the regular months stay readable. The figures above each bar are exact.",
+  chartProjectionNote:
+    "A projection from the amounts written in your contract, assuming they stay the same. Any increase or change your contract allows is not included here.",
   newContractTitle: "Start with a new contract?",
   newContractBody: "This explanation will be discarded. Download the summary first if you want to keep it.",
   newContractCancel: "Keep this contract",
@@ -392,6 +395,8 @@ const DE: Strings = {
   translating: "Ihre Analyse wird übersetzt…",
   askThinking: "Der Vertrag wird nach einer Antwort durchsucht…",
   chartScaleNote: "Die Balkenhöhen sind gestaucht, damit die regulären Monate lesbar bleiben. Die Beträge über den Balken sind exakt.",
+  chartProjectionNote:
+    "Eine Hochrechnung aus den in Ihrem Vertrag genannten Beträgen, unter der Annahme, dass sie gleich bleiben. Im Vertrag mögliche Erhöhungen oder Änderungen sind hier nicht enthalten.",
   newContractTitle: "Mit einem neuen Vertrag beginnen?",
   newContractBody: "Diese Erklärung wird verworfen. Laden Sie die Zusammenfassung vorher herunter, wenn Sie sie behalten möchten.",
   newContractCancel: "Diesen Vertrag behalten",
