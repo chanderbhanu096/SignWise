@@ -3,6 +3,7 @@ import type { Analysis, Depth } from "../types";
 import { t } from "../i18n";
 import { Severity } from "../components/Severity";
 import { DepthPicker } from "../components/DepthPicker";
+import { splitDocument } from "../document";
 
 // Split view: the contract's own wording on the left (verbatim clause passages,
 // highlighted), the plain-language explanation on the right. Selecting a passage or
@@ -12,6 +13,7 @@ export function Original({
   analysis,
   depth,
   setDepth,
+  docText,
   selectedClauseId,
   onSelectClause,
   onOpenClause,
@@ -20,6 +22,7 @@ export function Original({
   analysis: Analysis;
   depth: Depth;
   setDepth: (d: Depth) => void;
+  docText: string | null;
   selectedClauseId: string | null;
   onSelectClause: (id: string) => void;
   onOpenClause: (id: string) => void;
@@ -34,8 +37,14 @@ export function Original({
   const firstFinding = analysis.clauses.find((c) => c.id === analysis.findings[0]) ?? analysis.clauses[0] ?? null;
   const selected = analysis.clauses.find((c) => c.id === selectedClauseId) ?? firstFinding;
 
-  // Passages in document order.
+  // Passages in document order — the fallback when there is no extracted text to
+  // show (an uploaded image, or a PDF we could not read).
   const ordered = [...analysis.clauses].sort((a, b) => a.page - b.page);
+
+  // With the document itself in hand, the pane shows the whole thing and marks the
+  // passages the findings came from. Without it, the excerpts are all there is.
+  const blocks = docText ? splitDocument(docText, analysis.clauses) : null;
+  const findingNo = new Map(ordered.map((c, i) => [c.id, i + 1]));
 
   useEffect(() => {
     if (!selected || !docRef.current) return;
@@ -77,24 +86,37 @@ export function Original({
           <p className="doc-page">
             {analysis.contractType} · {s.fileMeta(14)}
           </p>
-          {ordered.map((c, i) => (
-            <div
-              key={c.id}
-              className={"doc-clause" + (selected?.id === c.id ? " on" : "")}
-              data-clause={c.id}
-              data-tone={c.level}
-              role="button"
-              tabIndex={0}
-              aria-current={selected?.id === c.id ? "true" : undefined}
-              onClick={() => pick(c.id)}
-              onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), pick(c.id))}
-            >
-              <span className="tag" lang={analysis.lang}>
-                {c.ref} — {analysis.lang === "de" ? "Punkt" : "Finding"} {i + 1}
-              </span>
-              <p style={{ margin: "6px 0 0" }}>{c.quote}</p>
-            </div>
-          ))}
+          {(blocks ?? ordered.map((c) => ({ text: c.quote, clauseId: c.id }))).map((block, i) => {
+            const c = block.clauseId ? analysis.clauses.find((x) => x.id === block.clauseId) : undefined;
+            if (!c) return (
+              <p className="doc-plain" key={i}>
+                {block.text}
+              </p>
+            );
+            // Only the first block of a multi-section passage answers to the clause
+            // id, so scrolling to a finding lands at its start.
+            const first = (blocks ?? []).findIndex((b) => b.clauseId === c.id) === i || !blocks;
+            return (
+              <div
+                key={i}
+                className={"doc-clause" + (selected?.id === c.id ? " on" : "")}
+                data-clause={first ? c.id : undefined}
+                data-tone={c.level}
+                role="button"
+                tabIndex={0}
+                aria-current={selected?.id === c.id ? "true" : undefined}
+                onClick={() => pick(c.id)}
+                onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), pick(c.id))}
+              >
+                {first && (
+                  <span className="tag" lang={analysis.lang}>
+                    {c.ref} — {analysis.lang === "de" ? "Punkt" : "Finding"} {findingNo.get(c.id)}
+                  </span>
+                )}
+                <p style={{ margin: first ? "6px 0 0" : 0 }}>{block.text}</p>
+              </div>
+            );
+          })}
         </div>
 
         <div className="doc-side" ref={sideRef}>

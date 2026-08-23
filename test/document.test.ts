@@ -1,0 +1,69 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { splitDocument } from "../src/document.ts";
+
+// Shaped like real extracted PDF text: one long run of words, sections ending in a
+// full stop before the next heading, and numbered paragraphs inline.
+const DOC = [
+  "Mietvertrag über Wohnraum. Zwischen den Parteien wird folgender Vertrag geschlossen:",
+  "§ 11 Obhutspflichten (1) Der Mieter hat die Mietsache schonend und pfleglich zu behandeln. (2) Zeigt sich ein Mangel der Mietsache, so hat der Mieter dies dem Vermieter unverzüglich anzuzeigen.",
+  "§ 12 Betreten der Mieträume Dem Vermieter ist das Betreten der Mieträume nach vorheriger Ankündigung zu angemessener Tageszeit gestattet.",
+  "§ 13 Gefahr im Verzug Zur Abwendung drohender Gefahren darf der Vermieter die Mieträume auch ohne vorherige Ankündigung betreten.",
+  "§ 14 Mieterhöhung Der Vermieter ist berechtigt, die Miete nach Maßgabe der §§ 558 ff. BGB zu erhöhen. Die Betriebskosten im Sinne des § 2 Betriebskostenverordnung bleiben unberührt.",
+].join("  ");
+
+const words = (s: string) => s.replace(/\s+/g, " ").trim().split(" ").filter(Boolean).length;
+
+test("every section becomes its own block", () => {
+  const blocks = splitDocument(DOC, []);
+  assert.equal(blocks.length, 5); // preamble + four sections
+  assert.deepEqual(
+    blocks.slice(1).map((b) => b.text.slice(0, 5)),
+    ["§ 11 ", "§ 12 ", "§ 13 ", "§ 14 "],
+  );
+});
+
+// The whole point of the screen: it is called "original contract", so no word of the
+// document may go missing between the extraction and the render.
+test("no text is dropped", () => {
+  const blocks = splitDocument(DOC, []);
+  assert.equal(words(blocks.map((b) => b.text).join(" ")), words(DOC));
+});
+
+test("a citation is not mistaken for a heading", () => {
+  const blocks = splitDocument(DOC, []);
+  const increase = blocks.find((b) => b.text.startsWith("§ 14"))!;
+  // both a bare citation and one naming the law in full stay inside the sentence
+  assert.ok(increase.text.includes("§§ 558 ff. BGB"));
+  assert.ok(increase.text.includes("§ 2 Betriebskostenverordnung"));
+});
+
+test("a quote spanning two sections marks both of them", () => {
+  const quote =
+    "Dem Vermieter ist das Betreten der Mieträume nach vorheriger Ankündigung zu angemessener Tageszeit gestattet. Zur Abwendung drohender Gefahren darf der Vermieter die Mieträume auch ohne vorherige Ankündigung betreten.";
+  const marked = splitDocument(DOC, [{ id: "access", quote }]).filter((b) => b.clauseId === "access");
+  assert.equal(marked.length, 2);
+  assert.ok(marked[0].text.startsWith("§ 12"));
+  assert.ok(marked[1].text.startsWith("§ 13"));
+});
+
+test("a quote inside one section marks only that section", () => {
+  const blocks = splitDocument(DOC, [
+    { id: "duty", quote: "Der Mieter hat die Mietsache schonend und pfleglich zu behandeln." },
+  ]);
+  assert.deepEqual(blocks.filter((b) => b.clauseId).map((b) => b.clauseId), ["duty"]);
+});
+
+test("a quote that starts after the heading still marks its section", () => {
+  const blocks = splitDocument(DOC, [
+    { id: "raise", quote: "Der Vermieter ist berechtigt, die Miete nach Maßgabe der §§ 558 ff. BGB zu erhöhen." },
+  ]);
+  const marked = blocks.filter((b) => b.clauseId === "raise");
+  assert.equal(marked.length, 1);
+  assert.ok(marked[0].text.startsWith("§ 14"));
+});
+
+test("numbered paragraphs are broken onto their own lines", () => {
+  const duties = splitDocument(DOC, []).find((b) => b.text.startsWith("§ 11"))!;
+  assert.ok(duties.text.includes("\n(2)"), "the second paragraph did not get its own line");
+});

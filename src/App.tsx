@@ -58,6 +58,9 @@ export default function App() {
   const [sampleKind, setSampleKind] = useState<"rental" | "employment">("rental");
   const [filename, setFilename] = useState(SAMPLE_FILENAME);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
+  // The extracted contract text, kept so the "original contract" screen can show the
+  // document itself rather than a list of the passages the model happened to quote.
+  const [docText, setDocText] = useState<string | null>(null);
   const [depth, setDepth] = useState<Depth>("standard");
   const [clauseId, setClauseId] = useState<string | null>(null);
   const [answer, setAnswer] = useState<{ text: string; clauseId: string | null } | null>(null);
@@ -84,6 +87,7 @@ export default function App() {
       ?.then(({ a, text }) => {
         if (cancelled) return;
         setAnalysis(verifyAnalysis(a, text));
+        setDocText(text);
         setScreen("overview");
       })
       .catch((e) => {
@@ -353,6 +357,7 @@ export default function App() {
             analysis={analysis}
             depth={depth}
             setDepth={setDepth}
+            docText={docText}
             selectedClauseId={selectedInDoc}
             onSelectClause={selectClause}
             onOpenClause={openClause}
@@ -391,6 +396,7 @@ export default function App() {
           setConfirmNew(false);
           setScreen("upload");
           setAnalysis(null);
+          setDocText(null);
           setAnswer(null);
         }}
       />

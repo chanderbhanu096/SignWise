@@ -509,3 +509,45 @@ selection ring following the same colour.
 (`.doc-clause .tag`, `--muted-2`) measured 3.66–3.91:1 against the washes — under AA
 on all three tones, including the teal one that predates any of this. Moving it to
 `--muted` puts every tone at 7.2:1 or better.
+
+---
+
+## Original contract: show the document, not the excerpts
+
+Reported against `Mietvertrag_Aberlestrasse_27.pdf`: the original view merged sections
+(`§§ 12-13`, `§§ 15-16`, `§§ 18-19`) and lost the text between them — "merging could be
+fine but they are missing the details… it's named original so it should be the same as
+the original."
+
+**Root cause: the screen never had the document.** `Original.tsx` rendered
+`analysis.clauses` — the passages the model chose to quote — one after another. So the
+pane called "Originalvertrag" was a list of excerpts. Where a quote covered two
+sections at once the text between them was absent, and any section the model never
+quoted never appeared at all. On the reported contract that hid nine of twenty
+sections, including §13, §16, §17, §19 and §20.
+
+The document text was never missing — `extractPdfText` produces it on upload, it was
+handed to the quote verifier, and then dropped on the floor.
+
+**Fix.** `App` keeps the extracted text; `src/document.ts` splits it into blocks and
+marks the ones a finding came from; `Original` renders every block, highlighted or
+plain. Without extracted text (an image upload, or an unreadable PDF) it falls back to
+the excerpt list, which is then genuinely all there is.
+
+Two details that took measurement rather than guessing, both checked against the
+reported contract:
+
+- **Section headings vs. citations.** Splitting on `§ <n> <Capital>` also split on
+  `§ 2 Betriebskostenverordnung` in the middle of a sentence. A heading now has to
+  follow the end of the previous sentence, and the capital after the number has to be
+  followed by a lower-case letter, so `§ 558 BGB` and `§§ 573, 573c BGB` stay put.
+  Result on the real file: 21 blocks — the preamble and all twenty sections, no false
+  splits.
+- **Matching a quote to a section.** Neither containment direction works on its own:
+  the model quotes from *after* the heading, and a merged quote runs on past the end
+  of the first section. A block is matched when it shares a run of eight consecutive
+  words with the quote, which survives both.
+
+**The guarantee that matters** is that nothing is dropped, and it is asserted in
+`test/document.test.ts` by word count: on the reported contract, 1420 words in and
+1420 words out.
