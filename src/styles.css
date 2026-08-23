@@ -138,7 +138,11 @@ section.screen { padding-top: 40px; }
 
 /* Card */
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 22px; }
-.card + .card { margin-top: 18px; }
+/* No sibling margin on cards. Every place that stacks them already spaces them —
+   .block in normal flow, a gap in .money and .two — and this rule was landing on top
+   of both: it pushed the second and third card of a grid row 18px below the first
+   (they share a row, so they should share a top edge), and in normal flow it beat
+   .block on specificity and cut the 30px section rhythm down to 18px. */
 .block { margin-top: 30px; }
 
 /* Upload */
@@ -327,7 +331,10 @@ section.screen.upload-screen::after {
 /* Money */
 /* align-items: start — grid items stretch by default, which padded the headline
    card out to the height of the detail card beside it. */
-.money { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 18px; margin-top: 16px; align-items: start; }
+/* Flex, not auto-fit grid: with three cards a two-column grid always orphans the
+   last one and leaves a hole beside it. Here the orphan grows to fill its own row. */
+.money { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 18px; margin-top: 16px; }
+.money > .card { flex: 1 1 300px; min-width: 0; }
 .money-big { font-size: clamp(32px, 3.4vw, 40px); font-weight: 700; letter-spacing: -1px; line-height: 1.1; }
 .money-year { color: var(--muted); margin-top: 4px; }
 .money-label { font-size: 13px; color: var(--muted-2); text-transform: uppercase; letter-spacing: 0.04em; }
