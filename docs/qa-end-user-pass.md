@@ -10,7 +10,7 @@ write down what and why.
 
 - Ran the app locally with the **real** Azure model (not the demo fixture).
 - Uploaded the contract the app is actually being judged on:
-  `Mietvertrag_Aberlestrasse_27 (1).pdf` — a 6-page Munich flat rental,
+  `Mietvertrag_Aberlestrasse_27 (1).pdf` — a 4-page Munich flat rental,
   20 numbered sections, German.
 - Walked every screen, clicked every control, and asked of each one:
   1. Do I know where I am and how to get anywhere else?
@@ -118,13 +118,13 @@ announcement and drops the box.
 
 ---
 
-## 3 — The app told me my 6-page contract had 14 pages
+## 3 — The app told me my 4-page contract had 14 pages
 
 **Seen.** Under the heading *"Ihr Vertrag auf einen Blick"*:
 
     Mietvertrag_Aberlestrasse_27 (1).pdf · 14 Seiten · erklärt auf Deutsch
 
-The file is six pages. The same line, with the same 14, also appears at the top
+The file is four pages. The same line, with the same 14, also appears at the top
 of the contract-text view.
 
 **Cause.** Literally this, in two files:
