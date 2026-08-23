@@ -198,3 +198,28 @@ than a plain text run — the hidden sizers use the same markup so they still re
 the correct box. Word wrapping is unaffected: verified at 375px, where the slogans
 break at spaces (`"Erst verstehen, dann " / "unterschreiben."`) with no mid-word
 breaks and no horizontal overflow.
+
+## 9 · "little alignment issue for the box" (screenshot: employment compensation)
+
+**Two thirds of this was already fixed before the issue was picked up**, in
+`f27988f` on master. The screenshot shows the state before that commit:
+
+- the "Brutto pro Monat" card stretched to the full height of its tallest sibling,
+  leaving ~290px of white space under a single number — grid items stretch by
+  default, fixed with `align-items: start` on `.money`;
+- "Weitere mögliche Zahlungen" sat *inside* the "Zusätzliche Vergütung" card, as a
+  block with no amount inside rows that align around one — it is now its own card.
+
+Verified on this branch: the compensation card is 138px tall against its 312px
+neighbour, and the three cards are separate.
+
+**One part of the report was still live, and it is the row alignment itself.**
+`.money-row` was a `flex-wrap: wrap` row, so a label long enough to collide with its
+amount pushed the amount onto a line of its own. On the employment example the total
+row *"Mögliche Gesamtvergütung pro Jahr — 42.480 €"* did exactly that, so two amounts
+sat flush right and the third sat below its label. That is the misalignment, and it
+was introduced by the earlier wrap fix.
+
+Now a two-column grid, `minmax(0, 1fr) auto`: a long label wraps inside its own
+column and the amount stays on the first line, flush right. All four amounts in the
+card now share an edge at the same x (`790`), on one line each, with no overflow.

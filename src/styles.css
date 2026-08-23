@@ -326,8 +326,12 @@ section.screen.upload-screen::after {
 .money-big { font-size: clamp(32px, 3.4vw, 40px); font-weight: 700; letter-spacing: -1px; line-height: 1.1; }
 .money-year { color: var(--muted); margin-top: 4px; }
 .money-label { font-size: 13px; color: var(--muted-2); text-transform: uppercase; letter-spacing: 0.04em; }
-.money-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; padding: 12px 0; border-top: 1px solid var(--line); gap: 2px 12px; }
-.money-row > :first-child { min-width: 0; }
+/* Two columns, not a wrapping flex row: a long label (a total line, a German
+   compound) then wraps inside its own column instead of pushing the amount onto a
+   line of its own, which left one row in the card reading as misaligned against the
+   ones above it. */
+.money-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; padding: 12px 0; border-top: 1px solid var(--line); gap: 2px 12px; }
+.money-row > :last-child { text-align: right; }
 .money-row:first-of-type { border-top: none; }
 .money-row .na { color: var(--muted-2); font-weight: 500; font-style: italic; font-size: 13px; }
 .chart { display: flex; align-items: flex-end; gap: 8px; height: 160px; margin-top: 16px; overflow-x: auto; overflow-y: hidden; }
