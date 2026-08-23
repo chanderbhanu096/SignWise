@@ -223,3 +223,23 @@ was introduced by the earlier wrap fix.
 Now a two-column grid, `minmax(0, 1fr) auto`: a long label wraps inside its own
 column and the amount stays on the first line, flush right. All four amounts in the
 card now share an edge at the same x (`790`), on one line each, with no overflow.
+
+## 10 · "rename overview — we could even ask our own questions; something like Summary and Clarify"
+
+**Worth fixing: yes.** "Overview" describes the first block on the screen and
+undersells the rest of it. The screen carries the findings triage, the money section,
+the dates, the rights and duties — and the one thing no other screen has, a box where
+the reader asks their own question about their own contract and gets an answer that
+links back to the wording. That is the demo's strongest moment and the nav label was
+hiding it.
+
+**Named `3 · Overview & answers` / `3 · Überblick & Antworten`, not "Clarify".**
+"Clarify" is already taken, and taken for the opposite thing: the decision brief's
+*"Questions to clarify"* are the points the contract leaves open, which the reader has
+to take to the landlord or employer. Calling the overview "Clarify" too would put the
+same word on the screen that *answers* questions and the screen that *collects* the
+ones nobody can answer yet — the identical collision that item 4/6 was about. Under
+"answers" the contrast is the right way round: answers here, open questions there.
+
+Checked at 375px: the longer label costs ~65px in a nav strip that is already an
+`overflow-x: auto` scroller, and adds no page overflow.

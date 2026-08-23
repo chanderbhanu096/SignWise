@@ -199,7 +199,7 @@ const EN: Strings = {
   disclaimer: "This tool explains your contract; it does not replace legal advice.",
   disclaimerLong:
     "This tool explains your contract; it does not replace legal advice. For a binding opinion, contact a lawyer or an appropriate advice centre (e.g. a consumer or tenants’ association).",
-  screens: { upload: "1 · Upload", analyzing: "2 · Analysis", overview: "3 · Overview", original: "4 · Original", decision: "5 · Before you sign" },
+  screens: { upload: "1 · Upload", analyzing: "2 · Analysis", overview: "3 · Overview & answers", original: "4 · Original", decision: "5 · Before you sign" },
   mobileView: "Mobile view",
   mobileViewOn: "Mobile view ✓",
   mockupLabel: "Screens",
@@ -404,7 +404,7 @@ const DE: Strings = {
   disclaimer: "Dieses Tool erklärt Ihren Vertrag; es ersetzt keine Rechtsberatung.",
   disclaimerLong:
     "Dieses Tool erklärt Ihren Vertrag; es ersetzt keine Rechtsberatung. Für eine verbindliche Einschätzung wenden Sie sich an einen Anwalt oder eine geeignete Beratungsstelle (z. B. Verbraucher- oder Mieterverein).",
-  screens: { upload: "1 · Hochladen", analyzing: "2 · Analyse", overview: "3 · Überblick", original: "4 · Original", decision: "5 · Vor der Unterschrift" },
+  screens: { upload: "1 · Hochladen", analyzing: "2 · Analyse", overview: "3 · Überblick & Antworten", original: "4 · Original", decision: "5 · Vor der Unterschrift" },
   mobileView: "Mobile Ansicht",
   mobileViewOn: "Mobile Ansicht ✓",
   mockupLabel: "Bildschirme",
