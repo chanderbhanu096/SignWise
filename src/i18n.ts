@@ -165,7 +165,6 @@ interface Strings {
   baseAnnual: string;
   additionalAnnual: string;
   totalAnnual: string;
-  timingUnspecified: string;
   depositBump: string;
   bonusBump: string;
 
@@ -325,7 +324,7 @@ const EN: Strings = {
       subheading: "Based on the amounts written in your contract.",
       monthly: "Every month",
       yearly: "Over one year",
-      extrasHeading: "One-time, at the start",
+      extrasHeading: "Other amounts in this contract",
       chartTitle: "Your cost over 12 months",
       receiveHeading: "You receive",
       payHeading: "You pay",
@@ -372,7 +371,6 @@ const EN: Strings = {
   baseAnnual: "Base annual salary",
   additionalAnnual: "Additional payments",
   totalAnnual: "Potential total annual compensation",
-  timingUnspecified: "Additional payment — timing not specified",
   depositBump: "The first month is higher because of the deposit.",
   bonusBump: "A highlighted month includes a bonus or holiday payment.",
   viewOfficialLaw: "View official law ↗",
@@ -528,7 +526,7 @@ const DE: Strings = {
       subheading: "Basierend auf den in Ihrem Vertrag genannten Beträgen.",
       monthly: "Jeden Monat",
       yearly: "Über ein Jahr",
-      extrasHeading: "Einmalig, zu Beginn",
+      extrasHeading: "Weitere Beträge in diesem Vertrag",
       chartTitle: "Ihre Kosten über 12 Monate",
       receiveHeading: "Sie erhalten",
       payHeading: "Sie zahlen",
@@ -575,7 +573,6 @@ const DE: Strings = {
   baseAnnual: "Jahresgrundgehalt",
   additionalAnnual: "Zusätzliche Zahlungen",
   totalAnnual: "Mögliche Gesamtvergütung pro Jahr",
-  timingUnspecified: "Zusätzliche Zahlung — Zeitpunkt nicht angegeben",
   depositBump: "Der erste Monat ist wegen der Kaution höher.",
   bonusBump: "Ein hervorgehobener Monat enthält eine Bonus- oder Sonderzahlung.",
   viewOfficialLaw: "Gesetz im Original ansehen ↗",

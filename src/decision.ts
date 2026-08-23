@@ -59,10 +59,16 @@ function normalise(
   const clauses = new Map(analysis.clauses.map((clause) => [clause.id, clause]));
   const commitments = uniqueBy(
     [...brief.commitments, ...fallback.commitments].filter((item) => clauses.has(item.clauseId)),
-    // Keep distinct concepts that legitimately share a clause (for example an
-    // indefinite duration and its notice period), while preferring the model's
-    // wording over a derived duplicate of the same concept.
-    (item) => `${item.clauseId}:${commitmentPriority(item)}`,
+    // Keep distinct concepts that legitimately share a clause (an indefinite
+    // duration and its notice period), and drop the same concept twice.
+    //
+    // The discriminator has to be something the reader can see. It used to be
+    // `commitmentPriority`, a keyword score — and the model's deposit card scored
+    // 100 because its explanation contained "Monatsraten" (which matches /monat/)
+    // while the derived one scored 95, so two cards both titled "Kaution", both
+    // showing 3.540 €, both pointing at § 5, sat side by side. Two cards with the
+    // same title on the same clause are a duplicate however they were scored.
+    (item) => `${item.clauseId}:${item.title}`,
   )
     .map((item, index) => ({ item, index }))
     .sort((a, b) => commitmentPriority(b.item) - commitmentPriority(a.item) || a.index - b.index)

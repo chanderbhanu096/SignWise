@@ -100,11 +100,6 @@ export function Overview({
   const depositOverlay = overlay.find((o) => o.it.kind === "deposit") || (category === "expense" ? overlay.find((o) => o.m === 0) : undefined);
   const chartNote = income && overlay.length ? s.bonusBump : depositOverlay ? s.depositBump : "";
 
-  // Amounts we could not confidently place in a month.
-  const unplaced = items.filter(
-    (it) => it.amount != null && it.timingMonth == null && it.freq !== "monthly" && !overlay.some((o) => o.it === it),
-  );
-
   // Income total (only when the document clearly adds an annual amount on top).
   const annualExtras = items.filter((it) => it.freq === "annual" && it.amount != null);
   const showTotal = income && money.yearly != null && annualExtras.length > 0;
@@ -415,21 +410,7 @@ export function Overview({
                   say so — that is a projection, not a forecast. Said, not implied. */}
               <p className="chart-scale-note">{s.chartProjectionNote}</p>
               {compressed && <p className="chart-scale-note">{s.chartScaleNote}</p>}
-              {unplaced.length > 0 && (
-                <ul className="rd-list" style={{ marginTop: 14 }}>
-                  {unplaced.map((it, i) => (
-                    <li className="rd-item" key={"u" + i}>
-                      <span className="rd-mark duty" aria-hidden="true">
-                        •
-                      </span>
-                      <span className="rd-text">
-                        {s.timingUnspecified}: {it.label}
-                        {it.amount != null && <> — {fmt(it.amount)}</>}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
+
             </div>
           )}
         </Section>

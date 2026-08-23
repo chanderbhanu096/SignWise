@@ -156,3 +156,27 @@ test("schema rejects duplicate clause ids because source links would be ambiguou
   analysis.clauses[1].id = analysis.clauses[0].id;
   assert.equal(AnalysisSchema.safeParse(analysis).success, false);
 });
+
+test("the same commitment is not shown twice under two wordings", () => {
+  // The shape that produced two "Kaution" cards on screen: the model's card and the
+  // derived one differ only in explanation, so any score-based key keeps both.
+  const base = sampleAnalysis("de");
+  const deposit = base.clauses.find((c) => /kaution/i.test(c.title))!;
+  // The model's own deposit card. The derived brief always produces one too, on the
+  // same clause, worded differently — which is how two "Kaution" cards reached the
+  // screen. Only the model's wording should survive.
+  const withDup: Analysis = {
+    ...base,
+    decisionSummary: {
+      commitments: [
+        { title: "Kaution", value: "3.000 €", explanation: "Sie dürfen sie in drei gleichen Monatsraten leisten.", clauseId: deposit.id },
+      ],
+      reviewItems: [],
+      understandingQuestions: [],
+      clarificationQuestions: [],
+    },
+  };
+  const kautionen = getDecisionSummary(withDup).commitments.filter((c) => c.title === "Kaution");
+  assert.equal(kautionen.length, 1);
+  assert.match(kautionen[0].explanation, /Monatsraten/);
+});

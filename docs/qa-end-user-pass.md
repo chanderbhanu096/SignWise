@@ -231,3 +231,66 @@ Three details that make it safe:
 A currency with no symbol in the table (CHF) is left exactly as written rather
 than mangled. Four tests cover the cases above, including the "quotes stay
 verbatim" one, which is the one that would actually hurt if it regressed.
+
+---
+
+## 6 — The deposit was on screen twice, and a per-reminder fee was filed as "one-time, at the start"
+
+Two findings from the same card, both about the app asserting things it hadn't
+checked.
+
+### 6a — Two "Kaution" cards, side by side
+
+**Seen.** "Vor der Unterschrift" → *Was Sie zusagen*, cards 2 and 4:
+
+    3.540,00 EUR    Kaution   Sie dürfen die Kaution in drei gleichen Monatsraten leisten.
+    3.540 €         Kaution   Ein zusätzlicher Betrag laut Vertrag.
+
+Same clause, same amount, same title. As a reader I stopped to work out whether
+these were two deposits.
+
+**Cause.** `normalise()` in `decision.ts` merges the model's brief with a derived
+fallback and de-duplicates on
+`` `${item.clauseId}:${commitmentPriority(item)}` `` — a **keyword score** used as
+a concept id. The model's card scored 100 because its explanation contains
+"Monats**raten**", which matches the `/monat/` in the rent pattern. The derived
+card scored 95 via `/kaution/`. Different keys, so both survived.
+
+**Worth fixing?** Yes, and the dedupe key was worth replacing rather than
+patching. A score built to *rank* things was doing duty as an *identity* — a
+category error that will keep producing duplicates on other contracts, just with
+different words.
+
+**Fix.** De-duplicate on `clauseId + title` — what the reader actually sees. Two
+cards with the same title on the same clause are a duplicate no matter how they
+scored; two genuinely different concepts sharing a clause (an indefinite duration
+and its notice period) have different titles and both survive, which was the
+original reason for not keying on `clauseId` alone. The model's wording wins
+because it is merged first. A regression test builds exactly this collision.
+
+### 6b — "Einmalig, zu Beginn"
+
+**Seen.** Under that heading: *"Mahnkosten je schriftlicher Mahnung — 5 €"*. A
+fee charged per reminder letter is neither one-time nor at the start.
+
+**Cause.** `money.oneTime` is really "every amount that is not the monthly
+figure". The heading dated the whole bucket.
+
+**Fix.** The heading no longer claims a timing it cannot know: *"Weitere Beträge
+in diesem Vertrag"* / *"Other amounts in this contract"*. Each row still carries
+its own frequency note and section reference, which is where per-item timing
+belongs. I also added one prompt line so per-event fees go to `money.variable`
+where they belong — but the heading is the fix that works on analyses that
+already exist.
+
+### 6c — And it was listed twice
+
+Under the 12-month chart sat a second list of the same items, prefixed
+*"Zusätzliche Zahlung — Zeitpunkt nicht angegeben"*. So `Mahnkosten` appeared
+once as "one-time, at the start" and once as "timing not specified", about 400px
+apart, contradicting each other.
+
+`unplaced` was every item the chart couldn't place — but the card above the chart
+already lists **every** item, so `unplaced` could only ever be a duplicate of
+something already on screen. Deleted, along with the string it used. Best kind of
+fix.
