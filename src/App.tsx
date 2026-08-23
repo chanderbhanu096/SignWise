@@ -231,6 +231,16 @@ export default function App() {
     }
   }
 
+  // The document's chrome — the screen switcher and the banners that describe an
+  // analysis — belongs to the document screens only. Each of those blocks used to
+  // test `analysis && screen !== "analyzing"` separately, which also renders them
+  // over the landing page for any state that leaves an analysis in memory while the
+  // upload screen is showing. Nothing in today's flow reaches that state (starting
+  // over clears the analysis first), but that is the confirm dialog's discipline
+  // holding it, not the condition — and a reviewer has a screenshot of the landing
+  // page wearing the switcher. Stated once, it cannot drift.
+  const inDocument = !!analysis && screen !== "upload" && screen !== "analyzing";
+
   const openClauseObj = clauseId ? analysis?.clauses.find((c) => c.id === clauseId) ?? null : null;
   const langBtn = (code: Lang, label: string) => (
     <button
@@ -261,7 +271,7 @@ export default function App() {
       </header>
 
       {/* Demo screen switcher — only once there is an analysis to move around in. */}
-      {analysis && screen !== "analyzing" && (
+      {inDocument && (
         <nav className="nav" aria-label={s.mockupLabel}>
           <span className="nav-label">{s.mockupLabel}</span>
           <div className="nav-btns">
@@ -292,7 +302,7 @@ export default function App() {
       )}
 
       {/* Banners */}
-      {analysis?.warnings.includes("stub") && screen !== "upload" && screen !== "analyzing" && (
+      {inDocument && analysis.warnings.includes("stub") && (
         <div className="banner banner-stub">
           <div className="banner-in">
             <span aria-hidden="true">🛈</span>
@@ -300,14 +310,14 @@ export default function App() {
           </div>
         </div>
       )}
-      {analysis?.warnings.includes("translate-stub") && (
+      {inDocument && analysis.warnings.includes("translate-stub") && (
         <div className="banner banner-warn">
           <div className="banner-in">
             {lang === "de" ? "Übersetzung wird aktiv, sobald das Modell verbunden ist." : "Translation activates once the model is connected."}
           </div>
         </div>
       )}
-      {analysis?.confidence === "low" && (
+      {inDocument && analysis.confidence === "low" && (
         <div className="banner banner-warn">
           <div className="banner-in" role="alert">
             <span aria-hidden="true">⚠</span>

@@ -243,3 +243,31 @@ ones nobody can answer yet — the identical collision that item 4/6 was about. 
 
 Checked at 375px: the longer label costs ~65px in a nav strip that is already an
 `overflow-x: auto` scroller, and adds no page overflow.
+
+## 11a · comment: "I don't know what happened here… probably just my browser" (screenshot: the screen switcher on the landing page)
+
+**Could not reproduce, and the fix is still worth making.**
+
+The screenshot shows the upload screen — hero, eyebrow, upload card — with the demo
+screen switcher (`3 · Überblick · 4 · Original · 5 · Vor der Unterschrift`) sitting
+above it. That combination requires `analysis !== null` while `screen === "upload"`.
+
+I traced every route into the upload screen: the "+ new contract" dialog clears the
+analysis before switching, the analysing screen's cancel and the error path are only
+reachable from an upload that already had no analysis. I could not construct the
+state through the UI, and the reporter's own "probably just my browser" is plausible.
+
+**Fixed anyway, because the condition was wrong even where the flow was right.** The
+switcher tested `analysis && screen !== "analyzing"`, and the low-confidence and
+translation banners tested even less than that. What kept the landing page clean was
+the confirm dialog remembering to null the analysis — an invariant enforced by
+discipline in a callback, not by the condition that does the rendering. One
+`inDocument` flag now states it once:
+
+```ts
+const inDocument = !!analysis && screen !== "upload" && screen !== "analyzing";
+```
+
+The switcher and all three analysis banners read from it. The state in the screenshot
+is now unreachable by construction rather than by accident. Verified: overview shows
+the switcher, "start over" returns to a landing page with zero banners and no nav.
