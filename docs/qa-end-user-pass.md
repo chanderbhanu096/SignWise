@@ -149,3 +149,41 @@ tempting move is a plausible constant. That is the same bug again with a nicer
 number. So `pages` is `number | null`, and `fileMeta(null)` simply drops the
 segment — *"Beispiel-Mietvertrag.pdf · erklärt auf Deutsch"*. Nothing invented,
 nothing missing. Singular/plural handled while I was in there.
+
+---
+
+## 4 — The same clause had two different numbers on the same screen
+
+**Seen.** In the contract-text view, the tag above a highlighted passage read:
+
+    §§ 12-13 — Punkt 12
+    § 14 — Punkt 13
+    §§ 15-16 — Punkt 14
+
+Meanwhile the list of findings *directly to the right of it* was numbered 1 to 5.
+There is no Punkt 12. Reading the document, the § 5 Kaution passage was tagged
+"Punkt 5" while the list called the very same clause "3".
+
+**Cause.** Two independent numbering schemes:
+
+- `Original.tsx` built `findingNo` from `[...analysis.clauses].sort(by page)` —
+  a running index over **all 20 clauses**.
+- Everywhere else numbers `analysis.findings`, the top five.
+
+Both call the result "Punkt N".
+
+**Worth fixing?** Yes. This is the exact confusion that produced the original bug
+report ("§§ 12-13 — Finding 12"). A number is an identity claim; two schemes
+under one label means neither can be trusted, and the reader is left trying to
+find "Punkt 12" in a list of five.
+
+**Fix.** There is exactly one numbering: position in `analysis.findings`. A
+passage that is one of the headline findings shows `§ 5 — Punkt 3`; a passage that
+isn't shows just its section, `§ 17`. No clause has a number that doesn't appear
+in a list, and no list has a number the document doesn't use.
+
+**The same bug, second location.** Filtering the overview to "Wichtig 9"
+renumbered those nine clauses 1–9 — inventing a *third* set of numbers, and
+implying a ranking that filter doesn't produce. A filtered list is every clause at
+a level in document order, so it now carries no rank badge at all. Each row still
+shows its severity chip and its section reference, which is what identifies it.

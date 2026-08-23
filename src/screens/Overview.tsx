@@ -129,9 +129,11 @@ export function Overview({
   const counts = Object.fromEntries(
     LEVELS.map((l) => [l, analysis.clauses.filter((c) => c.level === l).length]),
   ) as Record<Level, number>;
-  const shown = filter
-    ? analysis.clauses.filter((c) => c.level === filter).map((c, i) => ({ c, n: i + 1 }))
-    : findings;
+  // A filtered list is every clause at one level, in document order — not a ranking.
+  // Numbering it 1..n invented a second, conflicting set of numbers for clauses that
+  // already have one (their finding number, shown in the contract-text view). The
+  // rank badge belongs to the ranked list only.
+  const shown = filter ? analysis.clauses.filter((c) => c.level === filter).map((c) => ({ c, n: 0 })) : findings;
 
   // Calendar: the first warning-tone (or first available) date with a machine date.
   const deadline = analysis.dates.find((d) => d.tone === "warning" && d.iso) ?? analysis.dates.find((d) => d.iso);
@@ -219,7 +221,7 @@ export function Overview({
         <p className="sr-only" role="status">
           {s.filterShowing(shown.length, analysis.clauses.length)}
         </p>
-        <ol className="findings">
+        <ol className={"findings" + (filter ? " unranked" : "")}>
           {shown.map(({ c, n }) => (
             <li key={c.id}>
               <button
@@ -227,9 +229,11 @@ export function Overview({
                 data-level={c.level}
                 onClick={() => onOpenClause(c.id)}
               >
-                <span className="finding-n" aria-hidden="true">
-                  {n}
-                </span>
+                {n > 0 && (
+                  <span className="finding-n" aria-hidden="true">
+                    {n}
+                  </span>
+                )}
                 <span className="finding-body">
                   <span className="finding-title">{c.title}</span>
                   <span className="finding-meta">

@@ -46,7 +46,11 @@ export function Original({
   // With the document itself in hand, the pane shows the whole thing and marks the
   // passages the findings came from. Without it, the excerpts are all there is.
   const blocks = docText ? splitDocument(docText, analysis.clauses) : null;
-  const findingNo = new Map(ordered.map((c, i) => [c.id, i + 1]));
+  // Only the headline findings carry a number, and it is the number they carry
+  // everywhere else — the overview list and the list in this screen's own side
+  // pane. Numbering every clause in document order (the previous behaviour) meant
+  // a passage tagged "Punkt 12" sat next to a list that stopped at 5.
+  const findingNo = new Map(analysis.findings.map((id, i) => [id, i + 1]));
 
   useEffect(() => {
     if (!selected || !docRef.current) return;
@@ -112,7 +116,10 @@ export function Original({
               >
                 {first && (
                   <span className="tag" lang={analysis.lang}>
-                    {c.ref} — {analysis.lang === "de" ? "Punkt" : "Finding"} {findingNo.get(c.id)}
+                    {c.ref}
+                    {findingNo.has(c.id) && (
+                      <> — {analysis.lang === "de" ? "Punkt" : "Finding"} {findingNo.get(c.id)}</>
+                    )}
                   </span>
                 )}
                 <p style={{ margin: first ? "6px 0 0" : 0 }}>{block.text}</p>

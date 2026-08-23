@@ -314,6 +314,9 @@ section.screen.upload-screen::after {
 .finding-ref { font-size: 13px; color: var(--muted-2); }
 .finding-caret { flex: none; color: var(--muted-2); font-size: 22px; }
 .finding.unverified { opacity: 0.6; }
+/* Filtered = every clause at one level, in document order. No rank, so no badge —
+   the row starts at the title instead of at an empty slot. */
+.findings.unranked .finding { padding-left: 20px; }
 
 /* Elevation carries importance. The clauses that move money, obligations or
    cancellation lift off the page; everything else stays flat, so the eye sorts
