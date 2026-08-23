@@ -551,3 +551,26 @@ reported contract:
 **The guarantee that matters** is that nothing is dropped, and it is asserted in
 `test/document.test.ts` by word count: on the reported contract, 1420 words in and
 1420 words out.
+
+### Follow-up: keep the clauses, drop the personal data
+
+Reported on the same contract: the pane was rendering the party block at the top
+(both names, the tenant's date of birth, both private addresses) and the signature
+block at the bottom (`München, den 12.09.2026  ____  ____  Vermieter  Mieter`).
+
+Both are now removed before the document is split, and the rule is stated as the
+module's purpose: **the pane shows contract terms**. Everything before the first `§`
+heading is the party block; everything from the signature rule onwards, including the
+place-and-date line that precedes it, is the footer. Neither says anything about what
+the reader is agreeing to, and between them they hold the most sensitive personal data
+in the file — on a screen people will show to an advice centre or screenshot for a
+jury.
+
+Every numbered section is still kept whole, `§ 20 Schlussbestimmungen` included: its
+two paragraphs are real terms (written form, severability), so only the signature tail
+below them is cut. Verified against the reported contract: 20 blocks, `§ 1` through
+`§ 20`, with both names, the date of birth, both addresses, the signature rules and
+the signing date all absent.
+
+A document with no `§` headings at all is shown exactly as extracted rather than
+emptied — the party block is dropped only when there is a section to keep instead.

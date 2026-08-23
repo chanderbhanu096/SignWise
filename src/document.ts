@@ -6,6 +6,12 @@
 // section it did not quote never appeared at all. This module keeps the document
 // whole — every word of the extracted text is rendered — and marks up the parts a
 // finding came from.
+//
+// What it deliberately leaves out is everything that is not a contract term: the
+// party block at the top (names, addresses, dates of birth) and the signature block
+// at the bottom. Those carry the most sensitive personal data in the file and say
+// nothing about what the reader is agreeing to, so the pane has no reason to put
+// them on screen. Every numbered section is kept whole.
 
 export type DocBlock = { text: string; clauseId: string | null };
 
@@ -16,7 +22,13 @@ const norm = (s: string) => s.replace(/\s+/g, " ").trim().toLowerCase();
 // end of the previous sentence (a citation sits mid-sentence, as in "im Sinne des
 // § 2 Betriebskostenverordnung"), and the capital after the number must be followed
 // by a lower-case letter ("§ 558 BGB", "§§ 573, 573c BGB" are not headings).
-const HEADING = /(?<=(?:^|[.:!?)])\s*)(?=§\s?\d+[a-z]?\s+[A-ZÄÖÜ][a-zäöüß])/g;
+const HEADING = /(?<=(?:^|[.:!?)\n])\s*)(?=§\s?\d+[a-z]?\s+[A-ZÄÖÜ][a-zäöüß])/g;
+const IS_HEADING = /^§\s?\d+[a-z]?\s+[A-ZÄÖÜ][a-zäöüß]/;
+
+// The signature block: a run of underscores to sign on, usually preceded by "Ort,
+// den <date>", and nothing of substance after it. Cutting from the place-and-date
+// (when it sits right before the rule) removes the whole footer in one go.
+const SIGNATURE = /(?:[A-ZÄÖÜ][^.\n]{0,40},\s*den\s+\d{1,2}\.\d{1,2}\.\d{2,4}\s*)?_{3,}[\s\S]*$/;
 
 // Numbered paragraphs run together on one line once a PDF is flattened to text.
 const PARAGRAPH = / (\(\d{1,2}\)) /g;
@@ -47,13 +59,21 @@ export function splitDocument(
 ): DocBlock[] {
   const quotes = clauses.map((c) => ({ id: c.id, q: norm(c.quote) })).filter((c) => c.q.length >= 8);
 
-  return docText
+  const blocks = docText
+    .replace(SIGNATURE, "")
     .split(HEADING)
     .map((raw) => raw.replace(PARAGRAPH, "\n$1 ").trim())
-    .filter((text) => text.length > 0)
-    .map((text) => {
-      const n = norm(text);
-      const hit = quotes.find((c) => n.includes(c.q)) ?? quotes.find((c) => sharesRun(n, c.q));
-      return { text, clauseId: hit?.id ?? null };
-    });
+    .filter((text) => text.length > 0);
+
+  // Everything before the first section heading is the party block. Dropped only
+  // when there is a heading to drop it in favour of — a document we could not find
+  // any sections in is shown as it came, rather than emptied.
+  const firstSection = blocks.findIndex((text) => IS_HEADING.test(text));
+  const sections = firstSection > 0 ? blocks.slice(firstSection) : blocks;
+
+  return sections.map((text) => {
+    const n = norm(text);
+    const hit = quotes.find((c) => n.includes(c.q)) ?? quotes.find((c) => sharesRun(n, c.q));
+    return { text, clauseId: hit?.id ?? null };
+  });
 }
