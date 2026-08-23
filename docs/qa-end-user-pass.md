@@ -442,3 +442,16 @@ chose.
 the pitch material and clearly wanted — but `docs/` is not a served directory, so
 they stop being published and stop being deployed. Nothing referenced them, so
 nothing broke.
+
+---
+
+## 13 — Wording that described the artefact instead of helping the reader
+
+Three labels, fixed together because they share one failure: they were written
+from the inside.
+
+| Was | Now | Why |
+|---|---|---|
+| `Originalvertrag` / "Original contract" | `Der Vertrag im Wortlaut` / "The contract itself" | "Original" describes provenance — as opposed to a copy? A translation? What the reader wants to know is that these are the contract's own words. |
+| "Hervorgehobene Passagen sind die, aus denen Ihre Punkte stammen." | "Ihr Vertrag vollständig. Markierte Passagen sind die, aus denen ein Punkt stammt — wählen Sie eine aus, um die Erklärung zu sehen." | The old line said what the colours mean and nothing else. It never says the whole contract is here (the thing people were unsure about), and never says the marks are clickable — which is the only interaction on the screen. |
+| "Über die verfügbaren Quellenlinks gelangen Sie zurück zum Wortlaut in Ihrem Vertrag." | "Jeder Punkt hier führt zurück zum Wortlaut, aus dem er stammt." | Nineteen words of officialese ("über die verfügbaren Quellenlinks") for a six-word idea, on a screen whose entire premise is plain language. |
