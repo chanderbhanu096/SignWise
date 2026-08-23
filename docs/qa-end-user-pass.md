@@ -588,3 +588,27 @@ which is a privacy property worth 1.3 MB. Not a QA bug.
   session and has not been rotated since.
 - Deposit instalments as a real concept in the schema, so the chart stops
   overstating month one.
+
+---
+
+## Deploy note
+
+Target: **signwise-hero-7c21** (the host the hero-UI branch used), not the
+master host.
+
+The first attempt failed with a bare `Status Code: 400`. The useful detail was
+three log levels down, in the Oryx build detail:
+
+    error during build: Could not resolve entry module "index.html".
+
+`SCM_DO_BUILD_DURING_DEPLOYMENT` is on for this app, so App Service runs
+`npm run build` itself after unpacking — and my zip contained `dist/`, `src/` and
+`api/` but not `index.html` or `vite.config.ts`, which is what Vite builds *from*.
+Repackaged with the build entry included.
+
+Worth writing down because the surface error says nothing: a zip deploy to an app
+with server-side build enabled needs the **sources**, not just the built output.
+
+The zip is checked before every deploy for `.env*`, the QA test PDF, and
+`marketing/` — the test PDF is the real rental contract, with an address and a
+bank account in it, and it must never reach a public host.
