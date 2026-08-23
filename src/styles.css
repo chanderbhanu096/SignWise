@@ -87,7 +87,8 @@ button { font: inherit; }
 .btn-primary { background: var(--brand); border-color: var(--brand); color: #fff; }
 .btn-primary:hover { background: var(--brand-strong); border-color: var(--brand-strong); color: #fff; }
 .pill { min-width: 44px; min-height: 44px; padding: 0 13px; border-radius: 9px; font-size: 15px; font-weight: 600; cursor: pointer; border: none; background: transparent; color: var(--muted); display: inline-flex; align-items: center; justify-content: center; }
-.pill:hover { background: rgba(255,255,255,0.75); color: var(--brand); }
+.pill:hover:not(:disabled) { background: rgba(255,255,255,0.75); color: var(--brand); }
+.pill:disabled { cursor: progress; opacity: 0.55; }
 .pill[aria-pressed="true"], .pill.on { background: var(--brand); color: #fff; }
 .pill[aria-pressed="true"]:hover, .pill.on:hover { background: var(--brand-strong); color: #fff; }
 
@@ -112,6 +113,10 @@ section.screen { padding-top: 40px; }
 .banner-stub .banner-in { background: #fbf1d8; border: 1px solid #f0dfc0; color: #6b4a00; }
 .banner-warn .banner-in { background: var(--chk-bg); border: 1px solid var(--chk-bd); color: var(--chk-fg); }
 .banner-error .banner-in { background: #fbeceb; border: 1px solid #f0cfcc; color: #7a1a13; }
+.banner-busy .banner-in { align-items: center; background: var(--brand-tint); border: 1px solid var(--imp-bd); color: var(--brand-strong); }
+.spinner { flex: none; width: 15px; height: 15px; border-radius: 50%; border: 2px solid rgba(15,95,107,0.25); border-top-color: var(--brand); animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 2.4s; } }
 
 .disclaimer { margin-top: 28px; padding: 14px 16px; background: #edf2f1; border-radius: 10px; font-size: 14px; color: var(--muted); max-width: 48em; }
 

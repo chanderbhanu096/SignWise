@@ -23,6 +23,7 @@ interface Strings {
   tagline: string;
   slogans: string[]; // rotate one at a time in the header
   languageSelector: string;
+  translating: string;
   askThinking: string;
   chartScaleNote: string;
   newContractTitle: string;
@@ -186,6 +187,7 @@ const EN: Strings = {
     "See the signs. Read between the lines.",
   ],
   languageSelector: "Language",
+  translating: "Translating your analysis…",
   askThinking: "Reading your contract for an answer…",
   chartScaleNote: "Bar heights are compressed so the regular months stay readable. The figures above each bar are exact.",
   newContractTitle: "Start with a new contract?",
@@ -388,6 +390,7 @@ const DE: Strings = {
     "Verträge verständlich gemacht.",
   ],
   languageSelector: "Sprache",
+  translating: "Ihre Analyse wird übersetzt…",
   askThinking: "Der Vertrag wird nach einer Antwort durchsucht…",
   chartScaleNote: "Die Balkenhöhen sind gestaucht, damit die regulären Monate lesbar bleiben. Die Beträge über den Balken sind exakt.",
   newContractTitle: "Mit einem neuen Vertrag beginnen?",
