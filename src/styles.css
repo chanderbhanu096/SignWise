@@ -15,12 +15,20 @@
   --brand-strong: #0a464f;
   --brand-tint: #e0f0f1;
 
-  /* Severity — still deliberately no red. "Important" marks what deserves the
-     reader's attention, not a clause we judge to be invalid or dangerous, and red
-     would say the second thing. It earns its prominence from weight instead: a
-     solid fill against two outlined levels. Standard is neutral grey so it recedes
-     and can never be mistaken for the teal of Important. */
-  --imp-fg: #0a464f; --imp-bg: #e0f0f1; --imp-bd: #b9dbdd;
+  /* Severity — an attention ramp, not a traffic light. One warm scale that only ever
+     cools: deep red solid, amber outlined, grey outlined. The heat is the message —
+     how much of your attention this deserves — and it decreases monotonically, so no
+     level can out-shout the one above it.
+
+     No green in the scale, deliberately. Red at the top is emphasis and the label
+     next to it says so; green at the bottom would be an endorsement — "this clause is
+     fine" — which is the one claim this app refuses to make about anybody's contract.
+     Green stays where it is a fact rather than a verdict (--ok-*: a term the contract
+     states clearly, a right it grants).
+
+     Hue is never the only channel: Important is the only filled badge, and every level
+     carries its own mark and its own word. */
+  --imp-fg: #8f2822; --imp-bg: #fbeceb; --imp-bd: #eccbc8;
   --chk-fg: #8a5300; --chk-bg: #fdf3e2; --chk-bd: #f0dfc0;
   --std-fg: #55666b; --std-bg: #eef2f2; --std-bd: #dae2e2;
   --ok-fg: #1a6d4a; --ok-bg: #eaf5ef; --ok-bd: #cfe6da;
@@ -129,7 +137,7 @@ section.screen { padding-top: 40px; }
 .banner-stub .banner-in { background: #fbf1d8; border: 1px solid #f0dfc0; color: #6b4a00; }
 .banner-warn .banner-in { background: var(--chk-bg); border: 1px solid var(--chk-bd); color: var(--chk-fg); }
 .banner-error .banner-in { background: #fbeceb; border: 1px solid #f0cfcc; color: #7a1a13; }
-.banner-busy .banner-in { align-items: center; background: var(--brand-tint); border: 1px solid var(--imp-bd); color: var(--brand-strong); }
+.banner-busy .banner-in { align-items: center; background: var(--brand-tint); border: 1px solid #b9dbdd; color: var(--brand-strong); }
 .spinner { flex: none; width: 15px; height: 15px; border-radius: 50%; border: 2px solid rgba(15,95,107,0.25); border-top-color: var(--brand); animation: spin 0.7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 2.4s; } }
@@ -303,7 +311,7 @@ section.screen.upload-screen::after {
    the list before the reader has read a word of it. Shadow only — the severity
    chip still does the naming, so this never becomes colour-as-meaning. */
 .finding { transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease; }
-.finding[data-level="important"] { border-color: rgba(168,200,203,0.95); box-shadow: 0 10px 26px rgba(15,95,107,0.11); }
+.finding[data-level="important"] { border-color: rgba(220,196,193,0.95); box-shadow: 0 10px 26px rgba(18,38,43,0.10); }
 /* The loudest level also carries the only accent bar, so the row is readable as
    important before the badge is read. */
 .finding[data-level="important"]::before { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 3px; border-radius: 0 3px 3px 0; background: var(--imp-fg); }

@@ -65,6 +65,58 @@ Both halves of the report are answered: it is clearly brighter in the sense that
 matters (contrast against its surroundings), and it is no longer similar to
 Standard. Flipping to red later is a one-variable change if the team disagrees.
 
+### Revised — a warm attention ramp (red · amber · grey)
+
+Asked to reconsider a traffic light and to decide it myself against the site's palette,
+I changed my mind on half of the argument above. The version shipped first was right
+that Important must be the loudest and wrong about which colour should carry it.
+
+**What was wrong with solid teal.** Teal is the brand: buttons, links, the logo, the
+sticky header. An Important badge in brand teal competes with every interactive
+element on the page. Worse, it left the scale non-monotonic — the middle level
+(amber) was the only warm colour, and warm advances. "Worth checking" could catch the
+eye before "Important" did, which inverts the whole point of having levels.
+
+**Why not the full traffic light either.** The objection I raised to red turns out to
+apply far more strongly to *green*. Red at the top is emphasis, and the word next to it
+("Important") and the note under the chips both say what it means. Green at the bottom
+is an endorsement — it tells the reader *this clause is fine, you can skip it* — and
+that is the one claim this app refuses to make about anybody's contract. A tool that
+never judges validity cannot hand out green lights. So the scale keeps the red half of
+the traffic light and drops the green half.
+
+**What it is now — one warm scale that only ever cools:**
+
+| level | treatment | hue | contrast |
+|---|---|---|---|
+| Important | **solid fill** `#8f2822`, white text | red | 8.42:1 |
+| Worth checking | outlined, `#8a5300` on `#fdf3e2` | amber | 5.76:1 |
+| Standard | outlined, `#55666b` on `#eef2f2` | neutral grey | 5.32:1 |
+
+Heat *is* the message — how much of your attention this deserves — and it decreases at
+every step, in hue (red → amber → neutral), in fill (solid → outline → outline) and in
+contrast (8.42 → 5.76 → 5.32). No level can out-shout the one above it.
+
+**Against the site's palette.** SignWise is a cool teal/petrol world (`#0f5f6b`) on
+near-white, with amber as its one warm accent and red previously reserved for
+`.banner-error`. Deep brick red sits opposite teal on the wheel and directly extends
+the existing amber, so the severity scale becomes one coherent warm run against the
+cool brand instead of borrowing the brand's own colour. It is `#8f2822`, not a signal
+red: serious rather than alarming, and a shade of the error family already in the file.
+
+Green is not removed from the app, only from the severity scale. It stays as `--ok-*`
+where it states a fact rather than a verdict: a term the contract sets out clearly, a
+right it grants.
+
+**Accessibility.** Hue is never the only channel — a red/amber pair is exactly what
+deuteranopia flattens. Important is the only *filled* badge (a non-hue difference), and
+every level carries its own mark (`!` / `△` / `✓`) and its own word. All three clear
+WCAG AA against their backgrounds.
+
+Two supporting fixes: the busy banner had borrowed `--imp-bd` for its border and would
+have turned red, and the important row's box-shadow was a teal glow that read muddy
+under a red accent — now plain ink depth.
+
 ## 3 · "rethink the level, because we are not showing standard things at all — 5 important, 0 in other categories"
 
 **Worth fixing: yes, and this was the most substantive report in the list.** Two
@@ -309,7 +361,7 @@ special case is not worth carrying for a law no consumer contract cites.
 | # | Report | Verdict | Commit |
 |---|---|---|---|
 | 1 | Language switching slow | Fixed (cache + visible wait) | `keep a translated copy per language and show the wait` |
-| 2 | Important tag too similar to Standard | Fixed, **not with red** — argued above | `make the important level the loudest badge and neutralise standard` |
+| 2 | Important tag too similar to Standard | Fixed — warm ramp red · amber · grey, no green light | `make the important level the loudest badge and neutralise standard`, `put the severity levels on one warm ramp` |
 | 3 | Levels show 5 important, 0 of anything else | Fixed — two defects, UI *and* prompt | `count the levels over the whole contract, not the top five` |
 | 4 + 6 | Symbols differ between screens; `?` should be `△` | Fixed — one mark, one meaning | `use one mark for one meaning across the screens` |
 | 5 | 12-month cost chart could mislead | Fixed — stated as a projection | `say the 12-month chart is a projection` |
