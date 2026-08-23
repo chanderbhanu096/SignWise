@@ -10,6 +10,7 @@ import {
   EMPLOYMENT_FILENAME,
 } from "./sample";
 import { extractPdfText, verifyQuote } from "./pdf";
+import { narrowRef } from "./document";
 import { analyze, ask, translate, ApiError } from "./api";
 import { downloadDeadlineIcs } from "./ics";
 import { Upload } from "./screens/Upload";
@@ -47,7 +48,14 @@ function errMessage(code: string, lang: Lang): string {
 // fixture verifies itself, so we trust its flags and skip.
 function verifyAnalysis(a: Analysis, docText: string | null): Analysis {
   if (a.warnings.includes("stub") || !docText) return a;
-  return { ...a, clauses: a.clauses.map((c) => ({ ...c, verified: verifyQuote(docText, c.quote) })) };
+  return {
+    ...a,
+    clauses: a.clauses.map((c) => ({
+      ...c,
+      verified: verifyQuote(docText, c.quote),
+      ref: narrowRef(c.ref, c.quote),
+    })),
+  };
 }
 
 export default function App() {

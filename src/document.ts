@@ -77,3 +77,28 @@ export function splitDocument(
     return { text, clauseId: hit?.id ?? null };
   });
 }
+
+// A finding's "ref" is a label the model writes; its "quote" is verified against the
+// document. When the two disagree the label is the one that is wrong — and it
+// disagreed in a specific, repeatable way: a quote taken entirely from one section
+// was labelled with a range ("§§ 12-13", "§§ 15-16", "§§ 18-19"). The reader then
+// sees a finding that claims two sections while only the first is highlighted, and
+// the second sits there in grey looking broken.
+//
+// So the range is narrowed to what the quote can actually support. A quote that
+// genuinely runs into the next section carries that section's heading with it —
+// that is how the extracted text reads — so requiring the marker to be present is a
+// check rather than a guess.
+const REF_RANGE = /§§\s*(\d+)([a-z]?)\s*[-–—]\s*(\d+)([a-z]?)/;
+
+export function narrowRef(ref: string, quote: string): string {
+  const m = ref.match(REF_RANGE);
+  if (!m) return ref;
+  const from = Number(m[1]);
+  const to = Number(m[3]);
+  if (!(to > from)) return ref;
+  for (let n = from + 1; n <= to; n++) {
+    if (new RegExp(`§\\s?${n}\\b`).test(quote)) return ref; // the quote really does reach that far
+  }
+  return ref.replace(REF_RANGE, `§ ${m[1]}${m[2]}`);
+}

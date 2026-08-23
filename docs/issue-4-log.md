@@ -574,3 +574,36 @@ the signing date all absent.
 
 A document with no `§` headings at all is shown exactly as extracted rather than
 emptied — the party block is dropped only when there is a section to keep instead.
+
+### Follow-up: why §§ 12, 13 and 17 stayed grey
+
+Grey means "no finding points here", and that is the intended reading — but on the
+reported contract two of the three greyed sections were grey for a reason worth
+fixing, and one was not.
+
+**§ 17 (Mehrere Mieter — joint and several liability) was simply never surfaced.**
+The model returned 15 clauses out of 20 sections and left this one out, along with a
+few others. Until the original view showed the whole document, a skipped section was
+invisible; now it is a visible gap. The prompt used to say "every provision that
+shapes the deal, typically 6 to 12", which invites skipping the routine ones — it now
+says explicitly to include every numbered section carrying an obligation, cost,
+deadline or right, rating the routine ones "standard" rather than dropping them, and
+names joint liability, house rules and duties to tolerate maintenance as examples.
+
+**§ 13 was grey while a finding claimed to cover it, and that is a defect.** The
+model labelled a finding `§§ 12-13` whose quote is, word for word, all of § 12 and
+nothing of § 13 — checked against the extracted text: both sentences of that quote
+sit under "§ 12 Betreten der Mieträume", and § 13 "Maßnahmen des Vermieters" is
+different text entirely. The same over-claim appears in `§§ 15-16` (quote is all § 15)
+and `§§ 18-19` (quote is all § 18).
+
+The highlight follows the **quote**, because the quote is the part verified against
+the document; the `ref` is a label the model writes and nothing checked it. So a
+reader saw a finding announcing two sections with only the first one lit up.
+
+Fixed on both sides. The prompt now requires `ref` to name only the section the quote
+is taken from. And because a prompt request is not a check, `narrowRef` enforces it
+client-side: a range is narrowed to its first section unless the quote actually
+carries the later section's heading — which it does when the quote genuinely spans
+them, since the extracted text keeps headings inline. `§§ 12-13` becomes `§ 12`,
+while a quote that really runs across both is left alone. Three tests cover it.

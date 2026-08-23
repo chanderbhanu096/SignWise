@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { splitDocument } from "../src/document.ts";
+import { splitDocument, narrowRef } from "../src/document.ts";
 
 // Shaped like real extracted PDF text: one long run of words, sections ending in a
 // full stop before the next heading, and numbered paragraphs inline.
@@ -88,4 +88,23 @@ test("a quote that starts after the heading still marks its section", () => {
 test("numbered paragraphs are broken onto their own lines", () => {
   const duties = splitDocument(DOC, []).find((b) => b.text.startsWith("§ 11"))!;
   assert.ok(duties.text.includes("\n(2)"), "the second paragraph did not get its own line");
+});
+
+// The reported case: a finding labelled "§§ 12-13" whose quote is entirely § 12, so
+// § 13 rendered unhighlighted while the label claimed to cover it.
+test("a section range is narrowed to what the quote contains", () => {
+  const quote =
+    "Dem Vermieter ist das Betreten der Mieträume nach vorheriger Ankündigung gestattet. Zur Abwendung drohender Gefahren darf der Vermieter die Mieträume auch ohne vorherige Ankündigung betreten.";
+  assert.equal(narrowRef("§§ 12-13 Betreten · Seite 4", quote), "§ 12 Betreten · Seite 4");
+  assert.equal(narrowRef("§§ 18-19 · Seite 6", "Die beigefügte Hausordnung ist Bestandteil."), "§ 18 · Seite 6");
+});
+
+test("a range the quote really spans is left alone", () => {
+  const quote = "§ 12 Betreten Dem Vermieter ist das Betreten gestattet. § 13 Gefahr Zur Abwendung darf er auch ohne Ankündigung betreten.";
+  assert.equal(narrowRef("§§ 12-13 · Seite 4", quote), "§§ 12-13 · Seite 4");
+});
+
+test("a plain single-section ref is untouched", () => {
+  assert.equal(narrowRef("§ 14 Mieterhöhung · Seite 5", "Der Vermieter ist berechtigt zu erhöhen."), "§ 14 Mieterhöhung · Seite 5");
+  assert.equal(narrowRef("Clause 4 · page 2", "Anything at all."), "Clause 4 · page 2");
 });
