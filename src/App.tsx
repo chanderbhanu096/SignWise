@@ -282,24 +282,33 @@ export default function App() {
         </div>
       </header>
 
-      {/* Demo screen switcher — only once there is an analysis to move around in. */}
+      {/* The three views of one contract. They are destinations, not wizard steps —
+          you can read them in any order — so they are tabs, without step numbers.
+          "New contract" is not a fourth view of this contract; it throws this one
+          away, so it sits outside the tab group and never scrolls out of reach. */}
       {inDocument && (
         <nav className="nav" aria-label={s.mockupLabel}>
-          <span className="nav-label">{s.mockupLabel}</span>
-          <div className="nav-btns">
-            <button className={"nav-btn" + (screen === "overview" ? " on" : "")} aria-current={screen === "overview" ? "page" : undefined} onClick={() => setScreen("overview")}>
-              {s.screens.overview}
-            </button>
-            <button className={"nav-btn" + (screen === "original" ? " on" : "")} aria-current={screen === "original" ? "page" : undefined} onClick={goOriginal}>
-              {s.screens.original}
-            </button>
-            <button className={"nav-btn" + (screen === "decision" ? " on" : "")} aria-current={screen === "decision" ? "page" : undefined} onClick={() => setScreen("decision")}>
-              {s.screens.decision}
-            </button>
-            <button className="nav-btn" onClick={() => setConfirmNew(true)}>
-              {lang === "de" ? "+ Neuer Vertrag" : "+ New contract"}
-            </button>
+          <div className="nav-tabs">
+            {([
+              ["overview", s.screens.overview, () => setScreen("overview")],
+              ["original", s.screens.original, goOriginal],
+              ["decision", s.screens.decision, () => setScreen("decision")],
+            ] as const).map(([id, label, go]) => (
+              <button
+                key={id}
+                className={"nav-btn" + (screen === id ? " on" : "")}
+                aria-current={screen === id ? "page" : undefined}
+                onClick={go}
+              >
+                {label}
+              </button>
+            ))}
           </div>
+          <button className="nav-new" onClick={() => setConfirmNew(true)} title={s.newContract}>
+            <span aria-hidden="true">+</span>
+            <span className="nav-new-label">{s.newContract}</span>
+            <span className="sr-only">{s.newContract}</span>
+          </button>
         </nav>
       )}
 

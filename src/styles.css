@@ -40,6 +40,10 @@ body { background: var(--bg); color: var(--ink); line-height: 1.5; -webkit-font-
 h1, h2, h3 { line-height: 1.15; letter-spacing: -0.3px; }
 button { font: inherit; }
 :focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; border-radius: 6px; }
+/* Screens move focus to their heading so a screen reader announces the new view.
+   The heading is not interactive, so the ring tells a sighted reader nothing and
+   reads as a stray box drawn around the page title. Announce, don't outline. */
+[tabindex="-1"]:focus, [tabindex="-1"]:focus-visible { outline: none; }
 
 /* clip, not hidden: the auras bleed past the viewport edge and would otherwise
    add a horizontal scrollbar, and `hidden` here would break the sticky header. */
@@ -109,11 +113,15 @@ button { font: inherit; }
 .pill[aria-pressed="true"]:hover, .pill.on:hover { background: var(--brand-strong); color: #fff; }
 
 /* Screen nav (demo affordance) */
-.nav { max-width: var(--shell); margin: 0 auto; padding: 14px 20px 0; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-.nav-label { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted-2); }
-.nav-btns { display: flex; flex-wrap: wrap; gap: 8px; }
-.nav-btn { min-height: 44px; padding: 0 14px; border-radius: 9px; font-size: 14px; font-weight: 600; cursor: pointer; border: 1px solid var(--line); background: var(--surface); color: var(--muted); }
+/* Three equal tabs that always fit, plus a "new contract" button that is not one
+   of them. The tab group is the flexible part; the button never shrinks, so on a
+   narrow phone the tabs get tighter instead of pushing it off the screen. */
+.nav { max-width: var(--shell); margin: 0 auto; padding: 14px 20px 0; display: flex; gap: 10px; align-items: stretch; }
+.nav-tabs { flex: 1 1 auto; min-width: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.nav-btn { min-height: 44px; padding: 8px 12px; border-radius: 9px; font-size: 14px; font-weight: 600; cursor: pointer; border: 1px solid var(--line); background: var(--surface); color: var(--muted); text-align: center; line-height: 1.25; }
 .nav-btn.on { border-color: var(--brand); background: var(--brand-tint); color: var(--brand); }
+.nav-new { flex: 0 0 auto; min-height: 44px; padding: 0 14px; border-radius: 9px; font-size: 14px; font-weight: 600; cursor: pointer; border: 1px dashed var(--line-2); background: transparent; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
+.nav-new:hover { border-color: var(--brand); color: var(--brand); }
 
 .shell { margin: 0 auto; padding: 0 20px; }
 .shell.wide { max-width: var(--shell); }
@@ -598,10 +606,14 @@ li.law-ref > .law-ref-label { display: inline-block; padding: 6px 2px; } /* plai
   .pill { min-width: 42px; padding: 0 9px; font-size: 14px; }
   /* The screen switcher wrapped onto four rows and ate the first screenful.
      One swipeable row instead; the nav keeps its accessible name without the label. */
-  .nav { padding: 10px 12px 0; gap: 8px; }
-  .nav-label { display: none; }
-  .nav-btns { width: 100%; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
-  .nav-btn { flex: none; padding: 0 12px; font-size: 13px; }
+  .nav { padding: 10px 12px 0; gap: 6px; }
+  .nav-tabs { gap: 6px; }
+  .nav-btn { padding: 6px 6px; font-size: 12.5px; }
+  /* Phone: the label would cost a tab's worth of width. The + keeps its
+     accessible name from the .sr-only span. */
+  .nav-new { padding: 0 12px; }
+  .nav-new-label { display: none; }
+  .nav-new span[aria-hidden] { font-size: 20px; line-height: 1; }
   /* Cards, rows and controls that were a few pixels over the edge */
   .card { padding: 18px; }
   .money-row { gap: 10px; }
