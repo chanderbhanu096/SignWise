@@ -42,6 +42,22 @@ test("law citations map to official gesetze-im-internet URLs; unknowns do not", 
   assert.equal(getOfficialLawUrl("BGB", undefined), null);
 });
 
+// A law that was re-enacted keeps a dated slug, so the abbreviation is not the URL.
+// These four were checked against live section pages; getting one wrong produces a
+// link to a 404 that still claims to be the official source, which is worse than the
+// plain-text fallback.
+test("re-enacted laws map to their dated slug, not their abbreviation", () => {
+  assert.equal(getOfficialLawUrl("TKG", "§ 56"), "https://www.gesetze-im-internet.de/tkg_2021/__56.html");
+  assert.equal(getOfficialLawUrl("VVG", "§ 8"), "https://www.gesetze-im-internet.de/vvg_2008/__8.html");
+  assert.equal(getOfficialLawUrl("MuSchG", "§ 3"), "https://www.gesetze-im-internet.de/muschg_2018/__3.html");
+  assert.equal(getOfficialLawUrl("BBiG", "§ 15"), "https://www.gesetze-im-internet.de/bbig_2005/__15.html");
+});
+
+test("the laws a rental contract actually cites are linkable", () => {
+  assert.equal(getOfficialLawUrl("BetrKV", "§ 2"), "https://www.gesetze-im-internet.de/betrkv/__2.html");
+  assert.equal(getOfficialLawUrl("HeizkostenV", "§ 7"), "https://www.gesetze-im-internet.de/heizkostenv/__7.html");
+});
+
 test("employment fixture (both languages) satisfies the schema and cites § 622 BGB", () => {
   for (const lang of ["de", "en"] as const) {
     const a = employmentAnalysis(lang);

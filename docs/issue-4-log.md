@@ -271,3 +271,33 @@ const inDocument = !!analysis && screen !== "upload" && screen !== "analyzing";
 The switcher and all three analysis banners read from it. The state in the screenshot
 is now unreachable by construction rather than by accident. Verified: overview shows
 the switcher, "start over" returns to a landing page with zero banners and no nav.
+
+## 11b · comment: "§ 2 BetrKV does not turn into a forward link"
+
+**Worth fixing: yes, and it uncovered two links that were already broken.**
+
+**Root cause.** Law citations are mapped to gesetze-im-internet.de through a
+deliberate allow-list, and anything not on it renders as plain text rather than a
+guessed URL. `BetrKV` (Betriebskostenverordnung) — the single most-cited regulation in
+a German tenancy after the BGB itself — was not on the list. The fallback worked
+exactly as designed; the list was too short.
+
+**What checking the list turned up.** Verifying every slug against a live section page
+showed that `tkg` and `vvg` both 404. A German law that is re-enacted gets a dated
+slug, and both had moved: `tkg_2021` and `vvg_2008`. Those two are the telecom and
+insurance statutes — the two contract types the app names in its own suggestion
+sets — and they were not falling back to plain text. They were rendering a working-
+looking link, labelled "View official law ↗", straight to a 404. That is a worse
+failure than the one reported, and nothing in the app surfaced it.
+
+**Fix.** The allow-list now covers what consumer contracts actually cite: BetrKV,
+HeizkostenV and ZPO for renting; ArbSchG, BBiG, MuSchG and BEEG for employment;
+UWG, UKlaG, PAngV, FernUSG, ProdHaftG, BDSG and TTDSG for subscriptions, insurance and
+consumer protection — with `tkg` and `vvg` corrected. Every slug was checked with a
+request to a real section page (`/betrkv/__2.html`, `/tkg_2021/__56.html`, …), not
+inferred from the abbreviation.
+
+Two tests were added, covering the dated-slug cases and the rental citations, so the
+next re-enactment fails in CI rather than in front of a reader. GG was left off
+deliberately: the Grundgesetz uses `art_13.html` rather than `__13.html`, and one
+special case is not worth carrying for a law no consumer contract cites.

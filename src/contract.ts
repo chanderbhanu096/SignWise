@@ -63,22 +63,43 @@ export function getContractSuggestions(contractType: string, lang: Lang): string
 // Deterministic, allow-listed mapping from a German legal citation to its official
 // text on gesetze-im-internet.de. Returns null when we cannot safely map it, so the
 // UI shows the citation as plain text rather than a guessed (possibly wrong) link.
+// The slug is not always the abbreviation: a law that was re-enacted keeps a dated
+// slug (TKG 2021, VVG 2008, MuSchG 2018). Every entry here has been checked against
+// a real section page on gesetze-im-internet.de; test/contract.test.ts guards the
+// shape, and an unknown abbreviation still falls through to plain text.
 const LAW_SLUGS: Record<string, string> = {
   bgb: "bgb", // Bürgerliches Gesetzbuch
   hgb: "hgb",
   gewo: "gewo",
+  // Renting
+  betrkv: "betrkv", // Betriebskostenverordnung
+  heizkostenv: "heizkostenv", // Heizkostenverordnung
+  zpo: "zpo", // Zivilprozessordnung
+  // Employment
   tzbfg: "tzbfg", // Teilzeit- und Befristungsgesetz
   burlg: "burlg", // Bundesurlaubsgesetz
   kschg: "kschg", // Kündigungsschutzgesetz
   arbzg: "arbzg", // Arbeitszeitgesetz
+  arbschg: "arbschg", // Arbeitsschutzgesetz
   entgfg: "entgfg", // Entgeltfortzahlungsgesetz
   nachwg: "nachwg", // Nachweisgesetz
   tvg: "tvg",
   milog: "milog", // Mindestlohngesetz
   agg: "agg",
   betrvg: "betrvg",
-  tkg: "tkg", // Telekommunikationsgesetz
-  vvg: "vvg", // Versicherungsvertragsgesetz
+  bbig: "bbig_2005", // Berufsbildungsgesetz
+  muschg: "muschg_2018", // Mutterschutzgesetz
+  beeg: "beeg", // Bundeselterngeld- und Elternzeitgesetz
+  // Subscriptions, insurance, consumer
+  tkg: "tkg_2021", // Telekommunikationsgesetz
+  vvg: "vvg_2008", // Versicherungsvertragsgesetz
+  uwg: "uwg_2004", // Gesetz gegen den unlauteren Wettbewerb
+  uklag: "uklag", // Unterlassungsklagengesetz
+  pangv: "pangv_2022", // Preisangabenverordnung
+  fernusg: "fernusg", // Fernunterrichtsschutzgesetz
+  prodhaftg: "prodhaftg",
+  bdsg: "bdsg_2018", // Bundesdatenschutzgesetz
+  ttdsg: "ttdsg",
   estg: "estg",
 };
 
