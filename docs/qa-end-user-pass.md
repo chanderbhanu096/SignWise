@@ -353,3 +353,92 @@ contract. The extra spaces are an artefact of *how the page was set*, not
 something the document says, and removing them makes the pane look more like the
 printed original rather than less. A test asserts both halves: no double spaces
 left, line breaks still there.
+
+---
+
+## 9 — The headline hung 380px off to the left while it typed
+
+**Seen.** At 1440px, mid-animation, the hero read
+
+    Erst                                                 [empty half a screen]
+              Laden Sie Ihren Vertrag hoch und sehen Sie…
+
+The typewriter headline was hard against the left of the band while the paragraph
+under it was centred. At narrow widths you don't see it, because the line finishes
+typing and fills the box — which is why it survived this long.
+
+**Cause, and why the obvious reading is wrong.** An earlier pass fixed a real
+1.61px horizontal shimmer by giving every character its own inline box and keeping
+the *untyped* characters in the flow with `visibility: hidden`, reserving the full
+final width. That does hold the line perfectly still. It also means the visible
+text always starts at the left edge of a box sized for the finished sentence — so
+a centred headline is only centred on the last keystroke. The cure was ~380px; the
+disease was 1.61px.
+
+**Worth fixing?** Yes. This is the first thing anyone sees, and "our headline is
+stuck to the left" is a louder defect than a sub-pixel wobble nobody reported.
+
+**Fix.** `.slogan-ch.off { display: none }` — untyped characters take no space, so
+the typed text shrink-wraps and stays centred. Both of the original properties are
+kept, by two mechanisms that were already there:
+
+- **No page reflow:** the invisible `.slogan-sizer` copies of every slogan sit in
+  the same grid cell and hold the box at the largest line's width and height. The
+  card below never moves.
+- **No shimmer:** one inline box per character. Appending a character cannot
+  re-snap the ones before it, which was the actual cause of the 1.61px.
+
+The line does now grow outward from the centre, which is what a centred typewriter
+is supposed to look like — motion by design, not the irregular wobble that was
+fixed before.
+
+**Measured, not eyeballed.** 26 samples across a full type-and-erase cycle:
+centre offset `0px` at every text length, hero box `44 × 805` at every sample.
+
+---
+
+## 10 — "Dein Vertrag" / "Laden Sie Ihren Vertrag hoch"
+
+**Seen.** The rotating headline said **"Dein Vertrag, einfach erklärt"** — *du* —
+directly above a paragraph addressing the reader as **Sie**. A scan of every
+German string in `i18n.ts` found exactly one informal address: this line.
+
+**Worth fixing?** Yes, and it is a one-word fix. In German, mixing *du* and *Sie*
+30px apart is not a stylistic preference, it reads as an error — and this is a
+legal-information product under a Ministry of Justice patronage, where the formal
+register is the right one and the inconsistency is the kind of thing a German
+reader notices before they read anything else.
+
+**Fix.** "Ihr Vertrag, einfach erklärt." The other two slogans were already neutral.
+
+---
+
+## 11 — "Add deadline to calendar" — which deadline?
+
+**Seen.** The dates section lists three entries and offers one button:
+*"Frist zum Kalender hinzufügen"*. It silently exports the first warning-toned
+date. Nothing on the button says which of the three you are about to put in your
+calendar, and you only find out after the `.ics` downloads and opens.
+
+**Fix.** The button names its date: *"30.09.2028 in den Kalender übernehmen"*.
+The selection logic was already right; it just wasn't saying what it had picked.
+
+---
+
+## 12 — 14 MB of pitch material was published with the app
+
+**Seen.** Not on screen — in `public/`. `public/marketing/` held 14 MB of
+whiteboard PNGs, a GIF, a **.pptx** and a **.zip**. Nothing in `src/`,
+`index.html` or the API references any of it.
+
+Anything in `public/` is copied verbatim into `dist/` and served, so all of it was
+shipping in every zip deploy and sitting at a guessable URL on the live site.
+
+**Worth fixing?** Yes, on both counts: it is dead weight in every deploy, and the
+pitch deck being publicly fetchable from the demo host is not something anyone
+chose.
+
+**Fix.** `git mv public/marketing docs/marketing`. The files are kept — they are
+the pitch material and clearly wanted — but `docs/` is not a served directory, so
+they stop being published and stop being deployed. Nothing referenced them, so
+nothing broke.
