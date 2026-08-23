@@ -33,6 +33,13 @@ const SIGNATURE = /(?:[A-ZÄÖÜ][^.\n]{0,40},\s*den\s+\d{1,2}\.\d{1,2}\.\d{2,4}
 // Numbered paragraphs run together on one line once a PDF is flattened to text.
 const PARAGRAPH = / (\(\d{1,2}\)) /g;
 
+// Justified PDF text extracts with the inter-word padding still in it, so the pane
+// showed "Die erste Rate ist zu  Beginn" and "Ablauf des  zwölften Monats". Those
+// gaps are an artefact of how the page was typeset, not something the contract says
+// — collapsing them makes the pane look *more* like the printed original, not less.
+// Line structure is left alone.
+const PAD = /[^\S\n]{2,}/g;
+
 // How a block is recognised inside a quote. Exact containment is tried first, but
 // a quote and a section rarely line up at both ends: the model quotes from after
 // the section heading, and a quote covering several sections runs on past the end
@@ -62,7 +69,7 @@ export function splitDocument(
   const blocks = docText
     .replace(SIGNATURE, "")
     .split(HEADING)
-    .map((raw) => raw.replace(PARAGRAPH, "\n$1 ").trim())
+    .map((raw) => raw.replace(PAD, " ").replace(PARAGRAPH, "\n$1 ").trim())
     .filter((text) => text.length > 0);
 
   // Everything before the first section heading is the party block. Dropped only

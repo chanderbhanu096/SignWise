@@ -457,7 +457,13 @@ section.screen.upload-screen::after {
 .doc-page { font-size: 12px; color: var(--muted-2); text-transform: uppercase; letter-spacing: 0.05em; }
 .doc h2 { font-size: 18px; margin: 12px 0; }
 .doc p { color: var(--ink-2); margin: 12px 0; }
-.doc-clause { border-left: 3px solid var(--brand); background: var(--brand-tint); padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 12px 0; cursor: pointer; }
+/* The document is a document first. A "standard" clause is one with nothing to
+   flag, so it gets no wash — only a grey rail marking it as a passage you can open.
+   On this contract 7 of 20 sections are standard, and tinting them (in the brand
+   colour, no less) left the page with no neutral ground at all: 20 of 20 blocks
+   coloured, which makes "highlighted passages are the ones your points came from"
+   a claim about nothing. Tint is now spent only where there is something to say. */
+.doc-clause { border-left: 3px solid var(--line-2); background: transparent; padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 12px 0; cursor: pointer; }
 .doc-clause[data-tone="important"] { border-left-color: var(--imp-fg); background: var(--imp-bg); }
 .doc-clause[data-tone="check"] { border-left-color: #b8860b; background: var(--chk-bg); }
 /* --muted-2 on a tinted wash came out at 3.7:1, under AA, on all three tones —
@@ -471,9 +477,11 @@ section.screen.upload-screen::after {
 .doc-clause { scroll-margin-top: 84px; } /* clears the sticky header when the page scrolls to a passage */
 .doc-clause:hover { box-shadow: inset 0 0 0 1px var(--line-2); }
 /* The passage the explanation currently describes. Ring + weight, not colour alone. */
-.doc-clause.on { box-shadow: 0 0 0 2px var(--brand); }
-.doc-clause[data-tone="important"].on { box-shadow: 0 0 0 2px var(--imp-fg); }
-.doc-clause[data-tone="check"].on { box-shadow: 0 0 0 2px var(--chk-fg); }
+/* Selection has to beat severity: the passage you just clicked is the one you are
+   reading, whatever level it is. It gets the ring *and* a lift off the page. */
+.doc-clause.on { box-shadow: 0 0 0 2px var(--brand), 0 8px 20px rgba(18,38,43,0.10); background: var(--brand-tint); }
+.doc-clause[data-tone="important"].on { box-shadow: 0 0 0 2px var(--imp-fg), 0 8px 20px rgba(18,38,43,0.10); background: var(--imp-bg); }
+.doc-clause[data-tone="check"].on { box-shadow: 0 0 0 2px var(--chk-fg), 0 8px 20px rgba(18,38,43,0.10); background: var(--chk-bg); }
 .finding.on { border-color: var(--brand); background: var(--brand-tint); }
 .expl-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
 .doc-side { position: sticky; top: 84px; }

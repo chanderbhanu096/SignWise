@@ -294,3 +294,62 @@ apart, contradicting each other.
 already lists **every** item, so `unplaced` could only ever be a duplicate of
 something already on screen. Deleted, along with the string it used. Best kind of
 fix.
+
+---
+
+## 7 — Every section of the contract was highlighted, so none of them were
+
+**Seen.** The contract-text view, scrolled top to bottom on the real rental
+contract: **20 of 20 blocks had a coloured background.** Nine pink, four amber,
+seven teal. The subtitle above it reads *"Hervorgehobene Passagen sind die, aus
+denen Ihre Punkte stammen"* — highlighted passages are the ones your points came
+from — while pointing at a document with no un-highlighted passage in it.
+
+Two things made it worse:
+
+- "Standard" clauses were tinted with **`--brand-tint`**, the same teal as the
+  active tab and the primary button. An ordinary clause looked selected.
+- The **selected** passage was distinguished only by a slightly heavier border.
+  Against 19 other coloured blocks it did not read as selected at all.
+
+**Worth fixing?** Yes. Highlighting is a claim about scarcity; spend it on
+everything and you have spent it on nothing. This is also the screen a juror will
+scroll to check whether the analysis is really about *this* document, and a wall
+of pink says "everything is alarming", which is the opposite of the product's
+stated position that colour means attention and never validity.
+
+**Fix.**
+
+- `standard` loses its wash entirely — transparent background, grey rail. A
+  standard clause is one with nothing to flag, so it should look like the page.
+  The rail keeps it visibly clickable.
+- `check` and `important` keep their amber and red tints. Now they are the only
+  colour on screen, which is what makes them mean something. On this contract:
+  13 marked, 7 plain.
+- Selection now beats severity — the ring plus a background and a drop shadow, so
+  the passage you clicked lifts off the page whatever its level.
+
+**Not changed:** the tint colours themselves. They were chosen for contrast in an
+earlier pass and still pass; the bug was how many blocks wore them.
+
+---
+
+## 8 — "Die erste Rate ist zu  Beginn fällig"
+
+**Seen.** Double spaces scattered through the contract-text pane: *"zu  Beginn"*,
+*"Ablauf des  zwölften Monats"*, *"Die Beschaffung weiterer Schlüssel"*.
+
+**Cause.** The PDF is justified. `pdfjs` reports the inter-word padding the
+typesetter inserted, and we render it literally.
+
+**Worth fixing?** Small, but this is the pane whose entire promise is "this is
+your contract as it is written", so it is the one place where looking subtly
+wrong costs the most. It reads as a rendering defect.
+
+**Fix.** Collapse runs of horizontal whitespace to one space, in `splitDocument`,
+using `[^\S\n]{2,}` so newlines — which carry the paragraph structure — are
+untouched. Worth being clear about the reasoning: this does not edit the
+contract. The extra spaces are an artefact of *how the page was set*, not
+something the document says, and removing them makes the pane look more like the
+printed original rather than less. A test asserts both halves: no double spaces
+left, line breaks still there.

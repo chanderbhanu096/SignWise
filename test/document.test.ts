@@ -108,3 +108,11 @@ test("a plain single-section ref is untouched", () => {
   assert.equal(narrowRef("§ 14 Mieterhöhung · Seite 5", "Der Vermieter ist berechtigt zu erhöhen."), "§ 14 Mieterhöhung · Seite 5");
   assert.equal(narrowRef("Clause 4 · page 2", "Anything at all."), "Clause 4 · page 2");
 });
+
+test("justification padding is collapsed, line structure is not", () => {
+  const doc = "§ 1 Mietsache\n(1) Die erste Rate ist zu  Beginn  fällig.\n(2) Ablauf des  zwölften Monats.";
+  const [block] = splitDocument(doc, []);
+  assert.ok(!/ {2}/.test(block.text), block.text);
+  assert.ok(block.text.includes("zu Beginn fällig"));
+  assert.ok(block.text.includes("\n(2)"));
+});
