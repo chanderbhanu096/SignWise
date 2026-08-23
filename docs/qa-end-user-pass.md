@@ -521,3 +521,70 @@ the bug I would have shipped if I had stopped at "the code looks right". Fixed a
 re-checked:
 
     Beispiel-Mietvertrag_Kastanienallee.pdf · erklärt auf Deutsch   [Demo-Modus banner]
+
+---
+
+## Looked at, deliberately not changed
+
+Recording these matters as much as the fixes — a QA pass that only lists changes
+looks like everything else was fine, and some of these were close calls.
+
+**The address and the IBAN in the contract text.** § 1 shows the flat's full
+address; § 4 shows the landlord's IBAN. Tempting to strip, and an earlier pass did
+remove the party block and the signature block. Those were right: names, dates of
+birth and signature lines are *about the people*, not about the deal, and the
+screen is no worse without them. The address and the account are **terms of the
+contract** — where you are renting, where the money goes. A view called "the
+contract in full" that quietly deletes clauses is a worse product than one that
+shows the contract. Left as written.
+
+**The bar chart puts the whole deposit in month one.** The contract splits it into
+three instalments, and a right listed further down the same page says so. The
+schema has no notion of instalments, so the chart cannot know. Adding one would
+mean a schema change, a prompt change and a chart change to fix one cosmetic
+overstatement on a chart already captioned as a projection. Instead the label now
+carries it — *"Kaution, in 3 Monatsraten — 3.540 €"* — so the fact is on screen
+next to the figure. Not free of the flaw, but the flaw is now stated rather than
+hidden. **Worth doing properly if this ships beyond the hackathon.**
+
+**"5 Dinge, die Sie vor der Unterschrift wissen sollten" vs the "Vor der
+Unterschrift" tab.** Same phrase, two things. Mildly confusing, and I could not
+find a rewording that was clearly better rather than merely different. Left.
+
+**The first "wichtiger Termin" is the contract's own date.** Not a deadline you
+can miss, under a heading about missing deadlines. That is the model choosing what
+to list, and the section is honest about being a timeline. Not worth a prompt rule
+that might suppress genuine dates.
+
+**The bundled examples show no page count.** They have no PDF, so there is nothing
+to count. I considered a plausible constant and rejected it — see finding 3.
+
+**The stub fallback.** Kept, deliberately. See finding 15.
+
+**The `pdf.worker` chunk is 1.3 MB.** Real, and the build warns about it. It is
+also the thing that reads the PDF in the browser instead of shipping it somewhere,
+which is a privacy property worth 1.3 MB. Not a QA bug.
+
+---
+
+## What I ran
+
+- `npm test` — 50 tests, green. Six are new: three for the currency rewrite
+  (including "quotes stay verbatim"), one for the commitment de-duplication, one
+  for PDF padding, one for locale symbol placement.
+- `tsc -b` — clean.
+- The real contract end to end, twice, against the live model: nav, every finding,
+  all three explanation depths, the contract-text view, the decision brief, the
+  ask box, DE→EN translation.
+- Both bundled examples, after the changes, to make sure the fixes for a real PDF
+  did not break the demo path.
+- The stub path with credentials removed.
+- 1440px, 800px and 375px.
+- Production build: **16 MB → 2.1 MB**.
+
+## What is still worth doing
+
+- Rotate the Azure OpenAI key. It was pasted in plain text in chat in an earlier
+  session and has not been rotated since.
+- Deposit instalments as a real concept in the schema, so the chart stops
+  overstating month one.
