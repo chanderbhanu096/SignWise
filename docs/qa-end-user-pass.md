@@ -229,8 +229,19 @@ Three details that make it safe:
   up on different lines.
 
 A currency with no symbol in the table (CHF) is left exactly as written rather
-than mangled. Four tests cover the cases above, including the "quotes stay
-verbatim" one, which is the one that would actually hurt if it regressed.
+than mangled.
+
+**Two things the tests caught that I would not have.**
+
+- The symbol goes **where the locale puts it**. German writes `1.180 €`, English
+  writes `€1,180`, and the app's own `euro()` already does both — so a rewritten
+  amount that always trailed the symbol would have re-created the exact mismatch
+  in English that I was fixing in German. `Intl` is asked which way round, rather
+  than it being hardcoded.
+- The first version matched **from inside a number**: `12.50 EUR` came out as
+  `1€2.50`, because the pattern could start at the "2". A lookbehind now stops a
+  match beginning mid-number, and `Section 12.50 of the act` — no currency word —
+  is correctly left alone.
 
 ---
 

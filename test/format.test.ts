@@ -26,3 +26,11 @@ test("quotes and refs stay verbatim", () => {
   assert.equal(out.means, "Die Kaution beträgt 3.540\u00a0€.");
   assert.equal(out.currency, "EUR");
 });
+
+test("the symbol sits where the locale puts it", () => {
+  // The app's own euro() writes "1.480 €" in German and "€1,480" in English; a
+  // rewritten amount has to match, or we have reintroduced the mismatch in English.
+  assert.equal(currencyStyle("Sie zahlen 1.180,00 EUR", "EUR", "de"), "Sie zahlen 1.180 €");
+  assert.equal(currencyStyle("You pay 1,180.00 EUR", "EUR", "en"), "You pay €1,180");
+  assert.equal(currencyStyle("a fee of 12.50 EUR", "EUR", "en"), "a fee of €12.50");
+});

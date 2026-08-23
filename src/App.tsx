@@ -50,7 +50,7 @@ function errMessage(code: string, lang: Lang): string {
 function verifyAnalysis(a: Analysis, docText: string | null): Analysis {
   // One currency notation across the whole screen, including the amounts the model
   // wrote into its own sentences. Quotes and refs are excluded by styleCurrencyDeep.
-  const styled = styleCurrencyDeep(a, a.money.currency);
+  const styled = styleCurrencyDeep(a, a.money.currency, a.lang);
   if (a.warnings.includes("stub") || !docText) return styled;
   return {
     ...styled,
@@ -241,7 +241,7 @@ export default function App() {
     }
     setTranslating(true);
     try {
-      const translated = styleCurrencyDeep(await translate(analysis, l), analysis.money.currency);
+      const translated = styleCurrencyDeep(await translate(analysis, l), analysis.money.currency, l);
       langCacheRef.current.set(l, translated);
       setAnalysis(translated);
       setAnswer(null);
