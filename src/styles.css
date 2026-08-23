@@ -64,7 +64,11 @@ button { font: inherit; }
 /* Header — translucent so the page visibly moves underneath while scrolling.
    Kept subtle on purpose: this is a legal-tech tool, not a glass concept demo. */
 .hdr { position: sticky; top: 0; z-index: 30; background: rgba(255,255,255,0.72); backdrop-filter: saturate(165%) blur(14px); -webkit-backdrop-filter: saturate(165%) blur(14px); border-bottom: 1px solid rgba(220,228,227,0.85); box-shadow: 0 1px 22px rgba(18,38,43,0.055); }
-.hdr::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; pointer-events: none; background: linear-gradient(90deg, rgba(15,95,107,0.42), rgba(47,141,151,0.28) 38%, rgba(122,184,190,0.4) 72%, rgba(26,109,74,0.24)); }
+/* A tint of the brand along the header edge, not a green stripe: the gradient's
+   alphas are roughly halved so the line reads as depth rather than as a rule the
+   eye keeps returning to. The line itself stays — it is what separates the sticky
+   header from the page behind it. */
+.hdr::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; pointer-events: none; background: linear-gradient(90deg, rgba(15,95,107,0.2), rgba(47,141,151,0.13) 38%, rgba(122,184,190,0.19) 72%, rgba(26,109,74,0.11)); }
 @supports not ((backdrop-filter: blur(4px)) or (-webkit-backdrop-filter: blur(4px))) {
   .hdr { background: rgba(255,255,255,0.97); }
 }

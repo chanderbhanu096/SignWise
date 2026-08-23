@@ -151,3 +151,18 @@ silent: a contract that permits an increase, matched wrongly, shows a chart that
 claims more certainty than it has. The sentence is true of every projection, so it
 is shown for every projection. One line of copy beats a heuristic that can be wrong
 in the direction that costs the reader money.
+
+## 7 · "make the line/shadow underneath the top bar lighter, right now it is a green line"
+
+**Worth fixing: yes, despite being filed as "not so important."** It is a
+one-declaration change and the line sits under every screen in the app, so the cost
+of fixing it is far below the cost of it being slightly wrong everywhere.
+
+**Constraint.** The header's border line is a deliberate part of the design the repo
+owner asked to keep when the hero branch was merged. So the line stays — only its
+weight changes. The gradient's alphas are roughly halved (`0.42 → 0.20`,
+`0.28 → 0.13`, `0.40 → 0.19`, `0.24 → 0.11`). It now reads as the brand tinting an
+edge instead of a green rule the eye keeps returning to.
+
+The `box-shadow` was left alone: at `rgba(18,38,43,0.055)` it is neutral grey and not
+what made the edge look green.
