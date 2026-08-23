@@ -39,16 +39,19 @@ export function Decision({
         </h1>
         <p className="decision-lead">{s.decisionSub}</p>
         <p className="decision-source-hint">{s.decisionSourceHint}</p>
+        {/* A contents line, not a glossary: each badge is the mark and the exact
+            wording of the section it points at, so no label here is a term the
+            reader then fails to find further down the page. */}
         <div className="decision-states" aria-label={s.decisionBriefLabel}>
           <span className="state-badge clear">
-            <span aria-hidden="true">✓</span> {s.stateClear}
+            <span aria-hidden="true">✓</span> {s.decisionAgreeHeading}
           </span>
           <span className="state-badge check">
-            <span aria-hidden="true">△</span> {s.levelName.check}
+            <span aria-hidden="true">△</span> {s.decisionReviewHeading}
           </span>
           {brief.clarificationQuestions.length > 0 && (
             <span className="state-badge clarify">
-              <span aria-hidden="true">?</span> {s.stateClarify}
+              <span aria-hidden="true">?</span> {s.decisionClarifyHeading}
             </span>
           )}
         </div>

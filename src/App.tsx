@@ -66,8 +66,12 @@ export default function App() {
   const [dlMsg, setDlMsg] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [confirmNew, setConfirmNew] = useState(false);
+  const [translating, setTranslating] = useState(false);
 
   const pendingRef = useRef<Promise<{ a: Analysis; text: string | null }> | null>(null);
+  // One translated copy per language, kept for the life of this contract. Switching
+  // back is then instant instead of a second round-trip for text we already have.
+  const langCacheRef = useRef<Map<Lang, Analysis>>(new Map());
   const triggerRef = useRef<HTMLElement | null>(null);
   const s = t(lang);
 
@@ -196,7 +200,7 @@ export default function App() {
   }
 
   async function changeLang(l: Lang) {
-    if (l === lang) return;
+    if (l === lang || translating) return;
     setLang(l);
     if (!analysis) return;
     if (source === "sample") {
@@ -204,19 +208,47 @@ export default function App() {
       setAnswer(null);
       return;
     }
-    // Uploaded contract: translate the existing analysis.
+    // Uploaded contract: translating the analysis is a model call and takes seconds.
+    // Cache what we already have, reuse it on the way back, and say out loud that
+    // the wait is a translation — silence is what made this read as "slow".
+    langCacheRef.current.set(analysis.lang as Lang, analysis);
+    const cached = langCacheRef.current.get(l);
+    if (cached) {
+      setAnalysis(cached);
+      setAnswer(null);
+      return;
+    }
+    setTranslating(true);
     try {
       const translated = await translate(analysis, l);
+      langCacheRef.current.set(l, translated);
       setAnalysis(translated);
       setAnswer(null);
     } catch {
       /* leave current analysis; language label still switches */
+    } finally {
+      setTranslating(false);
     }
   }
 
+  // The document's chrome — the screen switcher and the banners that describe an
+  // analysis — belongs to the document screens only. Each of those blocks used to
+  // test `analysis && screen !== "analyzing"` separately, which also renders them
+  // over the landing page for any state that leaves an analysis in memory while the
+  // upload screen is showing. Nothing in today's flow reaches that state (starting
+  // over clears the analysis first), but that is the confirm dialog's discipline
+  // holding it, not the condition — and a reviewer has a screenshot of the landing
+  // page wearing the switcher. Stated once, it cannot drift.
+  const inDocument = !!analysis && screen !== "upload" && screen !== "analyzing";
+
   const openClauseObj = clauseId ? analysis?.clauses.find((c) => c.id === clauseId) ?? null : null;
   const langBtn = (code: Lang, label: string) => (
-    <button className={"pill" + (lang === code ? " on" : "")} aria-pressed={lang === code} onClick={() => changeLang(code)}>
+    <button
+      className={"pill" + (lang === code ? " on" : "")}
+      aria-pressed={lang === code}
+      disabled={translating}
+      onClick={() => changeLang(code)}
+    >
       {label}
     </button>
   );
@@ -231,7 +263,7 @@ export default function App() {
             </div>
             <div className="brand-name">SignWise</div>
           </div>
-          <div className="langs" role="group" aria-label={s.languageSelector}>
+          <div className="langs" role="group" aria-label={s.languageSelector} aria-busy={translating}>
             {langBtn("de", "DE")}
             {langBtn("en", "EN")}
           </div>
@@ -239,7 +271,7 @@ export default function App() {
       </header>
 
       {/* Demo screen switcher — only once there is an analysis to move around in. */}
-      {analysis && screen !== "analyzing" && (
+      {inDocument && (
         <nav className="nav" aria-label={s.mockupLabel}>
           <span className="nav-label">{s.mockupLabel}</span>
           <div className="nav-btns">
@@ -259,8 +291,18 @@ export default function App() {
         </nav>
       )}
 
+      {/* A translation is a model call; without this the page looks frozen. */}
+      {translating && (
+        <div className="banner banner-busy">
+          <div className="banner-in" role="status">
+            <span className="spinner" aria-hidden="true" />
+            <span>{s.translating}</span>
+          </div>
+        </div>
+      )}
+
       {/* Banners */}
-      {analysis?.warnings.includes("stub") && screen !== "upload" && screen !== "analyzing" && (
+      {inDocument && analysis.warnings.includes("stub") && (
         <div className="banner banner-stub">
           <div className="banner-in">
             <span aria-hidden="true">🛈</span>
@@ -268,14 +310,14 @@ export default function App() {
           </div>
         </div>
       )}
-      {analysis?.warnings.includes("translate-stub") && (
+      {inDocument && analysis.warnings.includes("translate-stub") && (
         <div className="banner banner-warn">
           <div className="banner-in">
             {lang === "de" ? "Übersetzung wird aktiv, sobald das Modell verbunden ist." : "Translation activates once the model is connected."}
           </div>
         </div>
       )}
-      {analysis?.confidence === "low" && (
+      {inDocument && analysis.confidence === "low" && (
         <div className="banner banner-warn">
           <div className="banner-in" role="alert">
             <span aria-hidden="true">⚠</span>

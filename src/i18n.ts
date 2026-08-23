@@ -23,8 +23,10 @@ interface Strings {
   tagline: string;
   slogans: string[]; // rotate one at a time in the header
   languageSelector: string;
+  translating: string;
   askThinking: string;
   chartScaleNote: string;
+  chartProjectionNote: string;
   newContractTitle: string;
   newContractBody: string;
   newContractCancel: string;
@@ -75,6 +77,7 @@ interface Strings {
   attentionHeading: string;
   attentionNoteToggle: string;
   attentionNote: string;
+  attentionScope: (clauses: number, findings: number) => string;
   filterAll: string;
   filterShowing: (shown: number, total: number) => string;
   sectionCount: (n: number) => string;
@@ -133,8 +136,6 @@ interface Strings {
   reviewEmptyTitle: string;
   reviewEmptyBody: string;
   missingInfo: string;
-  stateClear: string;
-  stateClarify: string;
   reviewClause: string;
   downloadSummary: string;
   summaryReady: string;
@@ -186,8 +187,11 @@ const EN: Strings = {
     "See the signs. Read between the lines.",
   ],
   languageSelector: "Language",
+  translating: "Translating your analysis…",
   askThinking: "Reading your contract for an answer…",
   chartScaleNote: "Bar heights are compressed so the regular months stay readable. The figures above each bar are exact.",
+  chartProjectionNote:
+    "A projection from the amounts written in your contract, assuming they stay the same. Any increase or change your contract allows is not included here.",
   newContractTitle: "Start with a new contract?",
   newContractBody: "This explanation will be discarded. Download the summary first if you want to keep it.",
   newContractCancel: "Keep this contract",
@@ -195,7 +199,7 @@ const EN: Strings = {
   disclaimer: "This tool explains your contract; it does not replace legal advice.",
   disclaimerLong:
     "This tool explains your contract; it does not replace legal advice. For a binding opinion, contact a lawyer or an appropriate advice centre (e.g. a consumer or tenants’ association).",
-  screens: { upload: "1 · Upload", analyzing: "2 · Analysis", overview: "3 · Overview", original: "4 · Original", decision: "5 · Before you sign" },
+  screens: { upload: "1 · Upload", analyzing: "2 · Analysis", overview: "3 · Overview & answers", original: "4 · Original", decision: "5 · Before you sign" },
   mobileView: "Mobile view",
   mobileViewOn: "Mobile view ✓",
   mockupLabel: "Screens",
@@ -244,6 +248,8 @@ const EN: Strings = {
   attentionNoteToggle: "What do these levels mean?",
   attentionNote:
     "These levels show how much attention something deserves. They do not say whether a clause is legally valid — SignWise never judges that.",
+  attentionScope: (clauses, findings) =>
+    `SignWise looked at ${clauses} clauses. Below are the ${findings} that matter most — select a level to see every clause in it.`,
   filterAll: "Show all",
   filterShowing: (shown, total) => `Showing ${shown} of ${total} findings.`,
   sectionCount: (n) => `${n} ${n === 1 ? "item" : "items"}`,
@@ -298,8 +304,6 @@ const EN: Strings = {
   reviewEmptyTitle: "No additional review points were identified",
   reviewEmptyBody: "This does not mean the contract has been legally reviewed. You can still inspect any clause in the original contract.",
   missingInfo: "We couldn’t find this information in the contract.",
-  stateClear: "Clear from contract",
-  stateClarify: "Clarify with the other party",
   reviewClause: "Review the clause",
   downloadSummary: "Print / save my summary",
   summaryReady: "The print window is opening — choose Save as PDF to keep a copy.",
@@ -388,8 +392,11 @@ const DE: Strings = {
     "Verträge verständlich gemacht.",
   ],
   languageSelector: "Sprache",
+  translating: "Ihre Analyse wird übersetzt…",
   askThinking: "Der Vertrag wird nach einer Antwort durchsucht…",
   chartScaleNote: "Die Balkenhöhen sind gestaucht, damit die regulären Monate lesbar bleiben. Die Beträge über den Balken sind exakt.",
+  chartProjectionNote:
+    "Eine Hochrechnung aus den in Ihrem Vertrag genannten Beträgen, unter der Annahme, dass sie gleich bleiben. Im Vertrag mögliche Erhöhungen oder Änderungen sind hier nicht enthalten.",
   newContractTitle: "Mit einem neuen Vertrag beginnen?",
   newContractBody: "Diese Erklärung wird verworfen. Laden Sie die Zusammenfassung vorher herunter, wenn Sie sie behalten möchten.",
   newContractCancel: "Diesen Vertrag behalten",
@@ -397,7 +404,7 @@ const DE: Strings = {
   disclaimer: "Dieses Tool erklärt Ihren Vertrag; es ersetzt keine Rechtsberatung.",
   disclaimerLong:
     "Dieses Tool erklärt Ihren Vertrag; es ersetzt keine Rechtsberatung. Für eine verbindliche Einschätzung wenden Sie sich an einen Anwalt oder eine geeignete Beratungsstelle (z. B. Verbraucher- oder Mieterverein).",
-  screens: { upload: "1 · Hochladen", analyzing: "2 · Analyse", overview: "3 · Überblick", original: "4 · Original", decision: "5 · Vor der Unterschrift" },
+  screens: { upload: "1 · Hochladen", analyzing: "2 · Analyse", overview: "3 · Überblick & Antworten", original: "4 · Original", decision: "5 · Vor der Unterschrift" },
   mobileView: "Mobile Ansicht",
   mobileViewOn: "Mobile Ansicht ✓",
   mockupLabel: "Bildschirme",
@@ -446,6 +453,8 @@ const DE: Strings = {
   attentionNoteToggle: "Was bedeuten diese Stufen?",
   attentionNote:
     "Die Stufen zeigen, welche Punkte besondere Aufmerksamkeit verdienen. Sie bewerten nicht die rechtliche Wirksamkeit einer Klausel — das beurteilt SignWise nie.",
+  attentionScope: (clauses, findings) =>
+    `SignWise hat ${clauses} Klauseln geprüft. Unten stehen die ${findings} wichtigsten — wählen Sie eine Stufe, um alle Klauseln darin zu sehen.`,
   filterAll: "Alle anzeigen",
   filterShowing: (shown, total) => `${shown} von ${total} Punkten werden angezeigt.`,
   sectionCount: (n) => `${n} ${n === 1 ? "Eintrag" : "Einträge"}`,
@@ -500,8 +509,6 @@ const DE: Strings = {
   reviewEmptyTitle: "Keine zusätzlichen Prüfpunkte gefunden",
   reviewEmptyBody: "Das bedeutet nicht, dass der Vertrag rechtlich geprüft wurde. Sie können jede Klausel im Originalvertrag ansehen.",
   missingInfo: "Wir konnten diese Information im Vertrag nicht finden.",
-  stateClear: "Im Vertrag klar genannt",
-  stateClarify: "Mit der anderen Partei klären",
   reviewClause: "Klausel prüfen",
   downloadSummary: "Zusammenfassung drucken / speichern",
   summaryReady: "Das Druckfenster öffnet sich — wählen Sie Als PDF speichern, um eine Kopie zu behalten.",
