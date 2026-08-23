@@ -123,10 +123,17 @@ export function Overview({
   const suggestions = getContractSuggestions(analysis.contractType, analysis.lang);
   const findings = analysis.findings.map((id, i) => ({ c: byId(id)!, n: i + 1 })).filter((x) => x.c);
 
-  // Attention triage. The counts are over the findings the reader can actually see,
-  // so a filter never claims more than the list holds.
-  const counts = Object.fromEntries(LEVELS.map((l) => [l, findings.filter((f) => f.c.level === l).length])) as Record<Level, number>;
-  const shown = filter ? findings.filter((f) => f.c.level === filter) : findings;
+  // Attention triage over the *whole* analysis, not just the five headline findings.
+  // Counting only the findings made a contract whose top five all happen to be
+  // important read as "5 important, 0 of anything else", which says nothing about
+  // the contract and everything about the cut-off. The default list still shows the
+  // headline findings; picking a level opens up every clause at that level.
+  const counts = Object.fromEntries(
+    LEVELS.map((l) => [l, analysis.clauses.filter((c) => c.level === l).length]),
+  ) as Record<Level, number>;
+  const shown = filter
+    ? analysis.clauses.filter((c) => c.level === filter).map((c, i) => ({ c, n: i + 1 }))
+    : findings;
 
   // Calendar: the first warning-tone (or first available) date with a machine date.
   const deadline = analysis.dates.find((d) => d.tone === "warning" && d.iso) ?? analysis.dates.find((d) => d.iso);
@@ -214,6 +221,7 @@ export function Overview({
               </button>
             ))}
           </div>
+          <p className="attn-scope">{s.attentionScope(analysis.clauses.length, findings.length)}</p>
           {/* The colours mean attention, never legal validity. Said out loud, not implied. */}
           <details className="attn-note">
             <summary>{s.attentionNoteToggle}</summary>
@@ -223,7 +231,7 @@ export function Overview({
         </div>
 
         <p className="sr-only" role="status">
-          {s.filterShowing(shown.length, findings.length)}
+          {s.filterShowing(shown.length, analysis.clauses.length)}
         </p>
         <ol className="findings">
           {shown.map(({ c, n }) => (

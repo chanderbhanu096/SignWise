@@ -374,6 +374,7 @@ section.screen.upload-screen::after {
 .attn { margin: 4px 0 18px; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); }
 .attn-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 4px 12px; }
 .attn-label { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted-2); }
+.attn-scope { margin-top: 12px; color: var(--muted-2); font-size: 13px; line-height: 1.5; }
 .attn-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .attn-chip { display: inline-flex; align-items: center; gap: 9px; min-height: 44px; padding: 0 15px; border-radius: 99px; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); font-size: 14px; font-weight: 600; cursor: pointer; }
 .attn-chip:hover:not(:disabled) { border-color: var(--line-2); }

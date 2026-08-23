@@ -76,6 +76,7 @@ interface Strings {
   attentionHeading: string;
   attentionNoteToggle: string;
   attentionNote: string;
+  attentionScope: (clauses: number, findings: number) => string;
   filterAll: string;
   filterShowing: (shown: number, total: number) => string;
   sectionCount: (n: number) => string;
@@ -246,6 +247,8 @@ const EN: Strings = {
   attentionNoteToggle: "What do these levels mean?",
   attentionNote:
     "These levels show how much attention something deserves. They do not say whether a clause is legally valid — SignWise never judges that.",
+  attentionScope: (clauses, findings) =>
+    `SignWise looked at ${clauses} clauses. Below are the ${findings} that matter most — select a level to see every clause in it.`,
   filterAll: "Show all",
   filterShowing: (shown, total) => `Showing ${shown} of ${total} findings.`,
   sectionCount: (n) => `${n} ${n === 1 ? "item" : "items"}`,
@@ -449,6 +452,8 @@ const DE: Strings = {
   attentionNoteToggle: "Was bedeuten diese Stufen?",
   attentionNote:
     "Die Stufen zeigen, welche Punkte besondere Aufmerksamkeit verdienen. Sie bewerten nicht die rechtliche Wirksamkeit einer Klausel — das beurteilt SignWise nie.",
+  attentionScope: (clauses, findings) =>
+    `SignWise hat ${clauses} Klauseln geprüft. Unten stehen die ${findings} wichtigsten — wählen Sie eine Stufe, um alle Klauseln darin zu sehen.`,
   filterAll: "Alle anzeigen",
   filterShowing: (shown, total) => `${shown} von ${total} Punkten werden angezeigt.`,
   sectionCount: (n) => `${n} ${n === 1 ? "Eintrag" : "Einträge"}`,

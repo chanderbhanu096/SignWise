@@ -64,3 +64,37 @@ errors (`.banner-error`).
 Both halves of the report are answered: it is clearly brighter in the sense that
 matters (contrast against its surroundings), and it is no longer similar to
 Standard. Flipping to red later is a one-variable change if the team disagrees.
+
+## 3 · "rethink the level, because we are not showing standard things at all — 5 important, 0 in other categories"
+
+**Worth fixing: yes, and this was the most substantive report in the list.** Two
+separate defects were hiding behind one symptom.
+
+**Defect A — the counts described the cut-off, not the contract.** The triage chips
+counted `analysis.findings`, which is capped at five and ordered most-important-first.
+A contract whose top five all happen to be important therefore always renders as
+"Important 5 · Worth checking 0 · Standard 0", regardless of what is in the document.
+That number told the reader nothing about their contract and quietly implied the
+whole thing was alarming.
+
+Fixed by counting over `analysis.clauses` — everything the analysis surfaced. The
+default list is unchanged (the five headline findings, ranked); selecting a level now
+opens every clause at that level, including ones that never made the top five. On the
+bundled rental example this turns `3 / 2 / 0` into `3 / 2 / 1`, and the Standard chip
+now reveals a clause that the Overview simply never showed before.
+
+A line under the chips states the scope out loud: *"SignWise looked at 6 clauses.
+Below are the 5 that matter most — select a level to see every clause in it."*
+
+**Defect B — the model was never asked for the ordinary clauses.** The prompt said
+"return 3 to 5 findings" and said nothing at all about how many `clauses` to return,
+so the model returned roughly the findings and nothing else. Counting over clauses
+fixes nothing if clauses ≈ findings. The prompt now asks for every provision that
+shapes the deal — typically 6 to 12, explicitly including the ordinary ones rated
+"standard" — and defines `findings` as the top 3–5 *of those*.
+
+**Why not a separate "standard provisions" summary section** (the report's other
+suggestion): the Overview already carries five blocks and the Original screen already
+lists every clause in document order. A sixth block restating the boring clauses adds
+scrolling to the page whose job is triage. Filtering by level puts the same
+information one click away, inside the control the reader is already using.
