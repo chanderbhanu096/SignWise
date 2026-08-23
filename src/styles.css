@@ -15,10 +15,14 @@
   --brand-strong: #0a464f;
   --brand-tint: #e0f0f1;
 
-  /* Severity — deliberately no red for "Important". Red is reserved and unused. */
+  /* Severity — still deliberately no red. "Important" marks what deserves the
+     reader's attention, not a clause we judge to be invalid or dangerous, and red
+     would say the second thing. It earns its prominence from weight instead: a
+     solid fill against two outlined levels. Standard is neutral grey so it recedes
+     and can never be mistaken for the teal of Important. */
   --imp-fg: #0a464f; --imp-bg: #e0f0f1; --imp-bd: #b9dbdd;
   --chk-fg: #8a5300; --chk-bg: #fdf3e2; --chk-bd: #f0dfc0;
-  --std-fg: #1a6d4a; --std-bg: #eaf5ef; --std-bd: #cfe6da;
+  --std-fg: #55666b; --std-bg: #eef2f2; --std-bd: #dae2e2;
 
   --radius: 12px;
   --radius-lg: 14px;
@@ -272,7 +276,7 @@ section.screen.upload-screen::after {
 
 /* Findings */
 .findings { list-style: none; display: flex; flex-direction: column; gap: 10px; }
-.finding { width: 100%; text-align: left; display: flex; align-items: center; gap: 16px; padding: 16px 18px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); cursor: pointer; }
+.finding { position: relative; overflow: hidden; width: 100%; text-align: left; display: flex; align-items: center; gap: 16px; padding: 16px 18px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); cursor: pointer; }
 .finding:hover { border-color: var(--brand); background: #f6fbfb; }
 .finding-n { flex: none; width: 34px; height: 34px; border-radius: 9px; background: var(--brand-tint); color: var(--brand); font-weight: 700; display: flex; align-items: center; justify-content: center; }
 .finding-body { flex: 1; min-width: 0; }
@@ -288,6 +292,9 @@ section.screen.upload-screen::after {
    chip still does the naming, so this never becomes colour-as-meaning. */
 .finding { transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease; }
 .finding[data-level="important"] { border-color: rgba(168,200,203,0.95); box-shadow: 0 10px 26px rgba(15,95,107,0.11); }
+/* The loudest level also carries the only accent bar, so the row is readable as
+   important before the badge is read. */
+.finding[data-level="important"]::before { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 3px; border-radius: 0 3px 3px 0; background: var(--imp-fg); }
 .finding[data-level="check"] { box-shadow: 0 5px 15px rgba(15,95,107,0.06); }
 .finding:hover { transform: translateY(-2px); box-shadow: 0 16px 34px rgba(15,95,107,0.15); }
 .finding:active { transform: translateY(0); box-shadow: 0 6px 16px rgba(15,95,107,0.12); }
@@ -296,7 +303,7 @@ section.screen.upload-screen::after {
 /* Severity badge */
 .sev { display: inline-flex; align-items: center; gap: 7px; padding: 4px 10px; border-radius: 99px; font-size: 13px; font-weight: 600; }
 .sev-mark { font-weight: 700; }
-[data-level="important"] .sev, .sev[data-level="important"] { color: var(--imp-fg); background: var(--imp-bg); border: 1px solid var(--imp-bd); }
+[data-level="important"] .sev, .sev[data-level="important"] { color: #fff; background: var(--imp-fg); border: 1px solid var(--imp-fg); }
 [data-level="check"] .sev, .sev[data-level="check"] { color: var(--chk-fg); background: var(--chk-bg); border: 1px solid var(--chk-bd); }
 [data-level="standard"] .sev, .sev[data-level="standard"] { color: var(--std-fg); background: var(--std-bg); border: 1px solid var(--std-bd); }
 
@@ -376,7 +383,8 @@ section.screen.upload-screen::after {
 .attn-chip[data-level="check"] .attn-mark { background: var(--chk-fg); }
 .attn-chip[data-level="standard"] .attn-mark { background: var(--std-fg); }
 .attn-n { font-variant-numeric: tabular-nums; color: var(--muted-2); }
-.attn-chip.on[data-level="important"] { background: var(--imp-bg); border-color: var(--imp-bd); color: var(--imp-fg); }
+.attn-chip.on[data-level="important"] { background: var(--imp-fg); border-color: var(--imp-fg); color: #fff; }
+.attn-chip.on[data-level="important"] .attn-mark { background: #fff; color: var(--imp-fg); }
 .attn-chip.on[data-level="check"] { background: var(--chk-bg); border-color: var(--chk-bd); color: var(--chk-fg); }
 .attn-chip.on[data-level="standard"] { background: var(--std-bg); border-color: var(--std-bd); color: var(--std-fg); }
 .attn-chip.on .attn-n { color: inherit; }

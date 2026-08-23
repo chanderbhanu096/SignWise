@@ -35,3 +35,32 @@ translation twice.
 background, right after analysis): it doubles the model spend on every single
 upload to save a wait that most users never trigger. The cache gets the same
 result for the users who actually switch, and costs nothing for the ones who don't.
+
+## 2 · "use a brighter color like red for the important tag, right now similar to standard"
+
+**Worth fixing: yes — but not with red.**
+
+The complaint has two halves and only one of them is about brightness. "Important"
+(teal `#0a464f` on `#e0f0f1`) and "Standard" (green `#1a6d4a` on `#eaf5ef`) were two
+low-saturation dark-on-pale badges a few degrees apart on the colour wheel. At badge
+size they are genuinely hard to tell apart. That is a real defect and it is fixed.
+
+**Why not red.** The app states in its own UI that *"these levels show how much
+attention something deserves. They do not say whether a clause is legally valid —
+SignWise never judges that."* Red is read as invalid / dangerous / error. Putting a
+red badge on a clause we explicitly refuse to judge would contradict the sentence
+sitting two lines above it — in front of a Ministry of Justice jury, on a tool whose
+whole pitch is that it explains rather than advises. Red stays reserved for genuine
+errors (`.banner-error`).
+
+**What was done instead — prominence from weight, not from alarm.**
+- Important is now the only **solid filled** badge: white on `#0a464f`, against two
+  outlined levels. It is the loudest thing in the row without claiming a verdict.
+- Standard moves from green to neutral grey `#55666b`. It recedes, and it can no
+  longer be confused with the teal.
+- Important findings get a 3px accent bar on the row, so the level is readable
+  before the badge text is.
+
+Both halves of the report are answered: it is clearly brighter in the sense that
+matters (contrast against its surroundings), and it is no longer similar to
+Standard. Flipping to red later is a one-variable change if the team disagrees.
