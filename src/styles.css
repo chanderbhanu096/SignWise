@@ -466,11 +466,8 @@ section.screen.upload-screen::after {
 .decision-title { position: relative; z-index: 1; margin-top: 8px; font-size: clamp(34px, 5vw, 48px); letter-spacing: -1.2px; }
 .decision-lead { position: relative; z-index: 1; max-width: 700px; margin-top: 10px; font-size: 18px; color: var(--ink-2); }
 .decision-source-hint { position: relative; z-index: 1; margin-top: 8px; font-size: 14px; color: var(--muted); }
-.decision-states { position: relative; z-index: 1; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
 .state-badge { display: inline-flex; align-items: center; gap: 7px; padding: 4px 10px; border-radius: 99px; font-size: 13px; font-weight: 600; }
-.state-badge.check { color: var(--chk-fg); background: var(--chk-bg); border: 1px solid var(--chk-bd); }
 .state-badge.clear { color: var(--ok-fg); background: var(--ok-bg); border: 1px solid var(--ok-bd); }
-.state-badge.clarify { color: var(--brand-strong); background: var(--brand-tint); border: 1px solid #b9dbdd; }
 .decision-section { margin-top: 34px; }
 .decision-section-head { display: flex; gap: 14px; align-items: flex-start; }
 .decision-step { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 10px; background: var(--brand); color: #fff; font-size: 15px; font-weight: 700; }
@@ -490,15 +487,16 @@ section.screen.upload-screen::after {
 .decision-attention-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 34px; align-items: start; }
 .decision-attention-grid.single { grid-template-columns: 1fr; }
 .decision-panel { min-width: 0; padding: 22px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); }
-.review-panel { border-top: 3px solid #b8860b; }
-.clarify-panel { border-top: 3px solid var(--brand); }
+/* Both panels wear the brand, not a severity colour. The amber rule here was the
+   last thing on this screen still claiming that everything inside it is the "worth
+   checking" level — it is not: the section is ranked by consequence and holds
+   clauses of every level, each now carrying its own badge. */
+.review-panel, .clarify-panel { border-top: 3px solid var(--brand); }
 .decision-panel-head { display: flex; align-items: flex-start; gap: 12px; }
-.decision-panel-mark { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; font-weight: 700; }
-.decision-panel-mark.check { color: var(--chk-fg); background: var(--chk-bg); border: 1px solid var(--chk-bd); }
-.decision-panel-mark.clarify { color: var(--brand-strong); background: var(--brand-tint); border: 1px solid #b9dbdd; }
 .review-list, .clarification-list { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; margin-top: 16px; }
 .review-card, .clarification-card { min-width: 0; padding: 15px 16px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); }
 .review-card h3, .clarification-card h3 { font-size: 16px; overflow-wrap: anywhere; }
+.review-card .sev { margin-bottom: 8px; }
 .review-card p, .clarification-card p { margin-top: 6px; color: var(--muted); font-size: 14px; }
 .review-card .review-reason { color: var(--ink-2); }
 .review-card .link-btn, .clarification-card .link-btn { margin-top: 5px; }

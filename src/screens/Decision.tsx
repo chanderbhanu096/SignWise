@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import type { Analysis } from "../types";
 import { t } from "../i18n";
 import { getDecisionSummary } from "../decision";
+import { Severity } from "../components/Severity";
 
 // A personalized decision-preparation brief: clear commitments, consequential
 // review items, answerable comprehension prompts, and genuine open questions.
@@ -23,6 +24,14 @@ export function Decision({
   const brief = getDecisionSummary(analysis);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const hasClause = (id: string | undefined) => !!id && analysis.clauses.some((clause) => clause.id === id);
+  const clauseLevel = (id: string) => analysis.clauses.find((clause) => clause.id === id)?.level;
+
+  // The sections are steps in a walkthrough, not severity levels — numbering them
+  // leaves the level marks (! △ ✓) meaning exactly one thing each, on the clauses
+  // themselves. The clarify panel only appears when the contract leaves something
+  // open, so the numbers are computed rather than written down.
+  const hasClarify = brief.clarificationQuestions.length > 0;
+  const step = { agree: 1, review: 2, clarify: 3, understand: hasClarify ? 4 : 3 };
 
   useEffect(() => {
     headingRef.current?.focus();
@@ -39,28 +48,12 @@ export function Decision({
         </h1>
         <p className="decision-lead">{s.decisionSub}</p>
         <p className="decision-source-hint">{s.decisionSourceHint}</p>
-        {/* A contents line, not a glossary: each badge is the mark and the exact
-            wording of the section it points at, so no label here is a term the
-            reader then fails to find further down the page. */}
-        <div className="decision-states" aria-label={s.decisionBriefLabel}>
-          <span className="state-badge clear">
-            <span aria-hidden="true">✓</span> {s.decisionAgreeHeading}
-          </span>
-          <span className="state-badge check">
-            <span aria-hidden="true">△</span> {s.decisionReviewHeading}
-          </span>
-          {brief.clarificationQuestions.length > 0 && (
-            <span className="state-badge clarify">
-              <span aria-hidden="true">?</span> {s.decisionClarifyHeading}
-            </span>
-          )}
-        </div>
       </header>
 
       <section className="decision-section" aria-labelledby="agree-h">
         <div className="decision-section-head">
           <span className="decision-step" aria-hidden="true">
-            1
+            {step.agree}
           </span>
           <div>
             <h2 id="agree-h">{s.decisionAgreeHeading}</h2>
@@ -91,8 +84,8 @@ export function Decision({
       <div className={`decision-attention-grid${brief.clarificationQuestions.length === 0 ? " single" : ""}`}>
         <section className="decision-panel review-panel" aria-labelledby="review-h">
           <div className="decision-panel-head">
-            <span className="decision-panel-mark check" aria-hidden="true">
-              △
+            <span className="decision-step" aria-hidden="true">
+              {step.review}
             </span>
             <div>
               <h2 id="review-h">{s.decisionReviewHeading}</h2>
@@ -104,6 +97,7 @@ export function Decision({
             <ul className="review-list">
               {brief.reviewItems.map((item) => (
                 <li className="review-card" key={item.clauseId}>
+                  {clauseLevel(item.clauseId) && <Severity level={clauseLevel(item.clauseId)!} lang={analysis.lang} />}
                   <h3>{item.title}</h3>
                   <p>{item.explanation}</p>
                   <p className="review-reason">
@@ -128,8 +122,8 @@ export function Decision({
         {brief.clarificationQuestions.length > 0 && (
           <section className="decision-panel clarify-panel" aria-labelledby="clarify-h">
             <div className="decision-panel-head">
-              <span className="decision-panel-mark clarify" aria-hidden="true">
-                ?
+              <span className="decision-step" aria-hidden="true">
+                {step.clarify}
               </span>
               <div>
                 <h2 id="clarify-h">{s.decisionClarifyHeading}</h2>
@@ -157,7 +151,7 @@ export function Decision({
         <section className="decision-section understanding-section" aria-labelledby="understand-h">
           <div className="decision-section-head">
             <span className="decision-step" aria-hidden="true">
-              2
+              {step.understand}
             </span>
             <div>
               <h2 id="understand-h">{s.decisionUnderstandHeading}</h2>
