@@ -3,6 +3,7 @@ import type { Analysis, Clause, Depth } from "../types";
 import { t } from "../i18n";
 import { getOfficialLawUrl } from "../contract";
 import { Severity } from "./Severity";
+import { DepthPicker } from "./DepthPicker";
 
 // The clause detail. Same component renders as a right-side panel on desktop and a
 // bottom sheet on mobile (CSS decides which). The three content classes get fixed,
@@ -12,12 +13,14 @@ export function ClausePanel({
   clause,
   analysis,
   depth,
+  setDepth,
   onClose,
   onShowInDoc,
 }: {
   clause: Clause;
   analysis: Analysis;
   depth: Depth;
+  setDepth: (d: Depth) => void;
   onClose: () => void;
   onShowInDoc: () => void;
 }) {
@@ -80,7 +83,7 @@ export function ClausePanel({
           <div className="pane pane-ai">
             <div className="pane-label">
               <span>{s.explainedBy}</span>
-              <span>{s.aiMeta(s.depth[depth], s.langLabel)}</span>
+              <DepthPicker depth={depth} setDepth={setDepth} lang={analysis.lang} />
             </div>
             <p>{clause.simple[depth]}</p>
           </div>

@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import type { Analysis, Depth } from "../types";
 import { t } from "../i18n";
 import { Severity } from "../components/Severity";
+import { DepthPicker } from "../components/DepthPicker";
 
 // Split view: the contract's own wording on the left (verbatim clause passages,
 // highlighted), the plain-language explanation on the right. Selecting a passage or
@@ -10,6 +11,7 @@ import { Severity } from "../components/Severity";
 export function Original({
   analysis,
   depth,
+  setDepth,
   selectedClauseId,
   onSelectClause,
   onOpenClause,
@@ -17,6 +19,7 @@ export function Original({
 }: {
   analysis: Analysis;
   depth: Depth;
+  setDepth: (d: Depth) => void;
   selectedClauseId: string | null;
   onSelectClause: (id: string) => void;
   onOpenClause: (id: string) => void;
@@ -97,7 +100,8 @@ export function Original({
         <div className="doc-side" ref={sideRef}>
           <div className="card">
             <div className="pane-label" style={{ color: "var(--muted-2)" }}>
-              {s.explanationLabel}
+              <span>{s.explanationLabel}</span>
+              {selected && <DepthPicker depth={depth} setDepth={setDepth} lang={analysis.lang} />}
             </div>
             {selected ? (
               <>

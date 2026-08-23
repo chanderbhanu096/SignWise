@@ -280,6 +280,11 @@ section.screen.upload-screen::after {
 .seg { display: inline-flex; background: #edf2f1; border-radius: 10px; padding: 4px; gap: 4px; }
 .seg button { min-height: 44px; padding: 0 16px; border-radius: 8px; border: none; font-size: 15px; font-weight: 600; cursor: pointer; background: transparent; color: var(--muted); }
 .seg button.on { background: #fff; color: var(--brand); box-shadow: 0 1px 2px rgba(18,38,43,0.14); }
+/* Inline next to the label of the text it rewrites, so it has to be quieter than a
+   section control without dropping under the 44px touch target. */
+.seg-sm { padding: 3px; gap: 3px; }
+.seg-sm button { min-height: 32px; padding: 0 10px; font-size: 13px; }
+@media (pointer: coarse) { .seg-sm button { min-height: 44px; padding: 0 14px; } }
 .glance { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; margin-top: 16px; }
 .glance > div { background: var(--surface); padding: 16px 18px; }
 .glance dt { font-size: 13px; color: var(--muted-2); text-transform: uppercase; letter-spacing: 0.04em; }
@@ -519,7 +524,7 @@ section.screen.upload-screen::after {
 .pane-contract { background: #f0f8f8; border: 1px solid var(--line); }
 .pane-contract p { font-size: 15px; color: var(--ink-2); } /* German quote in an EN UI gets lang="de" inline */
 .pane-ai { background: var(--brand-tint); border: 1px solid #b9dbdd; }
-.pane-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted-2); display: flex; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.pane-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted-2); display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 6px; }
 .pane-ai .pane-label { color: var(--brand-strong); }
 .why-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
 .legal-toggle { width: 100%; text-align: left; display: flex; justify-content: space-between; gap: 8px; background: none; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; font-weight: 600; cursor: pointer; }

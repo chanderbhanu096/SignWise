@@ -1,6 +1,6 @@
 import { useState } from "react";
-import type { Analysis, Depth, Level } from "../types";
-import { DEPTHS, LEVELS } from "../types";
+import type { Analysis, Level } from "../types";
+import { LEVELS } from "../types";
 import { t } from "../i18n";
 import { euro } from "../format";
 import { getContractCategory, getFinancialCopy, getContractSuggestions, getMoneyState } from "../contract";
@@ -9,8 +9,6 @@ import { Section } from "../components/Section";
 
 export function Overview({
   analysis,
-  depth,
-  setDepth,
   filename,
   onOpenClause,
   onOriginal,
@@ -22,8 +20,6 @@ export function Overview({
   calMsg,
 }: {
   analysis: Analysis;
-  depth: Depth;
-  setDepth: (d: Depth) => void;
   filename: string;
   onOpenClause: (id: string) => void;
   onOriginal: () => void;
@@ -161,18 +157,6 @@ export function Overview({
           <p className="section-sub" style={{ marginBottom: 0 }}>
             {filename} · {s.fileMeta(14)}
           </p>
-        </div>
-        <div>
-          <div className="pane-label" style={{ marginBottom: 6 }}>
-            {s.explanationLevel}
-          </div>
-          <div className="seg" role="group" aria-label={s.explanationLevel}>
-            {DEPTHS.map((d) => (
-              <button key={d} className={depth === d ? "on" : ""} aria-pressed={depth === d} onClick={() => setDepth(d)}>
-                {s.depth[d]}
-              </button>
-            ))}
-          </div>
         </div>
       </div>
 

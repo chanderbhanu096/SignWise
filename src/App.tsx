@@ -334,8 +334,6 @@ export default function App() {
         {screen === "overview" && analysis && (
           <Overview
             analysis={analysis}
-            depth={depth}
-            setDepth={setDepth}
             filename={filename}
             onOpenClause={openClause}
             onOriginal={goOriginal}
@@ -354,6 +352,7 @@ export default function App() {
           <Original
             analysis={analysis}
             depth={depth}
+            setDepth={setDepth}
             selectedClauseId={selectedInDoc}
             onSelectClause={selectClause}
             onOpenClause={openClause}
@@ -377,7 +376,7 @@ export default function App() {
       {/* key: transient panel state (the legal-context expander) belongs to one
           clause and must not carry over when a different clause is opened. */}
       {openClauseObj && analysis && (
-        <ClausePanel key={openClauseObj.id} clause={openClauseObj} analysis={analysis} depth={depth} onClose={closePanel} onShowInDoc={showInDoc} />
+        <ClausePanel key={openClauseObj.id} clause={openClauseObj} analysis={analysis} depth={depth} setDepth={setDepth} onClose={closePanel} onShowInDoc={showInDoc} />
       )}
 
       {/* Starting over throws the whole explanation away, so it asks first. */}

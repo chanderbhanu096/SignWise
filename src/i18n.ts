@@ -149,7 +149,6 @@ interface Strings {
   legalDisclaimer: string;
   showInDoc: string;
   close: string;
-  aiMeta: (depth: string, lang: string) => string;
 
   // labels
   levelName: Record<Level, string>;
@@ -315,7 +314,6 @@ const EN: Strings = {
   legalDisclaimer: "General information about German law — not a statement about your contract, and not legal advice.",
   showInDoc: "Show this in the original document",
   close: "Close",
-  aiMeta: (d, l) => `AI explanation · ${d} · ${l}`,
   levelName: { important: "Important", check: "Worth checking", standard: "Standard" },
   tagName: { money: "Money", deadline: "Deadline", responsibility: "Responsibility", risk: "Risk" },
   langLabel: "English",
@@ -520,7 +518,6 @@ const DE: Strings = {
   legalDisclaimer: "Allgemeine Informationen zum deutschen Recht — keine Aussage über Ihren Vertrag und keine Rechtsberatung.",
   showInDoc: "Dies im Originaldokument anzeigen",
   close: "Schließen",
-  aiMeta: (d, l) => `KI-Erklärung · ${d} · ${l}`,
   levelName: { important: "Wichtig", check: "Prüfenswert", standard: "Standard" },
   tagName: { money: "Geld", deadline: "Frist", responsibility: "Pflicht", risk: "Risiko" },
   langLabel: "Deutsch",
