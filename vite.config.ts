@@ -1,4 +1,4 @@
-import { defineConfig, type Connect } from "vite";
+import { defineConfig, loadEnv, type Connect } from "vite";
 import react from "@vitejs/plugin-react";
 import type { ServerResponse } from "node:http";
 
@@ -44,6 +44,12 @@ function jsonRes(res: ServerResponse) {
   return r;
 }
 
-export default defineConfig({
-  plugins: [react(), apiDev()],
+export default defineConfig(({ mode }) => {
+  // The api/* handlers read credentials from process.env, the way they do on Azure.
+  // Vite only puts .env files on import.meta.env (client side, VITE_ prefix), so
+  // without this the dev handlers see no key and quietly serve the sample fixture
+  // under the uploaded file's name. Empty prefix = load every key; loadEnv alone
+  // exposes nothing to the browser bundle.
+  Object.assign(process.env, loadEnv(mode, process.cwd(), ""));
+  return { plugins: [react(), apiDev()] };
 });
