@@ -342,3 +342,132 @@ Both halves of the original report still hold: Important is clearly the loudest 
 in the row, and it can no longer be confused with Standard. The colour lives in one
 variable (`--imp-fg`), so this remains a one-line decision if anyone wants to revisit
 it a third time.
+
+---
+
+# Issue #5 — Bugs: implementation record
+
+Source: [#5](https://github.com/chanderbhanu096/SignWise/issues/5) — reported by @Chennn03.
+Same rules as above: each item gets a verdict, and the ones not worth doing as asked
+are recorded with the argument.
+
+## 5.1 · "switching the language is really slow, but not a priority to fix"
+
+**No new work — already fixed, and the screenshot proves it.** The image attached to
+this line shows the EN pill greyed out mid-switch, which is the busy state added in
+issue #4 item 1. That round also added a per-language cache, so the second switch and
+every switch after it is instant.
+
+The first switch stays slow and always will: translating an analysis is a model call
+of several seconds. What was fixable was the silence around it, and that is done.
+Making it genuinely fast would mean translating into both languages on every upload —
+doubling the model spend on every single contract to save a wait most readers never
+trigger. Not worth it, and the reporter agrees it is not a priority.
+
+## 5.2 · "oops" (screenshots: the cost cards misaligned, and a hole beside the third)
+
+**Worth fixing: yes. Two real bugs in one screenshot, and one of them was mine.**
+
+Reproduced at a 900px viewport: card 1 at `top: 0`, cards 2 and 3 at `top: 18px`,
+inside a grid row they are supposed to share — and with two columns the third card
+was orphaned, leaving an empty half-row beside it.
+
+**Bug A — a stray sibling margin.** `.card + .card { margin-top: 18px }` was applying
+to cards inside grid containers, which already space themselves with an 18px `gap`.
+It pushed every card except the first one down by 18px within its own cell — visible
+in `.money` and in `.two` (rights and duties). The same rule was also beating
+`.block { margin-top: 30px }` on specificity in normal flow, quietly cutting the
+section rhythm on the overview from 30px to 18px. The rule is deleted: every place
+that stacks cards already spaces them.
+
+**Bug B — the orphan.** `repeat(auto-fit, minmax(min(100%, 300px), 1fr))` with three
+cards always leaves a hole at two columns. `.money` is now `flex-wrap` with
+`flex: 1 1 300px`, so a wrapped last card grows to fill its own row. Verified at 1280
+(three across, all `top: 0`), 900 (two across plus a full-width third) and 375
+(stacked), no overflow anywhere.
+
+## 5.3 · "it looked at all clauses and summarized 15 points/findings"
+
+**No action — this is the issue #4 item 3 change doing its job.** Their contract now
+yields 15 surfaced clauses with the 5 most important listed, and the line under the
+chips says exactly that. Before that change the same contract would have reported
+"5 important, 0 of anything else", which said nothing about the contract at all.
+
+## 5.4 · "nothing happened when click on explanation level"
+
+**Worth fixing: yes. The control was real, in the wrong place.**
+
+Simple / Standard / Detailed sets `depth`, which selects between `clause.simple.*`.
+That text is rendered in exactly two places — the clause panel and the original view's
+explanation pane — and the control was sitting in the overview header, where nothing
+on screen responds to it. Pressing it there genuinely did nothing visible. Not a
+state bug: a control placed away from its effect.
+
+It now sits inline in the pane label of the text it rewrites, in both places, as a
+smaller variant of the same segmented control. `aiMeta` ("AI explanation · Standard ·
+English") became redundant next to it and is deleted. Verified: all three levels
+change the paragraph in the panel and in the original view, and `aria-pressed`
+follows.
+
+## 5.5 · "the level red important matches to the yellow one which is worth another look !!!!"
+
+**Worth fixing: yes — this was the sharpest observation in the issue.** It is a
+correctness problem, not a colour preference.
+
+**Root cause.** `getDecisionSummary` ranks review items by *consequence*, so it draws
+from clauses at both the `important` and `check` level. The panel holding them was
+styled entirely as the `check` level — amber top border, amber `△` mark, and a
+heading, "Worth another look", one word away from the level name "Worth checking". So
+a clause the overview called **Important** was re-labelled by the section it landed in.
+
+**Fix — the section stops claiming a level, and each item states its own.**
+- Every review card now leads with its clause's real `<Severity>` badge. On the rental
+  example the panel reads `△ Worth checking`, `△ Worth checking`, `! Important`,
+  matching the overview exactly.
+- The panel's amber border and `△` mark are gone. The four sections are numbered steps
+  (1–4) in a walkthrough, because that is what they are — organised by what to *do*,
+  not by severity. The numbers are computed, so removing the clarify panel when a
+  contract leaves nothing open does not leave a gap in the sequence.
+- The hero's legend row is deleted. It paired a level mark with each section heading,
+  which could not be true for a section that mixes levels — it was the thing that
+  taught the wrong mapping in the first place.
+
+The level marks `!` `△` `✓` now appear only on clauses, and mean one thing each
+everywhere in the app.
+
+## 5.6 · Wording of the "Before you sign" categories
+
+Asked for separately alongside #5. The headings named states; they now name actions,
+in words a non-lawyer uses:
+
+| was | is |
+|---|---|
+| Worth another look · Genauer ansehen | **Read these again before you sign** · **Vor der Unterschrift noch einmal lesen** |
+| Questions to clarify · Fragen, die Sie klären sollten | **Ask the other side about these** · **Das sollten Sie nachfragen** |
+| Check your understanding · Prüfen Sie Ihr Verständnis | **Can you explain it in your own words?** · **Können Sie es in eigenen Worten erklären?** |
+
+"What you're agreeing to" was already plain and is unchanged. The review sub-heading
+now says why the section exists — "These clauses have the biggest consequences for
+you" — instead of restating the heading. Renaming the review section also removes the
+last near-collision with the level name "Worth checking".
+
+## 5.7 · "What this means for you" in simpler language
+
+Asked for separately. The prompt described the JSON shape of `means` and `simple` and
+said nothing about how to write them, so the model wrote like a contract.
+
+The prompt now specifies the register, using the bundled fixture — which was always
+written this way — as the worked example: one or two short sentences answering "what
+does this mean for me?", saying what the reader has to **do, pay or watch out for**,
+with the contract's own figure or date in them. Everyday words, active voice, direct
+address, under about 15 words a sentence, "Sie" in German. No restating the clause, no
+reusing its legal wording (and where a term is unavoidable — Kaution, Kündigungsfrist,
+Nebenkosten — name it once and explain it in the same sentence), no filler, no advice.
+
+The three `simple` levels are defined as differing in **coverage, not difficulty**:
+"detailed" adds the mechanism and the exceptions, and must not mean more legalese.
+That matters more now that the level switch is next to the text (5.4) and people will
+actually press it.
+
+The bundled examples keep their hand-written text — they are the fixture, and they
+already read the way the prompt now asks for.
