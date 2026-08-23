@@ -484,3 +484,40 @@ desktop both are in the accessible tree, so the name is announced twice.
 now correct in both layouts and stated once. Caught by testing the output, not the
 screenshot — the kind of thing that is invisible until you read the page the way
 assistive tech does.
+
+---
+
+## 15 — When the model is unreachable, the demo wore your document's identity
+
+**Seen.** This is finding 1 looked at from the user's side rather than the
+developer's. With no credentials, the server answers with the sample fixture
+tagged `stub`, and a banner says *"Demo-Modus — es wird die Beispielanalyse
+gezeigt."* Correct. But the page around the banner read:
+
+    Ihr Vertrag auf einen Blick
+    Mietvertrag_Aberlestrasse_27 (1).pdf · 14 Seiten · erklärt auf Deutsch
+
+Your filename. A rent, a start date, a deposit and a set of clauses from a
+completely different contract. One dismissible strip of yellow standing between a
+reader and the conclusion that these are their numbers.
+
+**Worth fixing?** The demo fallback itself: keep it. A hackathon demo that shows a
+white error screen because a key expired is worse than one that shows a worked
+example, and the banner is honest about which it is. **Attributing that example
+to a document we never read: no.** That is the one thing this product cannot do.
+
+**Fix.** Two lines. When the analysis is tagged `stub`, the screens show the
+sample's own filename, and the page count is dropped entirely.
+
+The page count is the more interesting half. It is a **real** fact — I really did
+extract 4 pages from the uploaded PDF — but it is a fact about a file that this
+analysis does not describe. A true number in the wrong place is more convincing
+than a false one, and therefore worse. `pages` is `null` on the stub path.
+
+**Verified properly**, not reasoned about: I moved `.env.local` aside, restarted,
+uploaded the real contract, and read the result. First attempt still showed
+`· 4 Seiten` — the filename was fixed and the page count was not, which is exactly
+the bug I would have shipped if I had stopped at "the code looks right". Fixed and
+re-checked:
+
+    Beispiel-Mietvertrag_Kastanienallee.pdf · erklärt auf Deutsch   [Demo-Modus banner]

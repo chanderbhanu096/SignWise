@@ -263,6 +263,16 @@ export default function App() {
   const inDocument = !!analysis && screen !== "upload" && screen !== "analyzing";
 
   const openClauseObj = clauseId ? analysis?.clauses.find((c) => c.id === clauseId) ?? null : null;
+
+  // When the model is unreachable the server answers with the sample fixture tagged
+  // "stub". A banner says so — but the page around it still put the *uploaded* file's
+  // name above someone else's rent and dates, which reads as "here is your contract".
+  // The demo is fine; attributing it to a document we never read is not.
+  const isStub = !!analysis?.warnings.includes("stub");
+  const shownFilename = isStub ? SAMPLE_FILENAME : filename;
+  // The page count is a real fact about the file we read — which is not the file this
+  // analysis describes. Attaching it to the sample is the same error, one field over.
+  const shownPages = isStub ? null : docPages;
   const langBtn = (code: Lang, label: string) => (
     <button
       className={"pill" + (lang === code ? " on" : "")}
@@ -366,8 +376,8 @@ export default function App() {
         {screen === "overview" && analysis && (
           <Overview
             analysis={analysis}
-            filename={filename}
-            pages={docPages}
+            filename={shownFilename}
+            pages={shownPages}
             onOpenClause={openClause}
             onOriginal={goOriginal}
             onDecision={() => setScreen("decision")}
@@ -387,7 +397,7 @@ export default function App() {
             depth={depth}
             setDepth={setDepth}
             docText={docText}
-            pages={docPages}
+            pages={shownPages}
             selectedClauseId={selectedInDoc}
             onSelectClause={selectClause}
             onOpenClause={openClause}
