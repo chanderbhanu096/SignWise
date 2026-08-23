@@ -88,7 +88,14 @@ button { font: inherit; }
 .slogan-sizer, .slogan-line { grid-area: 1 / 1; }
 .slogan-line { position: relative; }
 .slogan-sizer { visibility: hidden; }
-.slogan-ch.off { visibility: hidden; } /* holds the line breaks while the rest types in */
+/* Untyped characters take no space. The invisible .slogan-sizer copies in the same
+   grid cell already hold the box at the width and height of the longest slogan, so
+   the page never reflows — and because the typed text shrink-wraps, a centred
+   headline stays centred instead of hanging off the left edge of a reserved box
+   (at 1440px the visible text sat ~380px left of centre while it typed). One inline
+   box per character is what keeps this steady: appending a character never re-snaps
+   the ones before it. */
+.slogan-ch.off { display: none; }
 /* Negative right margin cancels the caret's own advance width, so the untyped
    remainder keeps exactly the line breaks it will have when fully typed. */
 /* Out of flow, at its static position. As an inline-block the caret sat between the

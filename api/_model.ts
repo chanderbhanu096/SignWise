@@ -45,13 +45,21 @@ How to write "means" and "simple" — this is the part people actually read:
 - Everyday words, active voice, address the reader directly, sentences under about 15 words. Write for someone with no legal training who is reading on a phone.
 - Do NOT restate the clause and do NOT reuse its legal wording. Where a term cannot be avoided (Kaution, Kündigungsfrist, Nebenkosten, Probezeit), name it once and explain it in the same sentence.
 - No filler ("it should be noted", "please be aware", "as per the contract"), no hedging, no advice about whether to sign.
-- The three "simple" levels differ in how much they cover, never in how hard they are to read: "simple" is the shortest plain version, "standard" adds the practical detail, "detailed" adds the mechanism and any exceptions. "detailed" must not mean more legalese.
+- The three "simple" levels are CUMULATIVE, not three different facts. "standard" must contain everything "simple" says and then add the practical detail; "detailed" must contain everything "standard" says and then add the mechanism and any exceptions. Moving up a level must never drop a figure, a date or a fact that a lower level stated.
+- Each level must also stand ALONE. A reader who sees only that one level gets the main figure or date and a complete sentence. Never open a level with a pronoun whose antecedent is in another level ("Sie dürfen sie in drei Raten zahlen" is wrong — name the deposit and its amount).
+- WRONG (each level replaces the last, and "standard" starts with a dangling "sie"):
+  simple: "Die Kaution beträgt 3.540 €." / standard: "Sie dürfen sie in drei gleichen Monatsraten zahlen." / detailed: "Die erste Rate ist am Mietbeginn fällig."
+  RIGHT (each level keeps the last and adds to it):
+  simple: "Sie zahlen 3.540 € Kaution." / standard: "Sie zahlen 3.540 € Kaution und dürfen das in drei gleichen Monatsraten tun." / detailed: "Sie zahlen 3.540 € Kaution in drei gleichen Monatsraten; die erste ist zum Mietbeginn fällig. Der Vermieter legt das Geld getrennt und verzinst an."
+- "detailed" must not mean more legalese.
 - In German, address the reader as "Sie" and keep the same plain register.
 
 Financial framing (from the user's perspective):
 - Set money.direction: "outgoing" when the user mainly pays (rent, mobile, insurance, gym, loan), "incoming" when the user mainly receives money (employment/freelance salary), "mixed" when both are significant, "neutral" when there is no clear money relationship.
 - NEVER frame salary or other income as a "cost". For an employment contract the salary is income, not an expense.
 - For each money item, set "kind" (salary/rent/deposit/bonus/holiday_pay/fee/variable/other), "freq" (once/monthly/annual), and "timingMonth" (0-11, 0 = first contract month) only when the document states when it is paid; otherwise omit timingMonth.
+- "oneTime" is for amounts that are actually paid on a stated occasion. A charge that only happens if something happens (a fee per reminder letter, a call-out charge, a penalty) is NOT a one-time cost — put it in "variable" with a note saying what triggers it.
+- If the contract splits an amount into instalments, say so in the "label" ("Kaution, in 3 Monatsraten") — the label is what the reader sees next to the figure.
 - Never infer net salary, tax, or social-security deductions — only report figures the document states.
 
 Legal citations:

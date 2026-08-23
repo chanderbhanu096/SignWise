@@ -93,7 +93,7 @@ interface Strings {
   firstMonthHigher: string;
   datesHeading: string;
   datesSub: string;
-  addCalendar: string;
+  addCalendar: (date: string) => string;
   calAdded: string;
   rightsHeading: string;
   rightsSub: string;
@@ -262,7 +262,7 @@ const EN: Strings = {
   firstMonthHigher: "First month is higher because of the deposit",
   datesHeading: "Important dates",
   datesSub: "Missing a deadline can have real financial consequences, so these matter most.",
-  addCalendar: "Add deadline to calendar",
+  addCalendar: (d) => `Add ${d} to calendar`,
   calAdded: "A reminder file (.ics) has been downloaded — open it to add the deadline to your calendar.",
   rightsHeading: "Your rights",
   rightsSub: "What the contract says you can expect.",
@@ -381,7 +381,7 @@ const EN: Strings = {
 const DE: Strings = {
   tagline: "Ihr Vertrag. Klar erklärt.",
   slogans: [
-    "Dein Vertrag, einfach erklärt.",
+    "Ihr Vertrag, einfach erklärt.",
     "Erst verstehen, dann unterschreiben.",
     "Verträge verständlich gemacht.",
   ],
@@ -464,7 +464,7 @@ const DE: Strings = {
   firstMonthHigher: "Der erste Monat ist wegen der Kaution höher",
   datesHeading: "Wichtige Termine",
   datesSub: "Eine verpasste Frist kann echte finanzielle Folgen haben — deshalb zählen diese am meisten.",
-  addCalendar: "Frist zum Kalender hinzufügen",
+  addCalendar: (d) => `${d} in den Kalender übernehmen`,
   calAdded: "Eine Erinnerungsdatei (.ics) wurde heruntergeladen — öffnen Sie sie, um die Frist in Ihren Kalender zu übernehmen.",
   rightsHeading: "Ihre Rechte",
   rightsSub: "Was Sie laut Vertrag erwarten dürfen.",

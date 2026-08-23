@@ -443,7 +443,7 @@ export function Overview({
                 <path d="M4 6h16v14H4z" />
                 <path d="M8 3v4M16 3v4M4 11h16" />
               </svg>
-              {s.addCalendar}
+              {s.addCalendar(deadline.date)}
             </button>
           )}
           {calMsg && (
