@@ -471,3 +471,41 @@ actually press it.
 
 The bundled examples keep their hand-written text — they are the fixture, and they
 already read the way the prompt now asks for.
+
+---
+
+## Item 2, third pass — red, tested against the supplied swatches
+
+The repo owner supplied a red swatch set and asked for it to be tested rather than
+assumed, with the amber "Worth checking" left alone. Measured first, applied second.
+
+**Contrast against white badge text** (the Important badge is the only solid fill, so
+this is the gating number — AA needs 4.5:1):
+
+| swatch | vs white text | verdict |
+|---|---|---|
+| `#5c0000` darkest | 14.43 | passes, but reads near-black at badge size |
+| `#8e0a0a` dark | **9.55** | **chosen** — unmistakably red and clears AAA |
+| `#d95e5e` medium | 3.42 | fails AA — cannot carry text |
+| `#e89a9a` light | 2.21 | fails AA — cannot carry text |
+
+The two light swatches are not usable as a filled badge, so they were put where they
+do work: `#e89a9a` is now `--imp-bd` (the row's border tint), and the wash behind an
+Important passage is `#fdecec`, the same lightness family as the existing amber wash.
+The chosen ramp is `--imp-fg: #8e0a0a` · `--imp-bg: #fdecec` · `--imp-bd: #e89a9a`.
+
+Verified in place: badge white-on-red **9.55:1**, document body text on the red wash
+**10.24:1**, the amber level untouched at 10.63:1.
+
+**Also implemented on the original document view, as asked — and it turned out to be
+a real gap.** `Original.tsx` set `data-tone={c.level === "check" ? "warning" : "normal"}`,
+so the document highlighted *check* passages in amber and gave **important** passages
+the same brand-teal wash as ordinary *standard* ones. The loudest level was the one
+the document did not mark at all. `data-tone` is now the level itself, and all three
+tones are styled: red wash for important, amber for check, teal for standard, with the
+selection ring following the same colour.
+
+**One accessibility fix found on the way.** The passage label inside a highlight
+(`.doc-clause .tag`, `--muted-2`) measured 3.66–3.91:1 against the washes — under AA
+on all three tones, including the teal one that predates any of this. Moving it to
+`--muted` puts every tone at 7.2:1 or better.

@@ -82,7 +82,7 @@ export function Original({
               key={c.id}
               className={"doc-clause" + (selected?.id === c.id ? " on" : "")}
               data-clause={c.id}
-              data-tone={c.level === "check" ? "warning" : "normal"}
+              data-tone={c.level}
               role="button"
               tabIndex={0}
               aria-current={selected?.id === c.id ? "true" : undefined}
