@@ -612,3 +612,17 @@ with server-side build enabled needs the **sources**, not just the built output.
 The zip is checked before every deploy for `.env*`, the QA test PDF, and
 `marketing/` — the test PDF is the real rental contract, with an address and a
 bank account in it, and it must never reach a public host.
+
+**A zip deploy does not remove anything.** After the successful deploy the new
+bundle was live, and `/marketing/signwise-whiteboard-one-slide.pptx` still
+returned the real 1.78 MB file: `az webapp deploy` unpacks over `wwwroot` without
+clearing it, so files deleted from the repo stay on the server forever. Finding 12
+was fixed in the build and not on the host. Redeployed with `--clean true`.
+
+Also worth recording, because it nearly sent me the wrong way: probing for the
+test PDF returned **200**, which looks like the contract is published. It is not —
+`server.ts` has an SPA fallback that answers any unknown non-API GET with
+`index.html`, so a missing file returns 200 and 584 bytes of HTML. **Status code
+alone cannot tell you whether a file is gone on an SPA host**; the content type
+can. `text/html, 584b` = absent, `application/vnd...presentation, 1784465b` =
+very much present.
