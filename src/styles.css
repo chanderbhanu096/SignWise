@@ -23,6 +23,7 @@
   --imp-fg: #0a464f; --imp-bg: #e0f0f1; --imp-bd: #b9dbdd;
   --chk-fg: #8a5300; --chk-bg: #fdf3e2; --chk-bd: #f0dfc0;
   --std-fg: #55666b; --std-bg: #eef2f2; --std-bd: #dae2e2;
+  --ok-fg: #1a6d4a; --ok-bg: #eaf5ef; --ok-bd: #cfe6da;
 
   --radius: 12px;
   --radius-lg: 14px;
@@ -441,7 +442,7 @@ section.screen.upload-screen::after {
 .decision-states { position: relative; z-index: 1; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
 .state-badge { display: inline-flex; align-items: center; gap: 7px; padding: 4px 10px; border-radius: 99px; font-size: 13px; font-weight: 600; }
 .state-badge.check { color: var(--chk-fg); background: var(--chk-bg); border: 1px solid var(--chk-bd); }
-.state-badge.clear { color: var(--std-fg); background: var(--std-bg); border: 1px solid var(--std-bd); }
+.state-badge.clear { color: var(--ok-fg); background: var(--ok-bg); border: 1px solid var(--ok-bd); }
 .state-badge.clarify { color: var(--brand-strong); background: var(--brand-tint); border: 1px solid #b9dbdd; }
 .decision-section { margin-top: 34px; }
 .decision-section-head { display: flex; gap: 14px; align-items: flex-start; }

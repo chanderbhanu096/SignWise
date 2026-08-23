@@ -98,3 +98,33 @@ suggestion): the Overview already carries five blocks and the Original screen al
 lists every clause in document order. A sixth block restating the boring clauses adds
 scrolling to the page whose job is triage. Filtering by level puts the same
 information one click away, inside the control the reader is already using.
+
+## 4 + 6 · "the symbols on the overview page are not the same as on the before-you-sign page" / "replace the ? with △"
+
+Reported twice, one defect. **Worth fixing: yes** — this was a correctness problem,
+not a styling preference.
+
+**Root cause.** `?` meant two different things on two screens. On the Overview it was
+the mark for the level *Worth checking*; on the decision brief it was the mark for
+*a question to put to the other party*. A reader who learns the glyph on one screen
+learns the wrong thing for the other.
+
+**Fix — one mark vocabulary, four marks, no overlap:**
+
+| mark | meaning | where |
+|---|---|---|
+| `!` | Important | overview, original |
+| `△` | Worth checking / worth another look | overview, original, decision |
+| `✓` | Clear / standard | overview, original, decision |
+| `?` | A question for the other party | decision only |
+
+**The orphan label.** The decision hero's badge row promised "✓ Clear from contract",
+a phrase that appears nowhere else on the page — the section it points at is called
+"What you're agreeing to". The badges now carry the exact headings of the three
+sections below them, which turns the row from a glossary of invented terms into a
+contents line. `stateClear` and `stateClarify` were then unreferenced and are deleted.
+
+`.state-badge.clear` was pointing at the `--std-*` variables, so item 2's move of
+Standard to grey would have quietly greyed out a positive state. It now has its own
+`--ok-*` green: "clear" is a good outcome, "standard" is a neutral one, and they are
+no longer the same colour by accident.

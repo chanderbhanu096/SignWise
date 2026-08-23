@@ -135,8 +135,6 @@ interface Strings {
   reviewEmptyTitle: string;
   reviewEmptyBody: string;
   missingInfo: string;
-  stateClear: string;
-  stateClarify: string;
   reviewClause: string;
   downloadSummary: string;
   summaryReady: string;
@@ -303,8 +301,6 @@ const EN: Strings = {
   reviewEmptyTitle: "No additional review points were identified",
   reviewEmptyBody: "This does not mean the contract has been legally reviewed. You can still inspect any clause in the original contract.",
   missingInfo: "We couldn’t find this information in the contract.",
-  stateClear: "Clear from contract",
-  stateClarify: "Clarify with the other party",
   reviewClause: "Review the clause",
   downloadSummary: "Print / save my summary",
   summaryReady: "The print window is opening — choose Save as PDF to keep a copy.",
@@ -508,8 +504,6 @@ const DE: Strings = {
   reviewEmptyTitle: "Keine zusätzlichen Prüfpunkte gefunden",
   reviewEmptyBody: "Das bedeutet nicht, dass der Vertrag rechtlich geprüft wurde. Sie können jede Klausel im Originalvertrag ansehen.",
   missingInfo: "Wir konnten diese Information im Vertrag nicht finden.",
-  stateClear: "Im Vertrag klar genannt",
-  stateClarify: "Mit der anderen Partei klären",
   reviewClause: "Klausel prüfen",
   downloadSummary: "Zusammenfassung drucken / speichern",
   summaryReady: "Das Druckfenster öffnet sich — wählen Sie Als PDF speichern, um eine Kopie zu behalten.",
