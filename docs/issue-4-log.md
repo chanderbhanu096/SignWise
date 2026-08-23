@@ -301,3 +301,29 @@ Two tests were added, covering the dated-slug cases and the rental citations, so
 next re-enactment fails in CI rather than in front of a reader. GG was left off
 deliberately: the Grundgesetz uses `art_13.html` rather than `__13.html`, and one
 special case is not worth carrying for a law no consumer contract cites.
+
+---
+
+## Summary
+
+| # | Report | Verdict | Commit |
+|---|---|---|---|
+| 1 | Language switching slow | Fixed (cache + visible wait) | `keep a translated copy per language and show the wait` |
+| 2 | Important tag too similar to Standard | Fixed, **not with red** — argued above | `make the important level the loudest badge and neutralise standard` |
+| 3 | Levels show 5 important, 0 of anything else | Fixed — two defects, UI *and* prompt | `count the levels over the whole contract, not the top five` |
+| 4 + 6 | Symbols differ between screens; `?` should be `△` | Fixed — one mark, one meaning | `use one mark for one meaning across the screens` |
+| 5 | 12-month cost chart could mislead | Fixed — stated as a projection | `say the 12-month chart is a projection` |
+| 7 | Header line too green | Fixed — line kept, weight halved | `soften the header hairline to a tint` |
+| 8 | Slogan shakes while typing | Fixed — 1.61px → 0.00px, measured | `stop the slogan shaking as it types` |
+| 9 | Alignment issue in the compensation box | Mostly fixed already; the live part fixed | `hold the amount on its own line in the money rows` |
+| 10 | Rename "Overview" | Fixed — "Overview & answers", not "Clarify" | `name the overview screen after what it can do` |
+| 11a | Screen switcher on the landing page | Not reproducible; condition hardened anyway | `keep the analysis chrome off the landing page` |
+| 11b | BetrKV not linked | Fixed — and two live links were 404ing | `link the laws consumer contracts actually cite` |
+
+Nothing in the list was dropped. Two reports were answered differently from how they
+were phrased — no red for Important (item 2) and no "Clarify" in the overview's name
+(item 10) — and both arguments are written out above rather than left implicit.
+
+**Verification.** 30/30 tests pass. Checked at 1280×900 and 375×812, both languages,
+both bundled examples, across all five screens: no horizontal overflow, no console
+errors on a clean session.
