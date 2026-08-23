@@ -166,3 +166,35 @@ edge instead of a green rule the eye keeps returning to.
 
 The `box-shadow` was left alone: at `rgba(18,38,43,0.055)` it is neutral grey and not
 what made the edge look green.
+
+## 8 · "the animation looks super nice when deleting but when typing, the words are shaking"
+
+**Worth fixing: yes.** It is the first thing anyone sees, including a jury.
+
+**Measured, not guessed.** Sampling `.slogan-line` while it typed showed the line's
+width moving between `890.16px` and `891.77px` — a spread of **1.61px** — and its left
+edge moving `287.28 → 286.50`. A centred line shifts by half the width change, so the
+headline was jumping ~0.8px on every keystroke. It is worse while typing than while
+erasing only because erasing runs at 26ms per character against 55ms, so the eye has
+less time to catch each jump.
+
+**Two wrong suspects, both ruled out by measurement.** Kerning across the split
+(0.016px — not it), and the inline-block caret between the typed text and the
+remainder (making it `position: absolute` changed the spread by exactly nothing:
+still 1.61px).
+
+**Actual cause.** The line was `[typed text node][caret][hidden remainder span]`. The
+browser snaps each inline box boundary to the pixel grid, so the sum of the snapped
+parts depends on *where* the split falls — which moves by one character every 55ms.
+
+**Fix.** One inline box per character, with the untyped ones `visibility: hidden`
+instead of absent. The number and position of the box boundaries is then constant, so
+the width is constant. Re-measured over 101 samples across typing and erasing:
+**spread 0.00px**, first character pinned at `252.30px` on every frame. The caret
+stays out of flow so it can sit at the split without contributing width.
+
+**Cost.** ~35 `<span>`s re-rendered every 55ms, which is nothing, and 0.3px wider
+than a plain text run — the hidden sizers use the same markup so they still reserve
+the correct box. Word wrapping is unaffected: verified at 375px, where the slogans
+break at spaces (`"Erst verstehen, dann " / "unterschreiben."`) with no mid-word
+breaks and no horizontal overflow.

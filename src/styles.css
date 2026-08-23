@@ -82,11 +82,18 @@ button { font: inherit; }
    always as large as the longest line and never resizes mid-animation. */
 .slogan { display: grid; justify-items: center; }
 .slogan-sizer, .slogan-line { grid-area: 1 / 1; }
+.slogan-line { position: relative; }
 .slogan-sizer { visibility: hidden; }
-.slogan-rest { visibility: hidden; } /* holds the line breaks while the rest types in */
+.slogan-ch.off { visibility: hidden; } /* holds the line breaks while the rest types in */
 /* Negative right margin cancels the caret's own advance width, so the untyped
    remainder keeps exactly the line breaks it will have when fully typed. */
-.slogan-caret { display: inline-block; width: 0.055em; height: 0.78em; margin-left: 0.07em; margin-right: -0.125em; vertical-align: baseline; border-radius: 2px; background: var(--brand); box-shadow: 0 0 10px rgba(15,95,107,0.3); animation: caret 1.05s steps(1) infinite; }
+/* Out of flow, at its static position. As an inline-block the caret sat between the
+   typed text and the (invisible) remainder, and the browser snapped that boundary to
+   the pixel grid — so the line's total width moved by up to 1.6px depending on which
+   character the caret happened to follow, and a centred line shook by half of that on
+   every keystroke. Absolute positioning keeps the caret exactly where the text ends
+   while contributing nothing to the line's width. */
+.slogan-caret { position: absolute; display: inline-block; width: 0.055em; height: 0.78em; margin-left: 0.07em; border-radius: 2px; background: var(--brand); box-shadow: 0 0 10px rgba(15,95,107,0.3); animation: caret 1.05s steps(1) infinite; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .langs { display: flex; align-items: center; gap: 3px; padding: 3px; border: 1px solid var(--line); border-radius: 12px; background: #edf2f1; }
 
