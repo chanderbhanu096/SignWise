@@ -455,3 +455,21 @@ from the inside.
 | `Originalvertrag` / "Original contract" | `Der Vertrag im Wortlaut` / "The contract itself" | "Original" describes provenance — as opposed to a copy? A translation? What the reader wants to know is that these are the contract's own words. |
 | "Hervorgehobene Passagen sind die, aus denen Ihre Punkte stammen." | "Ihr Vertrag vollständig. Markierte Passagen sind die, aus denen ein Punkt stammt — wählen Sie eine aus, um die Erklärung zu sehen." | The old line said what the colours mean and nothing else. It never says the whole contract is here (the thing people were unsure about), and never says the marks are clickable — which is the only interaction on the screen. |
 | "Über die verfügbaren Quellenlinks gelangen Sie zurück zum Wortlaut in Ihrem Vertrag." | "Jeder Punkt hier führt zurück zum Wortlaut, aus dem er stammt." | Nineteen words of officialese ("über die verfügbaren Quellenlinks") for a six-word idea, on a screen whose entire premise is plain language. |
+
+---
+
+## 14 — "New contract New contract"
+
+**Seen.** Reading the page as text (which is roughly what a screen reader does),
+the nav came out as:
+
+    Overview | Contract text | Before you sign | + | New contract | New contract
+
+**Cause.** My own fix from finding 2. The button carries a visible label that is
+hidden on phones, plus a visually-hidden copy so the name survives that. On
+desktop both are in the accessible tree, so the name is announced twice.
+
+**Fix.** One `aria-label` on the button, and both spans `aria-hidden`. The name is
+now correct in both layouts and stated once. Caught by testing the output, not the
+screenshot — the kind of thing that is invisible until you read the page the way
+assistive tech does.

@@ -313,10 +313,12 @@ export default function App() {
               </button>
             ))}
           </div>
-          <button className="nav-new" onClick={() => setConfirmNew(true)} title={s.newContract}>
+          {/* aria-label carries the name in both states: the visible label is hidden
+              on a phone, and a second sr-only copy would read the name twice on
+              desktop. */}
+          <button className="nav-new" onClick={() => setConfirmNew(true)} aria-label={s.newContract} title={s.newContract}>
             <span aria-hidden="true">+</span>
-            <span className="nav-new-label">{s.newContract}</span>
-            <span className="sr-only">{s.newContract}</span>
+            <span className="nav-new-label" aria-hidden="true">{s.newContract}</span>
           </button>
         </nav>
       )}
