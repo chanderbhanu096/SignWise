@@ -314,6 +314,41 @@ observed rather than imagined:
 Both held on the re-run: the penalty clause now cites § 555 BGB alongside § 546 and
 § 546a, and states what each contains.
 
+### Finding 7 — The same figure on two commitment cards
+*Severity: medium. Found by using the deployed build as an end user, not by reading
+code.*
+
+On the "Vor der Unterschrift" screen the trap contract showed **1.780 €** twice:
+once as *"Monatliche Zahlung — Sie zahlen 1.450 € Kaltmiete sowie 330 €
+Vorauszahlungen"* (the model's card, with the real breakdown) and once as *"Jeden
+Monat — Eine regelmäßige Zahlung laut Vertrag"* (the app's derived fallback, generic
+filler). Two of the four headline commitments were the same fact, and one of them
+said nothing.
+
+The dedupe key was `clauseId + title`, and the title is precisely what differs
+between a model-written card and a derived one. **Fix:** the figure decides —
+across the two sources only, never inside the model's own list, where two cards may
+legitimately share a value ("3 Monate" for a notice period and a probation).
+
+Compared by the *figures* a value contains, not the string: the model writes
+"1.780,00 EUR" and the derived card "1.780 €". Only the client-side currency styling
+ever made those two look alike, which meant the first version of this fix worked in
+the browser and silently did nothing anywhere else.
+
+### Finding 8 — The model reported our own privacy measure as a document defect
+*Severity: low-medium, found by probing the deployed API.*
+
+First live run after the redaction shipped came back with the warning *"Adresse und
+Bankverbindung sind durch Platzhalter ersetzt."* The model was reading `[ADRESSE-1]`
+as something missing from the contract — a warning slot spent on the app's own data
+minimisation, and a plausible route to a lowered confidence rating on every contract
+that contains an address.
+
+**Fix:** one prompt rule stating that placeholders are expected and correct, that
+they stand for the value they replace, that they must be kept verbatim in quotes,
+and that they are not a defect. Verified against the deployed host: the warning is
+gone, and the remaining warnings are genuine observations about the probe text.
+
 ---
 
 ## 4. Looked at, deliberately not changed
@@ -348,3 +383,26 @@ Both held on the re-run: the penalty clause now cites § 555 BGB alongside § 54
   whole deposit in month one. Carried over from the previous pass.
 - **§ 309 Nr. 9 has no test contract.** The subscription benchmark is covered by unit
   tests but has never run against a real mobile or gym contract.
+- **Two commitment cards can still overlap in prose** without sharing a figure
+  ("Bindung und Kündigung" beside "Laufzeit"). Closing that needs a similarity
+  measure on sentences, which risks dropping genuinely distinct cards; the figures
+  are no longer duplicated, which was the visible bug.
+
+---
+
+## 6. Verified
+
+- `npm test` — **75 pass, 0 fail** (`tsc -b` clean). 25 of those tests are new.
+- The trap contract, end to end through the live model in the browser: 7 benchmark
+  cards, 4 distinct commitment figures, the depth picker adding at every step, and
+  both § 551 benchmarks inside the clause panel.
+- The clean example contract: "✓ Keine Abweichung gefunden", naming all 7 benchmarks
+  as checked.
+- The deployed bundle (`index-zVr_S2Gt.js`) matches the local build.
+- `/__qa_traps.pdf` and `/__qa_test.pdf` both return the 584-byte SPA fallback as
+  `text/html` — no test document is published. (Checking the status code alone would
+  have been meaningless: the SPA fallback answers 200 for everything.)
+- A live `POST /api/analyze` through the deployed host with placeholders in the text:
+  HTTP 200, placeholders returned intact, so the browser-side restore has something
+  to substitute.
+- No console errors on the deployed site.
