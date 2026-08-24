@@ -33,18 +33,14 @@ const RAW: RawClause[] = [
     title: { de: "Sie zahlen jeden Monat 1.240 € Miete", en: "You will pay €1,240 every month" },
     simple: {
       de: {
-        simple: "Sie zahlen jeden Monat 1.240 € Miete — spätestens am 3. Werktag.",
-        standard:
-          "Die Grundmiete beträgt 1.240 € im Monat und wird im Voraus gezahlt. Das Geld muss bis zum dritten Werktag beim Vermieter sein; Überweisungskosten tragen Sie.",
-        detailed:
-          "Die Grundmiete beträgt 1.240 € monatlich und ist im Voraus fällig, nicht am Monatsende. Die Zahlung muss bis zum dritten Werktag auf dem Konto des Vermieters eingehen; „kostenfrei“ heißt, dass Sie die Gebühren tragen. Nebenkosten werden zusätzlich nach Verbrauch abgerechnet.",
+        simple: "Sie zahlen jeden Monat 1.240 € Miete.",
+        standard: "Das Geld muss im Voraus da sein: spätestens am dritten Werktag des Monats auf dem Konto des Vermieters.",
+        detailed: "„Kostenfrei“ heißt, dass Sie die Überweisungsgebühren tragen — und die Nebenkosten werden nach Verbrauch zusätzlich abgerechnet.",
       },
       en: {
-        simple: "You pay €1,240 rent each month. It must arrive by the 3rd working day of the month.",
-        standard:
-          "The basic rent is €1,240 per month, paid in advance. It has to be in the landlord’s account by the third working day of each month, and you carry any transfer fees.",
-        detailed:
-          "Your basic rent (Grundmiete) is €1,240 per month, due in advance rather than at the end of the month. Payment must reach the landlord’s account by the third working day, and the wording “kostenfrei” means bank charges are yours. Utilities are billed separately by consumption, so your real monthly outgoing will be higher.",
+        simple: "You pay €1,240 rent every month.",
+        standard: "It has to be there in advance: in the landlord’s account by the third working day of the month.",
+        detailed: "“Kostenfrei” means the transfer fees are yours — and utilities are billed on top by consumption.",
       },
     },
     means: {
@@ -67,18 +63,14 @@ const RAW: RawClause[] = [
     title: { de: "Ihre Kaution beträgt 3.000 €", en: "Your deposit is €3,000" },
     simple: {
       de: {
-        simple: "Sie zahlen 3.000 € Kaution — in 3 Monatsraten möglich.",
-        standard:
-          "Die Kaution beträgt 3.000 €, also gut zwei Monatsmieten. Sie darf in drei gleichen Raten gezahlt werden, die erste zu Mietbeginn. Nach dem Auszug bekommen Sie sie zurück, abzüglich berechtigter Forderungen.",
-        detailed:
-          "Die Kaution beträgt 3.000 €, rund 2,4 Grundmieten. Zahlung in drei gleichen Raten ist möglich, die erste zu Mietbeginn. Der Vermieter muss das Geld getrennt und verzinst anlegen und nach dem Auszug zurückzahlen, sobald Forderungen geklärt sind — das kann nach der Nebenkostenabrechnung einige Monate dauern.",
+        simple: "Sie zahlen 3.000 € Kaution.",
+        standard: "Diesen Betrag dürfen Sie in drei gleichen Monatsraten zahlen, die erste zum Mietbeginn.",
+        detailed: "Der Vermieter muss das Geld getrennt und verzinst anlegen und es nach dem Auszug zurückzahlen, sobald offene Forderungen geklärt sind — das kann bis nach der Nebenkostenabrechnung dauern.",
       },
       en: {
-        simple: "You pay €3,000 as a deposit. You may split it into 3 monthly parts.",
-        standard:
-          "The deposit is €3,000 — a little over two months’ rent. You can pay it in three equal monthly instalments, the first at the start of the tenancy. You get it back after you move out, minus anything the landlord may lawfully keep.",
-        detailed:
-          "The deposit is €3,000, which is about 2.4 months’ basic rent. The contract lets you pay in three equal instalments, the first due when the tenancy begins. The landlord must hold it in a separate, interest-bearing account, and returns it after move-out once any claims (damage, unpaid utilities) are settled — this can take several months after the final utilities statement.",
+        simple: "You pay a deposit of €3,000.",
+        standard: "You may split that amount into three equal monthly instalments, the first when the tenancy starts.",
+        detailed: "The landlord has to hold it in a separate, interest-bearing account and return it after you move out, once any claims are settled — which can run until after the final utilities statement.",
       },
     },
     means: {
@@ -101,18 +93,14 @@ const RAW: RawClause[] = [
     title: { de: "3 Monate Frist, um zu kündigen", en: "You need 3 months’ notice to cancel" },
     simple: {
       de: {
-        simple: "Zum Ausziehen schicken Sie einen unterschriebenen Brief — etwa 3 Monate vorher.",
-        standard:
-          "Der Vertrag hat kein Enddatum. Ihre schriftliche Kündigung muss bis zum dritten Werktag eines Monats eingehen; das Mietverhältnis endet dann zum Ende des zweiten Folgemonats. Praktisch sind das drei Monate Frist.",
-        detailed:
-          "Das Mietverhältnis läuft unbefristet und endet nur durch Kündigung. Die Kündigung muss schriftlich und unterschrieben sein (E-Mail genügt nicht) und bis zum dritten Werktag eines Kalendermonats zugehen; es endet zum Ablauf des zweiten Folgemonats. Ein Tag zu spät kostet eine weitere Monatsmiete — 1.240 €.",
+        simple: "Um auszuziehen, kündigen Sie schriftlich mit rund drei Monaten Frist.",
+        standard: "Ihr unterschriebener Brief muss bis zum dritten Werktag eines Monats ankommen; das Mietverhältnis endet dann zum Ende des zweiten Folgemonats.",
+        detailed: "Eine E-Mail genügt dafür nicht, und ein Tag zu spät verschiebt das Ende um einen ganzen Monat — also um weitere 1.240 €.",
       },
       en: {
-        simple: "To move out, send a signed letter. You must send it about 3 months before you leave.",
-        standard:
-          "The contract has no end date. To leave, you send a written, signed cancellation that arrives by the third working day of a month — you then move out at the end of the second month after that. In practice that is three months’ notice.",
-        detailed:
-          "The tenancy runs indefinitely, so it ends only if one side cancels. Your cancellation must be in writing and signed (email is not enough) and must arrive by the third working day of a calendar month; the tenancy then ends at the end of the second following month. Miss that date by a day and you owe one more month’s rent — €1,240.",
+        simple: "To move out, you cancel in writing with about three months’ notice.",
+        standard: "Your signed letter must arrive by the third working day of a month; the tenancy then ends at the end of the second month after that.",
+        detailed: "An e-mail does not count, and one day late pushes the end back by a full month — another €1,240.",
       },
     },
     means: {
@@ -138,18 +126,14 @@ const RAW: RawClause[] = [
     },
     simple: {
       de: {
-        simple: "Die Miete kann später steigen — nicht in den ersten 15 Monaten und nur im gesetzlichen Rahmen.",
-        standard:
-          "Der Vermieter darf die Miete an die ortsübliche Vergleichsmiete anpassen, frühestens 15 Monate nach Mietbeginn. Die Erhöhung muss schriftlich begründet werden, und Sie haben eine Überlegungsfrist.",
-        detailed:
-          "Die Klausel erlaubt Anpassungen bis zur ortsüblichen Vergleichsmiete, keine freien Erhöhungen. Frühestens möglich ist eine Erhöhung 15 Monate nach Mietbeginn, also ab Januar 2028. Der Vermieter muss sie schriftlich begründen (Mietspiegel, Vergleichswohnungen, Gutachten); Kappungsgrenzen begrenzen den Anstieg innerhalb von drei Jahren.",
+        simple: "Die Miete kann später steigen, frühestens 15 Monate nach Mietbeginn.",
+        standard: "Erlaubt sind dabei nur Anpassungen bis zur ortsüblichen Vergleichsmiete, keine freien Erhöhungen.",
+        detailed: "Jede Erhöhung muss der Vermieter schriftlich begründen — mit Mietspiegel, Vergleichswohnungen oder Gutachten — und eine Kappungsgrenze begrenzt den Anstieg innerhalb von drei Jahren.",
       },
       en: {
-        simple: "The rent can go up later, but not in the first 15 months, and only within legal limits.",
-        standard:
-          "The landlord may raise the rent towards the local comparative rent, at the earliest 15 months after the start. Any increase has to be requested in writing with reasons, and you have time to respond before it applies.",
-        detailed:
-          "This clause allows increases up to the local comparative rent (ortsübliche Vergleichsmiete), not free increases. The earliest possible increase is 15 months after your start date, i.e. from January 2028. The landlord must justify it in writing (rent index, comparable flats or an expert report), and legal caps limit how much rent can rise within three years.",
+        simple: "The rent can rise later, at the earliest 15 months after the start.",
+        standard: "Only increases up to the local comparative rent are allowed, not free increases.",
+        detailed: "Every increase has to be justified in writing — rent index, comparable flats or an expert report — and a statutory cap limits how far rent can rise within three years.",
       },
     },
     means: {
@@ -175,18 +159,14 @@ const RAW: RawClause[] = [
     },
     simple: {
       de: {
-        simple: "Kleine Reparaturen bis 150 € zahlen Sie selbst. Diese Klausel sollten Sie prüfen lassen.",
-        standard:
-          "Sie würden kleine Reparaturen an Armaturen, Schaltern und ähnlichen Gegenständen zahlen — bis 150 € je Fall und höchstens 8 % der Jahresmiete (rund 1.190 €). Beide Beträge liegen eher hoch, das sollte näher geprüft werden.",
-        detailed:
-          "Kleinreparaturklauseln verlagern die Kosten kleiner Instandsetzungen auf den Mieter. Hier bis 150 € je Einzelfall und jährlich höchstens 8 % der Jahresmiete — rund 1.190 €. Gerichte haben deutlich niedrigere Einzelbeträge als Obergrenze angesehen; fehlt eine wirksame Höchstgrenze, kann die Klausel insgesamt unwirksam sein. Eine genauere Prüfung ist sinnvoll.",
+        simple: "Kleine Reparaturen bis 150 € je Fall zahlen Sie selbst.",
+        standard: "Betroffen sind Armaturen, Schalter und ähnliche Gegenstände, im Jahr höchstens 8 % der Jahresmiete — rund 1.190 €.",
+        detailed: "Beide Grenzen zusammen entscheiden, wie teuer das für Sie werden kann. Diese Klausel verdient einen zweiten Blick, bevor Sie unterschreiben.",
       },
       en: {
-        simple: "You pay for small repairs up to €150 each. This clause may deserve closer review.",
-        standard:
-          "You would pay small repairs on taps, switches and similar fittings — up to €150 per case, and up to 8% of your yearly rent (about €1,190) in total. Both the per-case amount and the yearly cap are on the high side compared with what is usually accepted, so this may deserve closer review.",
-        detailed:
-          "Small-repair clauses shift the cost of minor fittings repairs (taps, switches, blinds) to the tenant. Here it is up to €150 per case with a yearly total of 8% of the annual rent — about €1,190. Courts have often treated per-case amounts well below this figure as the upper end of what is reasonable, and a clause without a valid cap can be ineffective as a whole. This may deserve closer review before signing.",
+        simple: "You pay small repairs up to €150 per case yourself.",
+        standard: "It covers taps, switches and similar fittings, capped at 8 % of the annual rent per year — about €1,190.",
+        detailed: "The two limits together decide how expensive this can get for you. This clause deserves a second look before you sign.",
       },
     },
     means: {
@@ -212,18 +192,14 @@ const RAW: RawClause[] = [
     },
     simple: {
       de: {
-        simple: "Die Wohnung muss sauber und bezugsfertig sein — wie im Protokoll festgehalten.",
-        standard:
-          "Die Wohnung wird bezugsfertig und gereinigt im Zustand des Übergabeprotokolls übergeben. Dieses Protokoll ist später Ihr Beweis — machen Sie am Tag Fotos.",
-        detailed:
-          "Die Übergabe erfolgt im Zustand des Übergabeprotokolls, bezugsfertig und gereinigt. Das Protokoll ist der Maßstab beim Auszug: Notieren Sie Mängel, Zählerstände und Schlüssel und behalten Sie eine unterschriebene Kopie.",
+        simple: "Die Wohnung wird sauber und bezugsfertig übergeben.",
+        standard: "Maßgeblich ist dabei der Zustand, den das Übergabeprotokoll festhält.",
+        detailed: "Dieses Protokoll ist beim Auszug der Maßstab: Notieren Sie Mängel, Zählerstände und Schlüssel und behalten Sie eine unterschriebene Kopie.",
       },
       en: {
-        simple: "The flat must be clean and ready to move into, as written in the handover record.",
-        standard:
-          "The apartment is handed over ready to move in and cleaned, in the condition recorded in the handover protocol. That document is your evidence later, so take photos on the day.",
-        detailed:
-          "Handover happens in the condition set out in the Übergabeprotokoll, ready to occupy and cleaned. The protocol is the reference point when you move out, so record existing marks, meter readings and any missing keys, and keep a signed copy.",
+        simple: "The flat is handed over clean and ready to move into.",
+        standard: "What counts is the condition recorded in the handover protocol.",
+        detailed: "That protocol is the reference point when you leave: note existing marks, meter readings and keys, and keep a signed copy.",
       },
     },
     means: {
@@ -513,14 +489,14 @@ const EMP: EmpClause[] = [
     title: { de: "Beginn am 1. November — unbefristet", en: "Starts 1 November — indefinite" },
     simple: {
       de: {
-        simple: "Das Arbeitsverhältnis beginnt am 1. November 2026 und ist unbefristet.",
-        standard: "Ihr Arbeitsverhältnis beginnt am 1. November 2026. Es hat kein festes Enddatum und läuft bis zu einer Kündigung.",
-        detailed: "Der Vertrag beginnt am 1. November 2026 und ist auf unbestimmte Zeit geschlossen. Er endet daher nicht automatisch an einem bestimmten Datum; für eine Beendigung gelten die Kündigungsregeln.",
+        simple: "Das Arbeitsverhältnis beginnt am 1. November 2026.",
+        standard: "Es ist unbefristet geschlossen und hat kein festes Enddatum.",
+        detailed: "Der Vertrag endet daher nicht von selbst — er läuft, bis eine Seite kündigt.",
       },
       en: {
-        simple: "Employment starts on 1 November 2026 and is indefinite.",
-        standard: "Your employment starts on 1 November 2026. It has no fixed end date and continues until it is terminated.",
-        detailed: "The agreement starts on 1 November 2026 and is indefinite. It therefore does not end automatically on a fixed date; the notice provisions govern termination.",
+        simple: "Employment starts on 1 November 2026.",
+        standard: "It is indefinite and has no fixed end date.",
+        detailed: "So the contract does not end by itself — it runs until one side gives notice.",
       },
     },
     means: {
@@ -542,14 +518,14 @@ const EMP: EmpClause[] = [
     title: { de: "Ihr Bruttogehalt beträgt 3.440 € / Monat", en: "Your gross salary is €3,440 / month" },
     simple: {
       de: {
-        simple: "Sie verdienen 3.440 € brutto im Monat, gezahlt zum Monatsende.",
-        standard: "Das monatliche Bruttogehalt beträgt 3.440 € und wird jeweils zum Monatsende gezahlt. Brutto heißt vor Steuern und Sozialabgaben.",
-        detailed: "Das vereinbarte Bruttogehalt beträgt 3.440 € pro Monat, zahlbar zum Monatsende. „Brutto“ ist der Betrag vor Lohnsteuer und Sozialversicherung; Ihr Nettobetrag ist niedriger und hängt von Steuerklasse und Beiträgen ab — das steht nicht im Vertrag.",
+        simple: "Sie verdienen 3.440 € brutto im Monat.",
+        standard: "Gezahlt wird jeweils zum Monatsende.",
+        detailed: "„Brutto“ ist der Betrag vor Lohnsteuer und Sozialversicherung; was ankommt, ist niedriger und hängt von Steuerklasse und Beiträgen ab — das steht nicht im Vertrag.",
       },
       en: {
-        simple: "You earn €3,440 gross per month, paid at month end.",
-        standard: "The monthly gross salary is €3,440, paid at the end of each month. Gross means before tax and social-security contributions.",
-        detailed: "The agreed gross salary is €3,440 per month, payable at month end. “Gross” is the figure before income tax and social security; your net pay is lower and depends on your tax class and contributions — which the contract does not state.",
+        simple: "You earn €3,440 gross per month.",
+        standard: "It is paid at the end of each month.",
+        detailed: "“Gross” is the figure before income tax and social security; what arrives is lower and depends on your tax class and contributions — which the contract does not state.",
       },
     },
     means: {
@@ -572,14 +548,14 @@ const EMP: EmpClause[] = [
     title: { de: "6 Monate Probezeit — 2 Wochen Frist", en: "6-month probation — 2 weeks’ notice" },
     simple: {
       de: {
-        simple: "In den ersten 6 Monaten können beide Seiten mit 2 Wochen Frist kündigen.",
-        standard: "Die ersten sechs Monate sind Probezeit. In dieser Zeit kann jede Seite mit einer Frist von zwei Wochen kündigen.",
-        detailed: "Die Probezeit dauert sechs Monate (bis 30.04.2027). Während dieser Zeit gilt eine verkürzte Kündigungsfrist von zwei Wochen zu jedem Tag; ein besonderer Kündigungsschutz besteht meist noch nicht.",
+        simple: "Die ersten sechs Monate sind Probezeit.",
+        standard: "In dieser Zeit kann jede Seite mit zwei Wochen Frist kündigen.",
+        detailed: "Die Probezeit läuft bis zum 30.04.2027; die verkürzte Frist gilt zu jedem Tag, und ein besonderer Kündigungsschutz besteht meist noch nicht.",
       },
       en: {
-        simple: "In the first 6 months, either side can cancel with 2 weeks’ notice.",
-        standard: "The first six months are a probation period. During it either side may cancel with two weeks’ notice.",
-        detailed: "Probation lasts six months (until 30 Apr 2027). During it a shortened two-week notice applies on any day, and full dismissal protection usually does not yet apply.",
+        simple: "The first six months are a probation period.",
+        standard: "During it either side may cancel with two weeks’ notice.",
+        detailed: "Probation runs until 30 Apr 2027; the shortened period applies on any day, and full dismissal protection usually does not yet apply.",
       },
     },
     means: {
@@ -602,14 +578,14 @@ const EMP: EmpClause[] = [
     title: { de: "Nach der Probezeit gilt die gesetzliche Frist", en: "After probation the statutory notice applies" },
     simple: {
       de: {
-        simple: "Nach der Probezeit gelten die normalen gesetzlichen Fristen — für Sie 4 Wochen.",
-        standard: "Nach der Probezeit richtet sich die Kündigungsfrist nach dem Gesetz: für Arbeitnehmer vier Wochen zum 15. oder zum Monatsende.",
-        detailed: "Nach der Probezeit gilt die gesetzliche Grundfrist von vier Wochen zum 15. oder zum Ende eines Kalendermonats (§ 622 Abs. 1 BGB). Für den Arbeitgeber verlängert sie sich mit der Beschäftigungsdauer.",
+        simple: "Nach der Probezeit gilt für Sie eine Frist von vier Wochen.",
+        standard: "Diese vier Wochen laufen jeweils zum 15. oder zum Ende eines Kalendermonats.",
+        detailed: "Das ist die gesetzliche Grundfrist (§ 622 Abs. 1 BGB); für den Arbeitgeber verlängert sie sich mit Ihrer Beschäftigungsdauer.",
       },
       en: {
-        simple: "After probation the normal statutory periods apply — four weeks for you.",
-        standard: "After probation the notice period follows the law: for employees four weeks to the 15th or the end of a month.",
-        detailed: "After probation the statutory base period is four weeks to the 15th or the end of a calendar month (§ 622 (1) BGB). For the employer it lengthens with your years of service.",
+        simple: "After probation your notice period is four weeks.",
+        standard: "Those four weeks run to the 15th or the end of a calendar month.",
+        detailed: "That is the statutory base period (§ 622 (1) BGB); for the employer it lengthens with your years of service.",
       },
     },
     means: {
@@ -633,13 +609,13 @@ const EMP: EmpClause[] = [
     simple: {
       de: {
         simple: "Sie haben 28 bezahlte Urlaubstage im Jahr.",
-        standard: "Der Vertrag gibt 28 bezahlte Urlaubstage pro Kalenderjahr — mehr als das gesetzliche Minimum von 20 Tagen (bei 5-Tage-Woche).",
-        detailed: "28 bezahlte Urlaubstage pro Jahr liegen über dem gesetzlichen Mindesturlaub von 20 Tagen bei einer Fünf-Tage-Woche (§ 3 BUrlG). Anteilige Kürzung gilt bei unterjährigem Ein- oder Austritt.",
+        standard: "Das liegt über dem gesetzlichen Mindesturlaub von 20 Tagen bei einer Fünf-Tage-Woche.",
+        detailed: "Treten Sie unterjährig ein oder aus, wird der Anspruch anteilig gekürzt.",
       },
       en: {
         simple: "You get 28 paid holiday days a year.",
-        standard: "The contract gives 28 paid holiday days per calendar year — more than the statutory minimum of 20 days (on a 5-day week).",
-        detailed: "28 paid holiday days a year is above the statutory minimum of 20 days on a five-day week (§ 3 BUrlG). A pro-rata reduction applies if you join or leave mid-year.",
+        standard: "That is above the statutory minimum of 20 days on a five-day week.",
+        detailed: "If you join or leave mid-year, the entitlement is reduced pro rata.",
       },
     },
     means: {
@@ -662,14 +638,14 @@ const EMP: EmpClause[] = [
     title: { de: "1.200 € Urlaubsgeld pro Jahr", en: "€1,200 holiday pay per year" },
     simple: {
       de: {
-        simple: "Sie bekommen zusätzlich 1.200 € Urlaubsgeld im Jahr, ausgezahlt im Juni.",
-        standard: "Zusätzlich zum Monatsgehalt zahlt der Arbeitgeber einmal im Jahr 1.200 € Urlaubsgeld, im Juni. Das kommt zum Jahresgehalt hinzu.",
-        detailed: "Das Urlaubsgeld von 1.200 € wird zusätzlich zum Grundgehalt einmal jährlich im Juni gezahlt. Zusammen mit 12 × 3.440 € ergibt sich eine mögliche Jahresvergütung von 42.480 € brutto.",
+        simple: "Sie bekommen zusätzlich 1.200 € Urlaubsgeld im Jahr.",
+        standard: "Ausgezahlt wird es einmal jährlich im Juni, zusätzlich zum Monatsgehalt.",
+        detailed: "Zusammen mit 12 × 3.440 € ergibt das eine mögliche Jahresvergütung von 42.480 € brutto.",
       },
       en: {
-        simple: "You also get €1,200 holiday pay a year, paid in June.",
-        standard: "On top of your monthly salary, the employer pays €1,200 holiday pay once a year, in June. It adds to your annual pay.",
-        detailed: "The €1,200 holiday pay is paid on top of base salary once a year in June. With 12 × €3,440 that gives a possible annual compensation of €42,480 gross.",
+        simple: "You also get €1,200 holiday pay a year.",
+        standard: "It is paid once a year in June, on top of your monthly salary.",
+        detailed: "With 12 × €3,440 that gives a possible annual compensation of €42,480 gross.",
       },
     },
     means: {

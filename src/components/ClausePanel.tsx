@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import type { Analysis, Clause, Depth } from "../types";
 import { t } from "../i18n";
 import { getOfficialLawUrl } from "../contract";
+import { depthText } from "../depth";
+import { lawChecksFor } from "../lawcheck";
 import { Severity } from "./Severity";
 import { DepthPicker } from "./DepthPicker";
 
@@ -25,6 +27,7 @@ export function ClausePanel({
   onShowInDoc: () => void;
 }) {
   const s = t(analysis.lang);
+  const hits = lawChecksFor(analysis, clause.id);
   const [legalOpen, setLegalOpen] = useState(false);
   const closeRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -85,9 +88,39 @@ export function ClausePanel({
               <span>{s.explainedBy}</span>
               <DepthPicker depth={depth} setDepth={setDepth} lang={analysis.lang} />
             </div>
-            <p>{clause.simple[depth]}</p>
+            <p>{depthText(clause.simple, depth)}</p>
           </div>
 
+
+          {hits.length > 0 && (
+            <div className="pane pane-law">
+              <div className="pane-label">{s.lawPanelLabel}</div>
+              {hits.map((hit) => {
+                const url = getOfficialLawUrl(hit.law, hit.section);
+                return (
+                  <div className="law-mini" key={hit.id}>
+                    <div className="law-cite">
+                      {url ? (
+                        <a href={url} target="_blank" rel="noopener noreferrer">
+                          {hit.cite}
+                          <span className="law-cite-cta">{s.viewOfficialLaw}</span>
+                        </a>
+                      ) : (
+                        hit.cite
+                      )}
+                    </div>
+                    <p>
+                      <span className="law-col-label">{s.lawRuleLabel}</span> {hit.rule}
+                    </p>
+                    <p>
+                      <span className="law-col-label">{s.lawContractLabel}</span> {hit.contract}
+                    </p>
+                  </div>
+                );
+              })}
+              <p className="legal-note">{s.lawLimit}</p>
+            </div>
+          )}
           <div>
             <div className="pane-label" style={{ color: "var(--muted-2)" }}>
               {s.meansTitle}

@@ -45,12 +45,16 @@ How to write "means" and "simple" — this is the part people actually read:
 - Everyday words, active voice, address the reader directly, sentences under about 15 words. Write for someone with no legal training who is reading on a phone.
 - Do NOT restate the clause and do NOT reuse its legal wording. Where a term cannot be avoided (Kaution, Kündigungsfrist, Nebenkosten, Probezeit), name it once and explain it in the same sentence.
 - No filler ("it should be noted", "please be aware", "as per the contract"), no hedging, no advice about whether to sign.
-- The three "simple" levels are CUMULATIVE, not three different facts. "standard" must contain everything "simple" says and then add the practical detail; "detailed" must contain everything "standard" says and then add the mechanism and any exceptions. Moving up a level must never drop a figure, a date or a fact that a lower level stated.
-- Each level must also stand ALONE. A reader who sees only that one level gets the main figure or date and a complete sentence. Never open a level with a pronoun whose antecedent is in another level ("Sie dürfen sie in drei Raten zahlen" is wrong — name the deposit and its amount).
-- WRONG (each level replaces the last, and "standard" starts with a dangling "sie"):
-  simple: "Die Kaution beträgt 3.540 €." / standard: "Sie dürfen sie in drei gleichen Monatsraten zahlen." / detailed: "Die erste Rate ist am Mietbeginn fällig."
-  RIGHT (each level keeps the last and adds to it):
-  simple: "Sie zahlen 3.540 € Kaution." / standard: "Sie zahlen 3.540 € Kaution und dürfen das in drei gleichen Monatsraten tun." / detailed: "Sie zahlen 3.540 € Kaution in drei gleichen Monatsraten; die erste ist zum Mietbeginn fällig. Der Vermieter legt das Geld getrennt und verzinst an."
+- The three "simple" levels are INCREMENTS of one explanation, not three versions of it. The app shows level 1 alone, then 1+2, then 1+2+3, so write them to be read in sequence:
+  "simple"   = the whole point in one short, complete sentence, with the main figure or date in it.
+  "standard" = ONLY what you add for the standard level. Do not restate "simple".
+  "detailed" = ONLY what you add on top of that: the mechanism, the exception, the consequence. Do not restate the first two.
+- Each added part is a complete sentence that follows on naturally from the one before. Never start one with a pronoun whose antecedent is in an earlier part ("Sie dürfen sie in drei Raten zahlen" is wrong — the reader may be seeing this level first while it renders).
+- Every part must earn its place: if there is genuinely nothing more to add, write a shorter contract-specific sentence rather than padding or repeating.
+- WRONG (three rewrites of the same sentence — the reader learns almost nothing by switching level):
+  simple: "Sie zahlen 5.800 € Kaution." / standard: "Sie zahlen 5.800 € Kaution in einer Summe." / detailed: "Sie zahlen 5.800 € Kaution in einer Summe vor der Schlüsselübergabe."
+  RIGHT (each part adds something new):
+  simple: "Sie zahlen 5.800 € Kaution." / standard: "Der volle Betrag muss fünf Werktage vor der Schlüsselübergabe auf dem Konto sein." / detailed: "Der Vertrag knüpft die Schlüsselübergabe daran: ohne vollständigen Eingang sieht er keinen Anspruch auf die Schlüssel vor."
 - "detailed" must not mean more legalese.
 - In German, address the reader as "Sie" and keep the same plain register.
 
@@ -65,6 +69,8 @@ Financial framing (from the user's perspective):
 Legal citations:
 - When a clause is governed by a specific German statute, add "legalRefs": a list of { "label", "law", "section" }, e.g. { "label": "§ 622 BGB — Kündigungsfristen", "law": "BGB", "section": "§ 622" }.
 - Give the citation only (law abbreviation + section). NEVER include a URL — the app maps citations to official sources itself.
+- Cite the provision that is actually on point for THIS clause, not a generic one. A penalty clause in a residential tenancy is § 555 BGB, not § 546 BGB.
+- Whenever you add a legalRef, "legal" must state in one sentence what that provision actually says as a general rule. A citation the reader cannot read anything into is decoration. Still no verdict on this contract: state the general rule, not whether this clause complies with it.
 - Add a "iso" (YYYY-MM-DD) to a date when the document gives a concrete calendar date.
 
 Decision brief ("decisionSummary") — the culmination of the analysis, contract-type aware:
@@ -106,7 +112,7 @@ const ANALYSIS_SHAPE = `Return a single JSON object with this exact shape:
     "level": "important"|"check"|"standard",
     "tags": ("money"|"deadline"|"responsibility"|"risk")[],
     "title": string,
-    "simple": { "simple": string, "standard": string, "detailed": string },
+    "simple": { "simple": string, "standard": string, "detailed": string },   // INCREMENTS: the app renders 1, then 1+2, then 1+2+3
     "means": string, "legal"?: string,
     "legalRefs"?: [{ "label": string, "law": string, "section"?: string }]   // citation only, no URL
   }],

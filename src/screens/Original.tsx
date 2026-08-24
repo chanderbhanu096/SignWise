@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import type { Analysis, Depth } from "../types";
 import { t } from "../i18n";
+import { depthText } from "../depth";
 import { Severity } from "../components/Severity";
 import { DepthPicker } from "../components/DepthPicker";
 import { splitDocument } from "../document";
@@ -144,7 +145,7 @@ export function Original({
                   <span className="finding-ref">{selected.ref}</span>
                 </div>
                 <p className="section-sub" style={{ margin: "10px 0 14px" }}>
-                  {selected.simple[depth]}
+                  {depthText(selected.simple, depth)}
                 </p>
                 <button className="btn" onClick={() => onOpenClause(selected.id)}>
                   {s.showClause}
