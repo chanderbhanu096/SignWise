@@ -21,6 +21,7 @@ import { Original } from "./screens/Original";
 import { Decision } from "./screens/Decision";
 import { ClausePanel } from "./components/ClausePanel";
 import { ConfirmDialog } from "./components/ConfirmDialog";
+import { LegalNotice } from "./components/LegalNotice";
 import logoSrc from "./assets/signwise-logo.svg";
 
 type Screen = "upload" | "analyzing" | "overview" | "original" | "decision";
@@ -82,6 +83,7 @@ export default function App() {
   const [calMsg, setCalMsg] = useState("");
   const [dlMsg, setDlMsg] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [legalOpen, setLegalOpen] = useState(false);
   const [confirmNew, setConfirmNew] = useState(false);
   const [translating, setTranslating] = useState(false);
 
@@ -417,6 +419,14 @@ export default function App() {
           />
         )}
       </main>
+
+      <footer className="site-foot">
+        <button className="link-btn" onClick={() => setLegalOpen(true)}>
+          {s.legalNoticeLink}
+        </button>
+      </footer>
+
+      {legalOpen && <LegalNotice lang={lang} onClose={() => setLegalOpen(false)} />}
 
       {/* key: transient panel state (the legal-context expander) belongs to one
           clause and must not carry over when a different clause is opened. */}
