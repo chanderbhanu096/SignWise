@@ -1,5 +1,6 @@
 import type { Analysis, ContractCategory, Lang } from "./types";
 import { t, type FinancialCopy } from "./i18n";
+import { sectionExists } from "./lawindex";
 
 // Contract-type awareness, kept out of the components. Detection is keyword-based
 // on the (model-provided, localized) contractType string, with graceful fallbacks
@@ -104,12 +105,18 @@ const LAW_SLUGS: Record<string, string> = {
 };
 
 export function getOfficialLawUrl(law: string, section?: string): string | null {
-  const slug = LAW_SLUGS[(law || "").trim().toLowerCase()];
+  const abbr = (law || "").trim().toLowerCase();
+  const slug = LAW_SLUGS[abbr];
   if (!slug || !section) return null;
   // First §-number (with optional letter suffix), e.g. "§§ 305 ff." -> 305, "§ 312g" -> 312g
   const m = section.match(/(\d+[a-z]?)/i);
   if (!m) return null;
-  return `https://www.gesetze-im-internet.de/${slug}/__${m[1].toLowerCase()}.html`;
+  const num = m[1].toLowerCase();
+  // A citation the model invented would otherwise become a 404 that the reader sees
+  // as an official source. src/lawindex.ts holds the real table of contents of every
+  // law above, so an unknown section falls back to plain text (see LegalRefs).
+  if (!sectionExists(abbr, num)) return null;
+  return `https://www.gesetze-im-internet.de/${slug}/__${num}.html`;
 }
 
 // What the financial section actually has to show. Without this the section
