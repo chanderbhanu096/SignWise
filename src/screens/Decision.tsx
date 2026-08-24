@@ -2,6 +2,8 @@ import { useEffect, useRef } from "react";
 import type { Analysis } from "../types";
 import { t } from "../i18n";
 import { getDecisionSummary } from "../decision";
+import { lawCheckScope } from "../lawcheck";
+import { getOfficialLawUrl } from "../contract";
 import { Severity } from "../components/Severity";
 
 // A personalized decision-preparation brief: clear commitments, consequential
@@ -31,7 +33,15 @@ export function Decision({
   // themselves. The clarify panel only appears when the contract leaves something
   // open, so the numbers are computed rather than written down.
   const hasClarify = brief.clarificationQuestions.length > 0;
-  const step = { agree: 1, review: 2, clarify: 3, understand: hasClarify ? 4 : 3 };
+  const law = lawCheckScope(analysis);
+  let n = 0;
+  const step = {
+    agree: ++n,
+    review: ++n,
+    clarify: hasClarify ? ++n : 0,
+    law: law.checked > 0 ? ++n : 0,
+    understand: ++n,
+  };
 
   useEffect(() => {
     headingRef.current?.focus();
@@ -147,6 +157,63 @@ export function Decision({
         )}
       </div>
 
+
+      {law.checked > 0 && (
+        <section className="decision-section law-section" aria-labelledby="law-h">
+          <div className="decision-section-head">
+            <span className="decision-step" aria-hidden="true">
+              {step.law}
+            </span>
+            <div>
+              <h2 id="law-h">{s.lawHeading}</h2>
+              <p>{s.lawSub}</p>
+            </div>
+          </div>
+
+          {law.hits.length > 0 ? (
+            <ul className="law-list">
+              {law.hits.map((hit) => {
+                const url = getOfficialLawUrl(hit.law, hit.section);
+                return (
+                  <li className="law-card" key={hit.id}>
+                    <div className="law-cite">
+                      {url ? (
+                        <a href={url} target="_blank" rel="noopener noreferrer">
+                          {hit.cite}
+                          <span className="law-cite-cta">{s.viewOfficialLaw}</span>
+                        </a>
+                      ) : (
+                        hit.cite
+                      )}
+                    </div>
+                    <div className="law-row">
+                      <div className="law-col-label">{s.lawRuleLabel}</div>
+                      <p>{hit.rule}</p>
+                    </div>
+                    <div className="law-row law-row-contract">
+                      <div className="law-col-label">{s.lawContractLabel}</div>
+                      <p>{hit.contract}</p>
+                    </div>
+                    <button className="link-btn" onClick={() => onOpenClause(hit.clauseId)}>
+                      {s.showClause} <span aria-hidden="true">→</span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <div className="brief-empty compact">
+              <span className="state-badge clear">
+                <span aria-hidden="true">✓</span> {s.lawEmptyTitle}
+              </span>
+              <p>{s.lawEmptyBody(law.checked)}</p>
+            </div>
+          )}
+
+          <p className="law-scope">{s.lawScope(law.checked)}</p>
+          <p className="legal-note law-limit">{s.lawLimit}</p>
+        </section>
+      )}
       {brief.understandingQuestions.length > 0 && (
         <section className="decision-section understanding-section" aria-labelledby="understand-h">
           <div className="decision-section-head">

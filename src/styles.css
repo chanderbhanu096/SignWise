@@ -709,6 +709,41 @@ li.law-ref > .law-ref-label { display: inline-block; padding: 6px 2px; } /* plai
   .finding:hover, .finding:focus-visible, .commitment-card:hover { transform: none; }
 }
 
+/* --- statutory benchmarks (src/lawcheck.ts) ---------------------------------
+   Deliberately not styled as an alert. The tool states a general rule and the
+   contract's own figure side by side; it renders no verdict, so it must not look
+   like one. Neutral surface, the citation carries the emphasis. */
+.law-section { margin-top: 26px; }
+.law-list { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 14px; }
+.law-card { padding: 16px 18px; border: 1px solid var(--line); border-left: 3px solid var(--brand); border-radius: var(--radius); background: var(--surface); }
+.law-cite { font-size: 15px; font-weight: 700; color: var(--brand-strong); margin-bottom: 10px; }
+.law-cite a { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; color: inherit; text-decoration: none; }
+.law-cite a:hover { text-decoration: underline; }
+.law-cite-cta { font-size: 12.5px; font-weight: 600; color: var(--brand); white-space: nowrap; }
+.law-row + .law-row { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
+.law-row p { font-size: 15px; color: var(--ink-2); }
+.law-row-contract p { font-weight: 600; color: var(--ink); }
+.law-col-label { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted-2); margin-bottom: 3px; }
+.law-card .link-btn { margin-top: 12px; }
+.law-scope { margin-top: 14px; font-size: 13px; color: var(--muted); }
+.law-limit { max-width: 60em; }
+/* compact form inside the clause panel */
+.pane-law { background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--brand); }
+.law-mini + .law-mini { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.law-mini p { font-size: 14.5px; color: var(--ink-2); }
+.law-mini p + p { margin-top: 8px; }
+.law-mini .law-col-label { display: block; }
+
+/* --- legal notice ----------------------------------------------------------- */
+.site-foot { max-width: var(--shell); margin: 0 auto; padding: 8px 20px 28px; text-align: center; }
+.site-foot .link-btn { font-size: 13.5px; color: var(--muted); }
+.site-foot .link-btn:hover { color: var(--brand); }
+.legal-panel .panel-body { gap: 22px; }
+.legal-h3 { font-size: 16px; font-weight: 700; color: var(--brand-strong); margin-bottom: 10px; }
+.legal-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.legal-list li { font-size: 14.5px; line-height: 1.55; color: var(--ink-2); padding-left: 14px; border-left: 2px solid var(--line); }
+.legal-list strong { color: var(--ink); }
+
 @media print {
   .hdr, .nav, .banner, .overview-foot, .seg, .ask-chips, .ask-row, .link-btn, .finding-caret, .print-status, .sec-chevron, .attn-note { display: none !important; }
   /* Collapsed sections still belong in a printed summary. */

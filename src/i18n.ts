@@ -145,6 +145,21 @@ interface Strings {
   meansTitle: string;
   whyTitle: string;
   legalToggle: string;
+  // statutory benchmarks (src/lawcheck.ts)
+  lawHeading: string;
+  lawSub: string;
+  lawRuleLabel: string;
+  lawContractLabel: string;
+  lawScope: (n: number) => string;
+  lawLimit: string;
+  lawEmptyTitle: string;
+  lawEmptyBody: (n: number) => string;
+  lawPanelLabel: string;
+  // legal & data-protection notice (src/components/LegalNotice.tsx)
+  legalNoticeLink: string;
+  legalNoticeTitle: string;
+  legalNoticeSections: Array<{ heading: string; items: Array<{ term: string; text: string }> }>;
+  legalNoticeFoot: string;
   legalDisclaimer: string;
   showInDoc: string;
   close: string;
@@ -308,6 +323,51 @@ const EN: Strings = {
   meansTitle: "What this means for you",
   whyTitle: "Why it matters",
   legalToggle: "Relevant legal context (general information)",
+  lawHeading: "Statutory benchmarks",
+  lawSub:
+    "SignWise compares individual figures and wordings in your contract against what German law lays down in general. It does not assess whether a clause is valid.",
+  lawRuleLabel: "What the law says in general",
+  lawContractLabel: "What your contract says",
+  lawScope: (n) => `${n} benchmark${n === 1 ? "" : "s"} apply to this type of contract and were checked.`,
+  lawLimit:
+    "This comparison is information, not legal advice, and not a validity check. Whether a clause holds in your case is something only legal advice can judge — a tenants’ association, a consumer advice centre or a lawyer.",
+  lawEmptyTitle: "No divergence found",
+  lawEmptyBody: (n) =>
+    `None of the ${n} benchmark${n === 1 ? "" : "s"} that apply to this type of contract diverges from your contract. That does not mean the contract is unproblematic overall — these are the only points checked here.`,
+  lawPanelLabel: "Statutory benchmark",
+  legalNoticeLink: "Legal notice & data protection",
+  legalNoticeTitle: "Legal notice & data protection",
+  legalNoticeSections: [
+    {
+      heading: "What SignWise is â and what it is not",
+      items: [
+        { term: "It explains.", text: "SignWise puts a contract into plain language, shows what it costs, when the deadlines fall, and which passages are worth a second look." },
+        { term: "It does not advise.", text: "SignWise gives no legal advice, makes no assessment of your individual case, and never says whether a clause is valid or whether you should sign. Assessing an individual case is a legal service under Â§ 2 (1) RDG, which this tool is not licensed to provide." },
+        { term: "Where the limits show.", text: "Under “Statutory benchmarks”, SignWise states what a statute says in general and what your contract says, and stops there. Drawing the conclusion is for a tenants’ association, a consumer advice centre or a lawyer." },
+        { term: "Every claim is traceable.", text: "Each explanation carries the verbatim passage it came from, checked against your uploaded file, plus its section and page. Statutory citations are checked against the real table of contents of the law before they become a link, so a citation that does not exist can never be presented as an official source." },
+      ],
+    },
+    {
+      heading: "What happens to your document (Art. 13 GDPR)",
+      items: [
+        { term: "Purpose.", text: "Producing the explanation you asked for, and nothing else. Your document is never used to train a model." },
+        { term: "The file stays with you.", text: "The PDF itself is never uploaded. It is read in your browser, and only the extracted text is sent." },
+        { term: "Minimised before sending.", text: "Bank details, addresses, e-mail addresses, phone numbers and tax numbers are replaced with placeholders in your browser before the text leaves it, and put back in your browser afterwards. The model host never receives them. A scanned contract has no text layer and is sent as an image, which cannot be filtered this way." },
+        { term: "Recipient and location.", text: "Microsoft Azure OpenAI Service, region Sweden Central (EU), acting as a processor. No transfer to a third country is part of this design." },
+        { term: "Retention.", text: "None. SignWise stores no document and no analysis. Everything lives in the browser tab and is gone when you close it." },
+        { term: "Your rights.", text: "Access, rectification, erasure, restriction, objection, portability, and a complaint to a supervisory authority. Because nothing is stored, there is normally nothing to access or erase." },
+      ],
+    },
+    {
+      heading: "Machine-generated content (Art. 50 AI Act)",
+      items: [
+        { term: "AI-generated.", text: "The explanations, the summary and the answers are produced by a language model and can be wrong or incomplete, even where they read confidently." },
+        { term: "Check against the original.", text: "The exact contract wording sits next to every explanation for that reason. A passage SignWise could not find in your document is marked as unverified." },
+      ],
+    },
+  ],
+  legalNoticeFoot:
+    "SignWise is a prototype built for the Legal Loves Tech Hackathon 2026 (challenge StMJ IV, “Was unterschreibe ich?”) under the patronage of the Bavarian State Ministry of Justice. Statutory texts are cited from gesetze-im-internet.de.",
   legalDisclaimer: "General information about German law — not a statement about your contract, and not legal advice.",
   showInDoc: "Show this in the original document",
   close: "Close",
@@ -510,6 +570,51 @@ const DE: Strings = {
   meansTitle: "Was das für Sie bedeutet",
   whyTitle: "Warum es wichtig ist",
   legalToggle: "Relevanter rechtlicher Kontext (allgemeine Information)",
+  lawHeading: "Gesetzliche Maßstäbe",
+  lawSub:
+    "SignWise vergleicht einzelne Zahlen und Formulierungen Ihres Vertrags mit dem, was das Gesetz allgemein vorsieht. Ob eine Klausel wirksam ist, beurteilt SignWise nicht.",
+  lawRuleLabel: "Was das Gesetz allgemein sagt",
+  lawContractLabel: "Was in Ihrem Vertrag steht",
+  lawScope: (n) => `Für diesen Vertragstyp gelten ${n} Maßstäbe. Sie wurden geprüft.`,
+  lawLimit:
+    "Diese Gegenüberstellung ist eine Information, keine Rechtsberatung und keine Prüfung der Wirksamkeit. Ob eine Klausel in Ihrem Fall gilt, kann nur eine Rechtsberatung beurteilen — zum Beispiel Mieterverein, Verbraucherzentrale oder Anwaltskanzlei.",
+  lawEmptyTitle: "Keine Abweichung gefunden",
+  lawEmptyBody: (n) =>
+    `Keiner der ${n} Maßstäbe, die für diesen Vertragstyp gelten, weicht von Ihrem Vertrag ab. Das heißt nicht, dass der Vertrag insgesamt unproblematisch ist — geprüft sind nur diese Punkte.`,
+  lawPanelLabel: "Gesetzlicher Maßstab",
+  legalNoticeLink: "Rechtliches & Datenschutz",
+  legalNoticeTitle: "Rechtliches & Datenschutz",
+  legalNoticeSections: [
+    {
+      heading: "Was SignWise ist — und was nicht",
+      items: [
+        { term: "Es erklärt.", text: "SignWise übersetzt einen Vertrag in verständliche Sprache, zeigt die Kosten, die Fristen und die Stellen, die einen zweiten Blick verdienen." },
+        { term: "Es berät nicht.", text: "SignWise gibt keine Rechtsberatung, prüft Ihren Einzelfall nicht und sagt nie, ob eine Klausel wirksam ist oder ob Sie unterschreiben sollten. Die Prüfung eines Einzelfalls ist eine Rechtsdienstleistung nach § 2 Abs. 1 RDG, zu der dieses Tool nicht befugt ist." },
+        { term: "Wo die Grenze sichtbar wird.", text: "Unter „Gesetzliche Maßstäbe“ nennt SignWise, was ein Gesetz allgemein vorsieht und was in Ihrem Vertrag steht — und hört dort auf. Den Schluss daraus ziehen Mieterverein, Verbraucherzentrale oder Anwaltskanzlei." },
+        { term: "Jede Aussage ist nachprüfbar.", text: "Zu jeder Erklärung gehört die wörtliche Passage, aus der sie stammt, geprüft gegen Ihre hochgeladene Datei, mit Paragraf und Seite. Gesetzeszitate werden gegen das echte Inhaltsverzeichnis des Gesetzes geprüft, bevor daraus ein Link wird — ein Paragraf, den es nicht gibt, kann so nie als amtliche Quelle erscheinen." },
+      ],
+    },
+    {
+      heading: "Was mit Ihrem Dokument passiert (Art. 13 DSGVO)",
+      items: [
+        { term: "Zweck.", text: "Ausschließlich die Erklärung, um die Sie gebeten haben. Ihr Dokument wird nicht zum Training eines Modells verwendet." },
+        { term: "Die Datei bleibt bei Ihnen.", text: "Das PDF selbst wird nicht hochgeladen. Es wird in Ihrem Browser gelesen; gesendet wird nur der herausgelöste Text." },
+        { term: "Datenminimierung vor dem Senden.", text: "Bankverbindungen, Adressen, E-Mail-Adressen, Telefonnummern und Steuernummern werden noch im Browser durch Platzhalter ersetzt und dort auch wieder eingesetzt. Der Modellanbieter erhält sie nicht. Ein eingescannter Vertrag hat keine Textebene und wird als Bild gesendet — das lässt sich so nicht filtern." },
+        { term: "Empfänger und Ort.", text: "Microsoft Azure OpenAI Service, Region Sweden Central (EU), als Auftragsverarbeiter. Eine Drittlandsübermittlung ist in diesem Aufbau nicht vorgesehen." },
+        { term: "Speicherdauer.", text: "Keine. SignWise speichert weder Dokument noch Analyse. Alles lebt im Browser-Tab und ist mit dem Schließen weg." },
+        { term: "Ihre Rechte.", text: "Auskunft, Berichtigung, Löschung, Einschränkung, Widerspruch, Datenübertragbarkeit und Beschwerde bei einer Aufsichtsbehörde. Da nichts gespeichert wird, gibt es in der Regel nichts, worauf sich Auskunft oder Löschung beziehen könnte." },
+      ],
+    },
+    {
+      heading: "Maschinell erzeugte Inhalte (Art. 50 KI-VO)",
+      items: [
+        { term: "KI-generiert.", text: "Die Erklärungen, die Zusammenfassung und die Antworten stammen von einem Sprachmodell und können falsch oder unvollständig sein — auch dort, wo sie sehr sicher klingen." },
+        { term: "Gegen das Original prüfen.", text: "Genau deshalb steht neben jeder Erklärung der wörtliche Vertragstext. Eine Passage, die SignWise in Ihrem Dokument nicht wiederfinden konnte, ist als ungeprüft gekennzeichnet." },
+      ],
+    },
+  ],
+  legalNoticeFoot:
+    "SignWise ist ein Prototyp für den Legal Loves Tech Hackathon 2026 (Challenge StMJ IV, „Was unterschreibe ich?“) unter der Schirmherrschaft des Bayerischen Staatsministeriums der Justiz. Gesetzestexte werden nach gesetze-im-internet.de zitiert.",
   legalDisclaimer: "Allgemeine Informationen zum deutschen Recht — keine Aussage über Ihren Vertrag und keine Rechtsberatung.",
   showInDoc: "Dies im Originaldokument anzeigen",
   close: "Schließen",
