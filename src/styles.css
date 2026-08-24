@@ -117,13 +117,18 @@ button { font: inherit; }
 .slogan-caret {
   position: absolute;
   display: inline-block;
-  width: 0.055em;
+  /* The stroke weight of the type it is typing. Measured off a canvas render of the
+     headline face at its own weight — the vertical stem of I, l, h, E and n is 7px at
+     40px Inter Bold, i.e. 0.175em, and it held across all five. At the old 0.055em the
+     caret was under a third of that: a hairline standing next to bold letters. */
+  width: 0.175em;
   height: 0.86em;
-  margin-left: 0.07em;
+  margin-left: 0.08em;
   transform: translateY(0.141em);
-  border-radius: 2px;
+  border-radius: 0.045em;
   background: var(--brand);
-  box-shadow: 0 0 10px rgba(15, 95, 107, 0.3);
+  /* Softened with the bar: the same glow over three times the area was a smear. */
+  box-shadow: 0 0 0.2em rgba(15, 95, 107, 0.22);
   animation: caret 1.05s ease-in-out infinite;
 }
 /* A real text cursor holds steady while it is being typed into and only blinks once
