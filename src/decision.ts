@@ -1,6 +1,7 @@
 import type { Analysis, Clause, DecisionSummary, Lang, Tag } from "./types";
 import { euro } from "./format";
 import { getContractCategory } from "./contract";
+import { facts } from "./depth";
 
 type UnderstandingQuestion = NonNullable<DecisionSummary["understandingQuestions"]>[number];
 export type DecisionBrief = Omit<DecisionSummary, "understandingQuestions"> & {
@@ -57,8 +58,25 @@ function normalise(
   modelProvided: boolean,
 ): DecisionBrief {
   const clauses = new Map(analysis.clauses.map((clause) => [clause.id, clause]));
+  // The derived fallback exists for a model that returns no brief at all. When the
+  // model DID write a commitment for the same figure, the derived one is the same
+  // fact with a worse sentence: the live run showed "1.780 € / Monatliche Zahlung /
+  // Sie zahlen 1.450 € Kaltmiete sowie 330 € Vorauszahlungen" next to "1.780 € /
+  // Jeden Monat / Eine regelmäßige Zahlung laut Vertrag." The title-based key below
+  // cannot catch that, because the title is exactly what differs between a
+  // model-written card and a derived one. The reader compares the figure, so the
+  // figure decides — but only across the two sources, never inside the model's own
+  // list, where two cards may legitimately share a value ("3 Monate" for a notice
+  // period and a probation).
+  // Compared by the figures they contain, not the string: the model writes
+  // "1.780,00 EUR" and the derived card "1.780 €", and only the client-side currency
+  // styling made those two ever look alike.
+  const shownValue = (item: { value?: string }) => [...facts(item.value ?? "")].sort().join(",");
+  const modelValues = new Set(brief.commitments.map(shownValue).filter(Boolean));
   const commitments = uniqueBy(
-    [...brief.commitments, ...fallback.commitments].filter((item) => clauses.has(item.clauseId)),
+    [...brief.commitments, ...fallback.commitments.filter((item) => !modelValues.has(shownValue(item)))].filter((item) =>
+      clauses.has(item.clauseId),
+    ),
     // Keep distinct concepts that legitimately share a clause (an indefinite
     // duration and its notice period), and drop the same concept twice.
     //

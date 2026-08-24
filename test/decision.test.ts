@@ -180,3 +180,31 @@ test("the same commitment is not shown twice under two wordings", () => {
   assert.equal(kautionen.length, 1);
   assert.match(kautionen[0].explanation, /Monatsraten/);
 });
+
+test("a derived commitment repeating a figure the model already showed is dropped", () => {
+  // Observed live: "1.780 € / Monatliche Zahlung / Sie zahlen 1.450 € Kaltmiete
+  // sowie 330 € Vorauszahlungen" sat next to "1.780 € / Jeden Monat / Eine
+  // regelmäßige Zahlung laut Vertrag." Same figure, different title, so the
+  // title-based key kept both.
+  const base = sampleAnalysis("de");
+  const rent = base.clauses[0];
+  const analysis: Analysis = {
+    ...base,
+    money: { ...base.money, monthly: 1780, monthlyClauseId: rent.id },
+    decisionSummary: {
+      commitments: [
+        {
+          title: "Monatliche Zahlung",
+          value: "1.780 €",
+          explanation: "Sie zahlen 1.450 € Kaltmiete sowie 330 € Vorauszahlungen.",
+          clauseId: rent.id,
+        },
+      ],
+      reviewItems: [],
+      clarificationQuestions: [],
+    },
+  };
+  const shown = getDecisionSummary(analysis).commitments.filter((c) => (c.value ?? "").includes("1.780"));
+  assert.equal(shown.length, 1, "the same figure must not appear on two cards");
+  assert.equal(shown[0].title, "Monatliche Zahlung");
+});
