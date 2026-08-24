@@ -1,4 +1,5 @@
 import { AnalysisSchema, type Analysis, type Lang } from "./types";
+import { jsonEscape, redact, type Redaction } from "./redact";
 
 async function fileToB64(file: File): Promise<string> {
   const buf = await file.arrayBuffer();
@@ -17,39 +18,66 @@ export class ApiError extends Error {
 }
 
 // Send extracted text when we have it (PDFs), else the raw image bytes for vision.
+//
+// Text is pseudonymised first (src/redact.ts): bank details, contact data and
+// addresses are swapped for placeholders here in the browser and swapped back into
+// the response here too, so the model host never receives them. A scanned upload has
+// no text layer and goes as pixels, which cannot be filtered — the upload screen
+// says so rather than implying a protection that isn't there.
 export async function analyze(file: File, lang: Lang, text: string | null): Promise<Analysis> {
   const body: Record<string, unknown> = { lang, filename: file.name, mime: file.type };
-  if (text && text.trim()) body.text = text;
-  else body.dataB64 = await fileToB64(file);
+  let restore: Redaction["restore"] = (s) => s;
+  if (text && text.trim()) {
+    const r = redact(text);
+    body.text = r.text;
+    restore = r.restore;
+  } else {
+    body.dataB64 = await fileToB64(file);
+  }
 
   const res = await fetch("/api/analyze", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify(body),
   });
-  const json = await res.json().catch(() => ({}));
-  if (!res.ok) throw new ApiError(json?.error ?? `http_${res.status}`);
-  return AnalysisSchema.parse(json);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new ApiError(err?.error ?? `http_${res.status}`);
+  }
+  // Restore on the raw JSON, before parsing: a placeholder can sit in any string
+  // field the model wrote, including the verbatim quotes that get checked against
+  // the original document.
+  const raw = await res.text();
+  return AnalysisSchema.parse(JSON.parse(restore(raw, jsonEscape)));
 }
 
+// The analysis carries the contract's verbatim quotes, so these two calls send the
+// same personal data as the first one and get the same treatment. Redacting the
+// serialised body works because a placeholder is JSON-safe wherever it lands.
 export async function ask(question: string, analysis: Analysis): Promise<{ answer: string; clauseId: string | null }> {
+  const { text, restore } = redact(JSON.stringify({ question, analysis }));
   const res = await fetch("/api/ask", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ question, analysis }),
+    body: text,
   });
-  const json = await res.json().catch(() => ({}));
-  if (!res.ok) throw new ApiError(json?.error ?? `http_${res.status}`);
-  return json;
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new ApiError(err?.error ?? `http_${res.status}`);
+  }
+  return JSON.parse(restore(await res.text(), jsonEscape));
 }
 
 export async function translate(analysis: Analysis, target: Lang): Promise<Analysis> {
+  const { text, restore } = redact(JSON.stringify({ analysis, target }));
   const res = await fetch("/api/translate", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ analysis, target }),
+    body: text,
   });
-  const json = await res.json().catch(() => ({}));
-  if (!res.ok) throw new ApiError(json?.error ?? `http_${res.status}`);
-  return AnalysisSchema.parse(json);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new ApiError(err?.error ?? `http_${res.status}`);
+  }
+  return AnalysisSchema.parse(JSON.parse(restore(await res.text(), jsonEscape)));
 }
