@@ -96,9 +96,9 @@ button { font: inherit; }
    box per character is what keeps this steady: appending a character never re-snaps
    the ones before it. */
 .slogan-ch.off { display: none; }
-/* Each character fades in over a little longer than one keystroke, so consecutive
-   characters overlap instead of popping in one hard step at a time. */
-.slogan-ch.new { animation: slogan-ch-in 130ms ease-out; }
+/* Each character fades in over more than twice one keystroke, so three of them are
+   always mid-fade and no single one arrives as a hard step. */
+.slogan-ch.new { animation: slogan-ch-in 150ms ease-out; }
 /* Out of flow, at its static position. As an inline-block the caret sat between the
    typed text and the (invisible) remainder, and the browser snapped that boundary to
    the pixel grid — so the line's total width moved by up to 1.6px depending on which
