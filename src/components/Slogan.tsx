@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 // Typewriter that cycles the localized slogans, one at a time, as the upload
 // screen's headline.
@@ -28,18 +28,24 @@ function prefersReducedMotion() {
 
 // `upto` characters are visible; the rest hold their space invisibly. The caret is
 // out of flow (see the stylesheet), so it can sit at the split without moving anything.
-function chars(line: string, upto?: number, caret?: boolean) {
+//
+// `newest` is the index of the character that appeared on this tick, which gets the
+// fade-in class. It is -1 while erasing: there the last visible index walks backwards
+// through characters that were already on screen, and re-fading them read as flicker.
+function chars(line: string, upto?: number, caret?: "solid" | "blink", newest = -1) {
   const out = [];
   const letters = Array.from(line);
+  const cut = upto ?? letters.length;
+  const bar = () => <i className={caret === "solid" ? "slogan-caret solid" : "slogan-caret"} key="caret" />;
   for (let i = 0; i < letters.length; i++) {
-    if (caret && i === (upto ?? letters.length)) out.push(<i className="slogan-caret" key="caret" />);
+    if (caret && i === cut) out.push(bar());
     out.push(
-      <span className={upto != null && i >= upto ? "slogan-ch off" : "slogan-ch"} key={i}>
+      <span className={i >= cut ? "slogan-ch off" : i === newest ? "slogan-ch new" : "slogan-ch"} key={i}>
         {letters[i]}
       </span>,
     );
   }
-  if (caret && (upto ?? letters.length) >= letters.length) out.push(<i className="slogan-caret" key="caret" />);
+  if (caret && cut >= letters.length) out.push(bar());
   return out;
 }
 
@@ -62,18 +68,28 @@ export function Slogan({ slogans, label }: { slogans: string[]; label: string })
   }, [i, n, erasing, reduced, slogans]);
 
   const current = slogans[i] ?? "";
-  return (
-    <span className="slogan">
-      <span className="sr-only">{label}</span>
-      {slogans.map((line) => (
+  // The caret only blinks when the line is at rest — fully typed and holding, or empty
+  // and waiting for the next slogan. Through the keystrokes it stays lit.
+  const atRest = erasing ? n === 0 : n >= current.length;
+  // The sizers never change; without this they were reconciled on every keystroke
+  // alongside the line itself (131 spans instead of 45 at the default three slogans).
+  const sizers = useMemo(
+    () =>
+      slogans.map((line) => (
         <span className="slogan-sizer" aria-hidden="true" key={line}>
           {chars(line)}
         </span>
-      ))}
+      )),
+    [slogans],
+  );
+  return (
+    <span className="slogan">
+      <span className="sr-only">{label}</span>
+      {sizers}
       <span className="slogan-line" aria-hidden="true">
         {/* zero-width space keeps the line box at full height before the first character */}
         {"​"}
-        {reduced ? chars(current) : chars(current, n, true)}
+        {reduced ? chars(current) : chars(current, n, atRest ? "blink" : "solid", erasing ? -1 : n - 1)}
       </span>
     </span>
   );

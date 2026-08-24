@@ -96,15 +96,39 @@ button { font: inherit; }
    box per character is what keeps this steady: appending a character never re-snaps
    the ones before it. */
 .slogan-ch.off { display: none; }
-/* Negative right margin cancels the caret's own advance width, so the untyped
-   remainder keeps exactly the line breaks it will have when fully typed. */
+/* Each character fades in over a little longer than one keystroke, so consecutive
+   characters overlap instead of popping in one hard step at a time. */
+.slogan-ch.new { animation: slogan-ch-in 130ms ease-out; }
 /* Out of flow, at its static position. As an inline-block the caret sat between the
    typed text and the (invisible) remainder, and the browser snapped that boundary to
    the pixel grid — so the line's total width moved by up to 1.6px depending on which
    character the caret happened to follow, and a centred line shook by half of that on
    every keystroke. Absolute positioning keeps the caret exactly where the text ends
-   while contributing nothing to the line's width. */
-.slogan-caret { position: absolute; display: inline-block; width: 0.055em; height: 0.78em; margin-left: 0.07em; border-radius: 2px; background: var(--brand); box-shadow: 0 0 10px rgba(15,95,107,0.3); animation: caret 1.05s steps(1) infinite; }
+   while contributing nothing to the line's width.
+
+   Vertical geometry is measured against Inter at the headline weight: cap height is
+   0.728em above the baseline, the descender 0.216em below it, and the static position
+   puts the caret's top at the top of the line box, 0.901em above the baseline. So the
+   bar is set to span from just above the caps to just under the baseline — height
+   0.86em, pushed down by 0.141em — instead of the old 0.78em box that started 7px
+   above the caps and stopped ~5px short of the baseline, floating over the text.
+   ponytail: the 0.141em offset assumes line-height 1.1 and Inter's metrics; both are
+   set in one place each, re-measure if either moves. */
+.slogan-caret {
+  position: absolute;
+  display: inline-block;
+  width: 0.055em;
+  height: 0.86em;
+  margin-left: 0.07em;
+  transform: translateY(0.141em);
+  border-radius: 2px;
+  background: var(--brand);
+  box-shadow: 0 0 10px rgba(15, 95, 107, 0.3);
+  animation: caret 1.05s ease-in-out infinite;
+}
+/* A real text cursor holds steady while it is being typed into and only blinks once
+   it is idle. Blinking through the keystrokes was most of what read as flicker. */
+.slogan-caret.solid { animation: none; opacity: 1; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .langs { display: flex; align-items: center; gap: 3px; padding: 3px; border: 1px solid var(--line); border-radius: 12px; background: #edf2f1; }
 
@@ -581,7 +605,8 @@ section.screen.upload-screen::after {
 .law-link-cta { font-size: 12.5px; font-weight: 600; color: var(--brand); white-space: nowrap; }
 li.law-ref > .law-ref-label { display: inline-block; padding: 6px 2px; } /* plain (no URL) citation */
 
-@keyframes caret { 50% { opacity: 0; } }
+@keyframes caret { 0%, 42% { opacity: 1; } 58%, 88% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes slogan-ch-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes progress-sheen { 0% { transform: translateX(-100%); } 60%, 100% { transform: translateX(100%); } }
 @keyframes prism-drift { from { transform: translate3d(0, 0, 0) scale(1); } to { transform: translate3d(-2.5vmax, 1.6vmax, 0) scale(1.05); } }
 @keyframes float-aura {
