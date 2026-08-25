@@ -34,13 +34,13 @@ const RAW: RawClause[] = [
     simple: {
       de: {
         simple: "Sie zahlen jeden Monat 1.240 € Miete.",
-        standard: "Das Geld muss im Voraus da sein: spätestens am dritten Werktag des Monats auf dem Konto des Vermieters.",
-        detailed: "„Kostenfrei“ heißt, dass Sie die Überweisungsgebühren tragen — und die Nebenkosten werden nach Verbrauch zusätzlich abgerechnet.",
+        standard: "Sie zahlen jeden Monat 1.240 € Miete, und zwar im Voraus: spätestens am dritten Werktag des Monats muss das Geld auf dem Konto des Vermieters sein.",
+        detailed: "Sie zahlen jeden Monat 1.240 € Grundmiete im Voraus — spätestens am dritten Werktag muss das Geld auf dem Konto des Vermieters angekommen sein. „Kostenfrei“ heißt hier, dass Sie die Überweisungsgebühren tragen. Die Nebenkosten stecken nicht in diesem Betrag; sie werden nach Verbrauch gesondert abgerechnet.",
       },
       en: {
         simple: "You pay €1,240 rent every month.",
-        standard: "It has to be there in advance: in the landlord’s account by the third working day of the month.",
-        detailed: "“Kostenfrei” means the transfer fees are yours — and utilities are billed on top by consumption.",
+        standard: "You pay €1,240 rent every month, and you pay it in advance: the money has to be in the landlord’s account by the third working day of the month.",
+        detailed: "You pay €1,240 base rent every month in advance — the money has to have arrived in the landlord’s account by the third working day. “Kostenfrei” here means the transfer fees are yours. Utilities are not part of that amount; they are billed separately by consumption.",
       },
     },
     means: {
@@ -64,13 +64,13 @@ const RAW: RawClause[] = [
     simple: {
       de: {
         simple: "Sie zahlen 3.000 € Kaution.",
-        standard: "Diesen Betrag dürfen Sie in drei gleichen Monatsraten zahlen, die erste zum Mietbeginn.",
-        detailed: "Der Vermieter muss das Geld getrennt und verzinst anlegen und es nach dem Auszug zurückzahlen, sobald offene Forderungen geklärt sind — das kann bis nach der Nebenkostenabrechnung dauern.",
+        standard: "Sie zahlen 3.000 € Kaution und dürfen den Betrag in drei gleichen Monatsraten aufbringen, die erste zu Beginn des Mietverhältnisses.",
+        detailed: "Sie zahlen 3.000 € Kaution, aufteilbar in drei gleiche Monatsraten ab Mietbeginn. Der Vermieter muss das Geld getrennt von seinem eigenen Vermögen und verzinst anlegen. Zurück bekommen Sie es nach dem Auszug, sobald offene Ansprüche geklärt sind — das kann bis nach der letzten Betriebskostenabrechnung dauern.",
       },
       en: {
         simple: "You pay a deposit of €3,000.",
-        standard: "You may split that amount into three equal monthly instalments, the first when the tenancy starts.",
-        detailed: "The landlord has to hold it in a separate, interest-bearing account and return it after you move out, once any claims are settled — which can run until after the final utilities statement.",
+        standard: "You pay a deposit of €3,000, and you may split it into three equal monthly instalments, the first when the tenancy starts.",
+        detailed: "You pay a deposit of €3,000, which you may split into three equal monthly instalments from the start of the tenancy. The landlord has to hold it separately from their own money and pay interest on it. You get it back after you move out, once any claims are settled — which can run until after the final utilities statement.",
       },
     },
     means: {
@@ -94,13 +94,13 @@ const RAW: RawClause[] = [
     simple: {
       de: {
         simple: "Um auszuziehen, kündigen Sie schriftlich mit rund drei Monaten Frist.",
-        standard: "Ihr unterschriebener Brief muss bis zum dritten Werktag eines Monats ankommen; das Mietverhältnis endet dann zum Ende des zweiten Folgemonats.",
-        detailed: "Eine E-Mail genügt dafür nicht, und ein Tag zu spät verschiebt das Ende um einen ganzen Monat — also um weitere 1.240 €.",
+        standard: "Um auszuziehen, kündigen Sie schriftlich mit rund drei Monaten Frist: Ihr unterschriebener Brief muss bis zum dritten Werktag eines Monats angekommen sein, dann endet das Mietverhältnis zum Ende des zweiten Folgemonats.",
+        detailed: "Um auszuziehen, kündigen Sie schriftlich mit rund drei Monaten Frist — Ihr unterschriebener Brief muss bis zum dritten Werktag eines Monats beim Vermieter angekommen sein, und das Mietverhältnis endet dann zum Ablauf des zweiten darauffolgenden Monats. Eine E-Mail genügt dafür nicht. Ein Tag zu spät verschiebt das Ende um einen vollen Monat, also um weitere 1.240 € Miete.",
       },
       en: {
         simple: "To move out, you cancel in writing with about three months’ notice.",
-        standard: "Your signed letter must arrive by the third working day of a month; the tenancy then ends at the end of the second month after that.",
-        detailed: "An e-mail does not count, and one day late pushes the end back by a full month — another €1,240.",
+        standard: "To move out, you cancel in writing with about three months’ notice: your signed letter has to arrive by the third working day of a month, and the tenancy then ends at the end of the second month after that.",
+        detailed: "To move out, you cancel in writing with about three months’ notice — your signed letter has to reach the landlord by the third working day of a month, and the tenancy then ends at the close of the second month after that. An e-mail does not count. One day late pushes the end back by a full month, which is another €1,240 of rent.",
       },
     },
     means: {
@@ -127,13 +127,13 @@ const RAW: RawClause[] = [
     simple: {
       de: {
         simple: "Die Miete kann später steigen, frühestens 15 Monate nach Mietbeginn.",
-        standard: "Erlaubt sind dabei nur Anpassungen bis zur ortsüblichen Vergleichsmiete, keine freien Erhöhungen.",
-        detailed: "Jede Erhöhung muss der Vermieter schriftlich begründen — mit Mietspiegel, Vergleichswohnungen oder Gutachten — und eine Kappungsgrenze begrenzt den Anstieg innerhalb von drei Jahren.",
+        standard: "Die Miete kann später steigen, frühestens 15 Monate nach Mietbeginn und auch dann nur bis zur ortsüblichen Vergleichsmiete — freie Erhöhungen erlaubt die Klausel nicht.",
+        detailed: "Die Miete kann frühestens 15 Monate nach Mietbeginn steigen und höchstens bis zur ortsüblichen Vergleichsmiete; freie Erhöhungen erlaubt die Klausel nicht. Jede Erhöhung muss der Vermieter Ihnen schriftlich begründen, mit Mietspiegel, Vergleichswohnungen oder Gutachten. Zusätzlich begrenzt die gesetzliche Kappungsgrenze, wie stark die Miete innerhalb von drei Jahren insgesamt steigen darf.",
       },
       en: {
-        simple: "The rent can rise later, at the earliest 15 months after the start.",
-        standard: "Only increases up to the local comparative rent are allowed, not free increases.",
-        detailed: "Every increase has to be justified in writing — rent index, comparable flats or an expert report — and a statutory cap limits how far rent can rise within three years.",
+        simple: "The rent can rise later, at the earliest 15 months after the tenancy starts.",
+        standard: "The rent can rise later, at the earliest 15 months after the tenancy starts, and even then only up to the local comparative rent — the clause does not allow free increases.",
+        detailed: "The rent can rise at the earliest 15 months after the tenancy starts, and only as far as the local comparative rent; the clause does not allow free increases. The landlord has to justify every increase to you in writing, using the rent index, comparable flats or an expert report. On top of that, the statutory cap limits how far the rent may rise in total within three years.",
       },
     },
     means: {
@@ -160,13 +160,13 @@ const RAW: RawClause[] = [
     simple: {
       de: {
         simple: "Kleine Reparaturen bis 150 € je Fall zahlen Sie selbst.",
-        standard: "Betroffen sind Armaturen, Schalter und ähnliche Gegenstände, im Jahr höchstens 8 % der Jahresmiete — rund 1.190 €.",
-        detailed: "Beide Grenzen zusammen entscheiden, wie teuer das für Sie werden kann. Diese Klausel verdient einen zweiten Blick, bevor Sie unterschreiben.",
+        standard: "Kleine Reparaturen an Armaturen, Schaltern und ähnlichen Gegenständen zahlen Sie selbst: bis 150 € je Einzelfall und im Jahr höchstens 8 % der Jahresmiete.",
+        detailed: "Kleine Reparaturen an Armaturen, Schaltern und ähnlichen Gegenständen zahlen Sie selbst — bis 150 € je Einzelfall und über das Jahr höchstens 8 % der Jahresmiete, hier also rund 1.190 €. Beide Grenzen gelten nebeneinander und entscheiden zusammen, wie teuer die Klausel für Sie werden kann. Sie verdient einen zweiten Blick, bevor Sie unterschreiben.",
       },
       en: {
         simple: "You pay small repairs up to €150 per case yourself.",
-        standard: "It covers taps, switches and similar fittings, capped at 8 % of the annual rent per year — about €1,190.",
-        detailed: "The two limits together decide how expensive this can get for you. This clause deserves a second look before you sign.",
+        standard: "You pay small repairs to taps, switches and similar fittings yourself: up to €150 per case, and no more than 8 % of the annual rent per year.",
+        detailed: "You pay small repairs to taps, switches and similar fittings yourself — up to €150 per case, and across the year no more than 8 % of the annual rent, which here is about €1,190. The two limits apply side by side and together decide how expensive this clause can get for you. It deserves a second look before you sign.",
       },
     },
     means: {
@@ -192,14 +192,14 @@ const RAW: RawClause[] = [
     },
     simple: {
       de: {
-        simple: "Die Wohnung wird sauber und bezugsfertig übergeben.",
-        standard: "Maßgeblich ist dabei der Zustand, den das Übergabeprotokoll festhält.",
-        detailed: "Dieses Protokoll ist beim Auszug der Maßstab: Notieren Sie Mängel, Zählerstände und Schlüssel und behalten Sie eine unterschriebene Kopie.",
+        simple: "Die Wohnung wird Ihnen bezugsfertig und gereinigt übergeben.",
+        standard: "Die Wohnung wird Ihnen bezugsfertig und gereinigt übergeben; maßgeblich ist der Zustand, den das Übergabeprotokoll festhält.",
+        detailed: "Die Wohnung wird Ihnen bezugsfertig und gereinigt übergeben, und maßgeblich ist allein der Zustand, den das Übergabeprotokoll festhält. Dieses Protokoll ist später Ihr wichtigster Beweis: Notieren Sie jeden Mangel und jeden Kratzer darin und lassen Sie es von beiden Seiten unterschreiben. Fehlt der Eintrag, tragen beim Auszug Sie die Beweislast dafür, dass ein Schaden schon vorher da war.",
       },
       en: {
-        simple: "The flat is handed over clean and ready to move into.",
-        standard: "What counts is the condition recorded in the handover protocol.",
-        detailed: "That protocol is the reference point when you leave: note existing marks, meter readings and keys, and keep a signed copy.",
+        simple: "The flat is handed over to you ready to move into and cleaned.",
+        standard: "The flat is handed over to you ready to move into and cleaned; what counts is the condition recorded in the handover protocol.",
+        detailed: "The flat is handed over to you ready to move into and cleaned, and what counts is only the condition recorded in the handover protocol. That protocol is your most important evidence later: note every defect and every scratch in it, and have both sides sign it. Without the entry, when you move out the burden is on you to prove a damage was already there.",
       },
     },
     means: {
@@ -209,6 +209,39 @@ const RAW: RawClause[] = [
     legal: {
       de: "Der Vermieter muss die Wohnung in einem zum vertragsgemäßen Gebrauch geeigneten Zustand überlassen und erhalten (§ 535 BGB).",
       en: "The landlord must provide the property in a condition suitable for the agreed use and maintain it (§ 535 BGB).",
+    },
+  },
+  {
+    id: "access",
+    page: 4,
+    level: "check",
+    tags: ["responsibility"],
+    quote:
+      "§ 12 Betreten der Mieträume. Der Vermieter oder ein von ihm Beauftragter darf die Wohnung nach rechtzeitiger Ankündigung zu angemessener Tageszeit betreten. Bei Gefahr im Verzug ist der Zutritt jederzeit gestattet.",
+    ref: { de: "§ 12 Betreten der Mieträume · Seite 4", en: "§ 12 Betreten der Mieträume · page 4" },
+    title: {
+      de: "Der Vermieter darf nur angekündigt herein",
+      en: "The landlord may only enter with notice",
+    },
+    simple: {
+      de: {
+        simple: "Der Vermieter darf die Wohnung nur nach Ankündigung betreten.",
+        standard: "Der Vermieter oder eine beauftragte Person darf die Wohnung nur nach rechtzeitiger Ankündigung und zu angemessener Tageszeit betreten — bei Gefahr im Verzug auch sofort.",
+        detailed: "Der Vermieter oder eine beauftragte Person darf die Wohnung nur nach rechtzeitiger Ankündigung und zu angemessener Tageszeit betreten; bei Gefahr im Verzug, etwa einem Wasserrohrbruch, auch sofort und ohne Ankündigung. Was „rechtzeitig“ und „angemessen“ genau heißt, sagt der Vertrag nicht — üblich sind einige Tage Vorlauf und Werktage zu normalen Zeiten. Ein Recht, mit eigenem Schlüssel in Ihrer Abwesenheit hereinzukommen, folgt daraus nicht.",
+      },
+      en: {
+        simple: "The landlord may only enter the flat after giving notice.",
+        standard: "The landlord or someone acting for them may only enter the flat after giving reasonable notice and at a reasonable time of day — in an emergency, immediately.",
+        detailed: "The landlord or someone acting for them may only enter the flat after giving reasonable notice and at a reasonable time of day; in an emergency, such as a burst pipe, immediately and without notice. What exactly counts as “reasonable” is not defined in the contract — a few days’ warning and normal hours on working days is the usual reading. It gives no right to let themselves in with their own key while you are out.",
+      },
+    },
+    means: {
+      de: "Bestehen Sie auf einer Ankündigung mit Datum und Uhrzeit und schlagen Sie einen anderen Termin vor, wenn er Ihnen nicht passt.",
+      en: "Insist on notice with a date and a time, and offer a different slot if the one proposed does not suit you.",
+    },
+    legal: {
+      de: "Die Wohnung ist während der Mietzeit dem Besitz des Mieters zugeordnet; ein allgemeines Betretungsrecht des Vermieters ohne Anlass besteht nicht (§ 535 BGB).",
+      en: "During the tenancy the flat is in the tenant’s possession; the landlord has no general right of entry without a reason (§ 535 BGB).",
     },
   },
 ];
@@ -456,14 +489,20 @@ export function sampleAnalysis(lang: Lang): Analysis {
 // to match against and the "original document" pane has something to show.
 export const SAMPLE_DOC_TEXT = [
   "Mietvertrag über Wohnraum",
+  "zwischen Frau Beate Wagner, Kastanienallee 14, 10435 Berlin — nachfolgend Vermieterin — und Herrn Malik Osei, Sonnenallee 3, 12045 Berlin — nachfolgend Mieter — wird folgender Mietvertrag geschlossen:",
   "§ 1 Mietsache. Vermietet werden die im Anwesen Kastanienallee 14, 10435 Berlin, gelegene Wohnung im 3. Obergeschoss, bestehend aus 3 Zimmern, Küche, Bad, Balkon, sowie ein Kellerabteil.",
   RAW.find((c) => c.id === "condition")!.quote,
+  "§ 3 Mietzeit. Das Mietverhältnis beginnt am 01.10.2026 und läuft auf unbestimmte Zeit. Eine Befristung ist nicht vereinbart.",
   RAW.find((c) => c.id === "rent")!.quote,
-  "§ 7 Hausordnung. Der Mieter verpflichtet sich, die als Anlage beigefügte Hausordnung einzuhalten. Ruhezeiten gelten von 22:00 bis 6:00 Uhr sowie sonn- und feiertags.",
+  "§ 5 Betriebskosten. Die Betriebskosten im Sinne der Betriebskostenverordnung trägt der Mieter. Über die geleisteten Vorauszahlungen wird jährlich abgerechnet; die Abrechnung erfolgt spätestens zwölf Monate nach Ende des Abrechnungszeitraums.",
   RAW.find((c) => c.id === "deposit")!.quote +
     " Die erste Teilzahlung ist zu Beginn des Mietverhältnisses fällig.",
+  "§ 7 Hausordnung. Der Mieter verpflichtet sich, die als Anlage beigefügte Hausordnung einzuhalten. Ruhezeiten gelten von 22:00 bis 6:00 Uhr sowie sonn- und feiertags.",
+  "§ 8 Untervermietung. Der Mieter darf die Wohnung oder Teile davon nur mit vorheriger Zustimmung des Vermieters untervermieten. Die Zustimmung ist schriftlich einzuholen.",
   RAW.find((c) => c.id === "notice")!.quote,
+  "§ 10 Tierhaltung. Das Halten von Kleintieren ist gestattet. Die Haltung von Hunden und Katzen bedarf der Zustimmung des Vermieters.",
   RAW.find((c) => c.id === "increase")!.quote,
+  RAW.find((c) => c.id === "access")!.quote,
   RAW.find((c) => c.id === "repairs")!.quote,
   "§ 14 Schlussbestimmungen. Änderungen und Ergänzungen dieses Vertrages bedürfen der Schriftform. Sollte eine Bestimmung unwirksam sein, bleibt die Wirksamkeit der übrigen Bestimmungen unberührt.",
 ].join("\n\n");
@@ -490,13 +529,13 @@ const EMP: EmpClause[] = [
     simple: {
       de: {
         simple: "Das Arbeitsverhältnis beginnt am 1. November 2026.",
-        standard: "Es ist unbefristet geschlossen und hat kein festes Enddatum.",
-        detailed: "Der Vertrag endet daher nicht von selbst — er läuft, bis eine Seite kündigt.",
+        standard: "Das Arbeitsverhältnis beginnt am 1. November 2026 und ist unbefristet geschlossen — es hat kein festes Enddatum.",
+        detailed: "Das Arbeitsverhältnis beginnt am 1. November 2026 und ist unbefristet geschlossen. Es endet deshalb nicht von selbst, sondern läuft weiter, bis eine der beiden Seiten kündigt. Das ist für Sie die günstigere Variante: Ein befristeter Vertrag würde ohne Kündigung einfach auslaufen.",
       },
       en: {
-        simple: "Employment starts on 1 November 2026.",
-        standard: "It is indefinite and has no fixed end date.",
-        detailed: "So the contract does not end by itself — it runs until one side gives notice.",
+        simple: "The employment starts on 1 November 2026.",
+        standard: "The employment starts on 1 November 2026 and is open-ended — there is no fixed end date.",
+        detailed: "The employment starts on 1 November 2026 and is open-ended. It therefore does not end by itself; it continues until one side gives notice. That is the better version for you: a fixed-term contract would simply expire with no notice at all.",
       },
     },
     means: {
@@ -519,13 +558,13 @@ const EMP: EmpClause[] = [
     simple: {
       de: {
         simple: "Sie verdienen 3.440 € brutto im Monat.",
-        standard: "Gezahlt wird jeweils zum Monatsende.",
-        detailed: "„Brutto“ ist der Betrag vor Lohnsteuer und Sozialversicherung; was ankommt, ist niedriger und hängt von Steuerklasse und Beiträgen ab — das steht nicht im Vertrag.",
+        standard: "Sie verdienen 3.440 € brutto im Monat, ausgezahlt jeweils zum Monatsende.",
+        detailed: "Sie verdienen 3.440 € brutto im Monat, ausgezahlt jeweils zum Monatsende. Brutto heißt vor Steuern und Sozialabgaben — was ankommt, hängt von Steuerklasse und Krankenkasse ab und liegt deutlich darunter. Eine Regelung zu späteren Gehaltserhöhungen enthält der Vertrag nicht.",
       },
       en: {
         simple: "You earn €3,440 gross per month.",
-        standard: "It is paid at the end of each month.",
-        detailed: "“Gross” is the figure before income tax and social security; what arrives is lower and depends on your tax class and contributions — which the contract does not state.",
+        standard: "You earn €3,440 gross per month, paid at the end of each month.",
+        detailed: "You earn €3,440 gross per month, paid at the end of each month. Gross means before tax and social contributions — what actually arrives depends on your tax class and health insurer and is noticeably less. The contract says nothing about later pay rises.",
       },
     },
     means: {
@@ -549,13 +588,13 @@ const EMP: EmpClause[] = [
     simple: {
       de: {
         simple: "Die ersten sechs Monate sind Probezeit.",
-        standard: "In dieser Zeit kann jede Seite mit zwei Wochen Frist kündigen.",
-        detailed: "Die Probezeit läuft bis zum 30.04.2027; die verkürzte Frist gilt zu jedem Tag, und ein besonderer Kündigungsschutz besteht meist noch nicht.",
+        standard: "Die ersten sechs Monate sind Probezeit; in dieser Zeit kann jede Seite mit zwei Wochen Frist kündigen.",
+        detailed: "Die ersten sechs Monate sind Probezeit — gerechnet ab dem 1. November 2026 also bis zum 30. April 2027. In dieser Zeit kann jede Seite mit einer Frist von zwei Wochen kündigen, und zwar zu jedem beliebigen Tag. Der allgemeine Kündigungsschutz greift meist erst danach.",
       },
       en: {
         simple: "The first six months are a probation period.",
-        standard: "During it either side may cancel with two weeks’ notice.",
-        detailed: "Probation runs until 30 Apr 2027; the shortened period applies on any day, and full dismissal protection usually does not yet apply.",
+        standard: "The first six months are a probation period; during it either side can give notice with two weeks’ notice.",
+        detailed: "The first six months are a probation period — counted from 1 November 2026, that runs to 30 April 2027. During it either side can give two weeks’ notice, on any day of the month. General protection against dismissal usually only starts afterwards.",
       },
     },
     means: {
@@ -578,14 +617,14 @@ const EMP: EmpClause[] = [
     title: { de: "Nach der Probezeit gilt die gesetzliche Frist", en: "After probation the statutory notice applies" },
     simple: {
       de: {
-        simple: "Nach der Probezeit gilt für Sie eine Frist von vier Wochen.",
-        standard: "Diese vier Wochen laufen jeweils zum 15. oder zum Ende eines Kalendermonats.",
-        detailed: "Das ist die gesetzliche Grundfrist (§ 622 Abs. 1 BGB); für den Arbeitgeber verlängert sie sich mit Ihrer Beschäftigungsdauer.",
+        simple: "Nach der Probezeit gilt für Sie eine Kündigungsfrist von vier Wochen.",
+        standard: "Nach der Probezeit gilt für Sie eine Kündigungsfrist von vier Wochen, jeweils zum 15. oder zum Ende eines Kalendermonats.",
+        detailed: "Nach der Probezeit gilt für Sie eine Kündigungsfrist von vier Wochen, jeweils zum 15. oder zum Ende eines Kalendermonats. Der Vertrag nennt keine eigene Frist, sondern verweist auf das Gesetz — das ist die gesetzliche Grundfrist. Für den Arbeitgeber verlängert sie sich mit Ihrer Beschäftigungsdauer, für Sie bleibt sie gleich.",
       },
       en: {
-        simple: "After probation your notice period is four weeks.",
-        standard: "Those four weeks run to the 15th or the end of a calendar month.",
-        detailed: "That is the statutory base period (§ 622 (1) BGB); for the employer it lengthens with your years of service.",
+        simple: "After the probation period your notice period is four weeks.",
+        standard: "After the probation period your notice period is four weeks, taking effect on the 15th or at the end of a calendar month.",
+        detailed: "After the probation period your notice period is four weeks, taking effect on the 15th or at the end of a calendar month. The contract sets no period of its own and points at the law instead — this is the statutory baseline. For the employer it grows with your length of service; for you it stays the same.",
       },
     },
     means: {
@@ -609,13 +648,13 @@ const EMP: EmpClause[] = [
     simple: {
       de: {
         simple: "Sie haben 28 bezahlte Urlaubstage im Jahr.",
-        standard: "Das liegt über dem gesetzlichen Mindesturlaub von 20 Tagen bei einer Fünf-Tage-Woche.",
-        detailed: "Treten Sie unterjährig ein oder aus, wird der Anspruch anteilig gekürzt.",
+        standard: "Sie haben 28 bezahlte Urlaubstage im Jahr — mehr als den gesetzlichen Mindesturlaub von 20 Tagen bei einer Fünf-Tage-Woche.",
+        detailed: "Sie haben 28 bezahlte Urlaubstage im Jahr, also acht Tage mehr als den gesetzlichen Mindesturlaub von 20 Tagen bei einer Fünf-Tage-Woche. Treten Sie unterjährig ein oder aus, wird der Anspruch anteilig gekürzt. Wie lange nicht genommener Urlaub ins nächste Jahr mitgenommen werden kann, steht nicht im Vertrag.",
       },
       en: {
         simple: "You get 28 paid holiday days a year.",
-        standard: "That is above the statutory minimum of 20 days on a five-day week.",
-        detailed: "If you join or leave mid-year, the entitlement is reduced pro rata.",
+        standard: "You get 28 paid holiday days a year — more than the statutory minimum of 20 days on a five-day week.",
+        detailed: "You get 28 paid holiday days a year, eight more than the statutory minimum of 20 days on a five-day week. If you join or leave part way through a year, the entitlement is reduced pro rata. How long untaken holiday can be carried into the next year is not stated in the contract.",
       },
     },
     means: {
@@ -639,13 +678,13 @@ const EMP: EmpClause[] = [
     simple: {
       de: {
         simple: "Sie bekommen zusätzlich 1.200 € Urlaubsgeld im Jahr.",
-        standard: "Ausgezahlt wird es einmal jährlich im Juni, zusätzlich zum Monatsgehalt.",
-        detailed: "Zusammen mit 12 × 3.440 € ergibt das eine mögliche Jahresvergütung von 42.480 € brutto.",
+        standard: "Sie bekommen zusätzlich 1.200 € Urlaubsgeld im Jahr, ausgezahlt einmal jährlich im Juni.",
+        detailed: "Sie bekommen zusätzlich 1.200 € Urlaubsgeld im Jahr, ausgezahlt einmal jährlich im Juni. Zusammen mit zwölf Monatsgehältern von 3.440 € ergibt das eine Jahresvergütung von 42.480 € brutto. Ob die Zahlung auch in Jahren mit unterjährigem Ein- oder Austritt anteilig anfällt, regelt der Vertrag nicht.",
       },
       en: {
-        simple: "You also get €1,200 holiday pay a year.",
-        standard: "It is paid once a year in June, on top of your monthly salary.",
-        detailed: "With 12 × €3,440 that gives a possible annual compensation of €42,480 gross.",
+        simple: "You also get €1,200 of holiday pay a year.",
+        standard: "You also get €1,200 of holiday pay a year, paid once annually in June.",
+        detailed: "You also get €1,200 of holiday pay a year, paid once annually in June. Together with twelve monthly salaries of €3,440 that comes to €42,480 gross a year. The contract does not say whether the payment is pro-rated in a year you join or leave part way through.",
       },
     },
     means: {
@@ -668,13 +707,13 @@ const EMP: EmpClause[] = [
     simple: {
       de: {
         simple: "Überstunden werden nur bezahlt, wenn sie vorher angeordnet wurden.",
-        standard: "Der Vertrag verspricht eine Vergütung für Überstunden nur, wenn der Arbeitgeber sie vorher angeordnet hat. Die Höhe der Vergütung wird nicht genannt.",
-        detailed: "Nur vorab angeordnete Überstunden werden laut Vertrag vergütet. Es bleibt offen, mit welchem Stundenbetrag oder Freizeitausgleich und wie nicht angeordnete, aber notwendige Mehrarbeit behandelt wird.",
+        standard: "Überstunden werden nur bezahlt, wenn sie vorher angeordnet wurden — freiwillig geleistete Mehrarbeit wird nicht vergütet.",
+        detailed: "Überstunden werden nur bezahlt, wenn sie vorher angeordnet wurden; freiwillig geleistete Mehrarbeit wird nicht vergütet. Lassen Sie sich eine Anordnung deshalb schriftlich oder wenigstens per Nachricht geben, bevor Sie länger bleiben. Wie Überstunden abgegolten werden — in Geld oder in Freizeit — sagt der Vertrag nicht.",
       },
       en: {
-        simple: "Overtime is paid only when it was ordered in advance.",
-        standard: "The contract promises payment for overtime only when the employer ordered it in advance. It does not state the payment amount.",
-        detailed: "The contract pays only overtime ordered in advance. It leaves open the hourly amount or time-off arrangement and how necessary but unapproved extra work is treated.",
+        simple: "Overtime is only paid if it was ordered in advance.",
+        standard: "Overtime is only paid if it was ordered in advance — extra hours you put in voluntarily are not compensated.",
+        detailed: "Overtime is only paid if it was ordered in advance; extra hours you put in voluntarily are not compensated. So get the instruction in writing, or at least in a message, before you stay late. The contract does not say how overtime is settled — in money or in time off.",
       },
     },
     means: {
@@ -684,6 +723,36 @@ const EMP: EmpClause[] = [
     legal: {
       de: "Ob und wie Überstunden vergütet werden, hängt von der konkreten Vereinbarung und den Umständen ab.",
       en: "Whether and how overtime is compensated depends on the specific agreement and circumstances.",
+    },
+  },
+  {
+    id: "hours",
+    page: 2,
+    level: "standard",
+    tags: ["responsibility"],
+    quote:
+      "§ 6 Arbeitszeit. Die regelmäßige wöchentliche Arbeitszeit beträgt 40 Stunden, verteilt auf fünf Werktage von Montag bis Freitag.",
+    ref: { de: "§ 6 Arbeitszeit · Seite 2", en: "§ 6 Arbeitszeit · page 2" },
+    title: { de: "40 Stunden pro Woche, Montag bis Freitag", en: "40 hours a week, Monday to Friday" },
+    simple: {
+      de: {
+        simple: "Sie arbeiten 40 Stunden pro Woche.",
+        standard: "Sie arbeiten 40 Stunden pro Woche, verteilt auf fünf Werktage von Montag bis Freitag — also acht Stunden am Tag.",
+        detailed: "Sie arbeiten 40 Stunden pro Woche, verteilt auf fünf Werktage von Montag bis Freitag, also acht Stunden am Tag. Der Vertrag legt die Dauer fest, nicht aber Beginn und Ende des Arbeitstags; darüber entscheidet der Arbeitgeber im Rahmen seines Weisungsrechts. Eine Regelung zu Gleitzeit, Zeiterfassung oder mobiler Arbeit enthält er nicht.",
+      },
+      en: {
+        simple: "You work 40 hours a week.",
+        standard: "You work 40 hours a week over five working days, Monday to Friday — eight hours a day.",
+        detailed: "You work 40 hours a week over five working days, Monday to Friday, which is eight hours a day. The contract fixes the length of the week but not when the day starts and ends; the employer decides that under its right to direct work. It says nothing about flexitime, time recording or remote work.",
+      },
+    },
+    means: {
+      de: "Klären Sie vor der Unterschrift, wie die Arbeitszeit erfasst wird und ob es feste Kernzeiten gibt.",
+      en: "Before signing, clarify how working time is recorded and whether there are fixed core hours.",
+    },
+    legal: {
+      de: "Die werktägliche Arbeitszeit darf acht Stunden nicht überschreiten und nur unter Ausgleich auf bis zu zehn Stunden verlängert werden (§ 3 ArbZG).",
+      en: "Daily working time may not exceed eight hours and may only be extended to ten hours where it is averaged out (§ 3 ArbZG).",
     },
   },
 ];
@@ -794,11 +863,15 @@ export function employmentAnalysis(lang: Lang): Analysis {
 
 export const EMPLOYMENT_DOC_TEXT = [
   "Arbeitsvertrag",
+  "zwischen der Nordlicht Systeme GmbH, Gertrudenstraße 8, 20095 Hamburg — nachfolgend Arbeitgeberin — und Frau Ayla Demir, Beim Grünen Jäger 21, 20359 Hamburg — nachfolgend Arbeitnehmerin — wird folgender Arbeitsvertrag geschlossen:",
   EMP.find((c) => c.id === "duration")!.quote,
   EMP.find((c) => c.id === "probation")!.quote,
+  "§ 3 Tätigkeit. Die Arbeitnehmerin wird als Sachbearbeiterin im Bereich Kundenbetreuung eingestellt. Der Arbeitgeber kann ihr auch andere zumutbare Tätigkeiten zuweisen, die ihrer Vorbildung und ihren Fähigkeiten entsprechen.",
   EMP.find((c) => c.id === "salary")!.quote,
   EMP.find((c) => c.id === "holiday")!.quote,
+  EMP.find((c) => c.id === "hours")!.quote,
   EMP.find((c) => c.id === "vacation")!.quote,
-  EMP.find((c) => c.id === "notice")!.quote,
   EMP.find((c) => c.id === "overtime")!.quote,
+  EMP.find((c) => c.id === "notice")!.quote,
+  "§ 10 Schlussbestimmungen. Änderungen und Ergänzungen dieses Vertrages bedürfen der Schriftform. Mündliche Nebenabreden bestehen nicht.",
 ].join("\n\n");

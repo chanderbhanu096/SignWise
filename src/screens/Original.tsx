@@ -4,6 +4,7 @@ import { t } from "../i18n";
 import { depthText } from "../depth";
 import { Severity } from "../components/Severity";
 import { DepthPicker } from "../components/DepthPicker";
+import { FigureSources } from "../components/FigureSources";
 import { splitDocument } from "../document";
 
 // Split view: the contract's own wording on the left (verbatim clause passages,
@@ -147,6 +148,12 @@ export function Original({
                 <p className="section-sub" style={{ margin: "10px 0 14px" }}>
                   {depthText(selected.simple, depth)}
                 </p>
+                <FigureSources
+                  analysis={analysis}
+                  clause={selected}
+                  text={depthText(selected.simple, depth)}
+                  depth={depth}
+                />
                 <button className="btn" onClick={() => onOpenClause(selected.id)}>
                   {s.showClause}
                 </button>

@@ -6,6 +6,7 @@ import { depthText } from "../depth";
 import { lawChecksFor } from "../lawcheck";
 import { Severity } from "./Severity";
 import { DepthPicker } from "./DepthPicker";
+import { FigureSources } from "./FigureSources";
 
 // The clause detail. Same component renders as a right-side panel on desktop and a
 // bottom sheet on mobile (CSS decides which). The three content classes get fixed,
@@ -28,6 +29,7 @@ export function ClausePanel({
 }) {
   const s = t(analysis.lang);
   const hits = lawChecksFor(analysis, clause.id);
+  const explained = depthText(clause.simple, depth);
   const [legalOpen, setLegalOpen] = useState(false);
   const closeRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -88,7 +90,8 @@ export function ClausePanel({
               <span>{s.explainedBy}</span>
               <DepthPicker depth={depth} setDepth={setDepth} lang={analysis.lang} />
             </div>
-            <p>{depthText(clause.simple, depth)}</p>
+            <p>{explained}</p>
+            <FigureSources analysis={analysis} clause={clause} text={explained} depth={depth} />
           </div>
 
 

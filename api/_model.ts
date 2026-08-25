@@ -46,17 +46,18 @@ How to write "means" and "simple" — this is the part people actually read:
 - Everyday words, active voice, address the reader directly, sentences under about 15 words. Write for someone with no legal training who is reading on a phone.
 - Do NOT restate the clause and do NOT reuse its legal wording. Where a term cannot be avoided (Kaution, Kündigungsfrist, Nebenkosten, Probezeit), name it once and explain it in the same sentence.
 - No filler ("it should be noted", "please be aware", "as per the contract"), no hedging, no advice about whether to sign.
-- The three "simple" levels are INCREMENTS of one explanation, not three versions of it. The app shows level 1 alone, then 1+2, then 1+2+3, so write them to be read in sequence:
-  "simple"   = the whole point in one short, complete sentence, with the main figure or date in it.
-  "standard" = ONLY what you add for the standard level. Do not restate "simple".
-  "detailed" = ONLY what you add on top of that: the mechanism, the exception, the consequence. Do not restate the first two.
-- Each added part is a complete sentence that follows on naturally from the one before. Never start one with a pronoun whose antecedent is in an earlier part ("Sie dürfen sie in drei Raten zahlen" is wrong — the reader may be seeing this level first while it renders).
-- Every part must earn its place: if there is genuinely nothing more to add, write a shorter contract-specific sentence rather than padding or repeating.
-- WRONG (three rewrites of the same sentence — the reader learns almost nothing by switching level):
-  simple: "Sie zahlen 5.800 € Kaution." / standard: "Sie zahlen 5.800 € Kaution in einer Summe." / detailed: "Sie zahlen 5.800 € Kaution in einer Summe vor der Schlüsselübergabe."
-  RIGHT (each part adds something new):
-  simple: "Sie zahlen 5.800 € Kaution." / standard: "Der volle Betrag muss fünf Werktage vor der Schlüsselübergabe auf dem Konto sein." / detailed: "Der Vertrag knüpft die Schlüsselübergabe daran: ohne vollständigen Eingang sieht er keinen Anspruch auf die Schlüssel vor."
+- The three "simple" levels are three COMPLETE explanations of the same clause, each written to be read on its own. Each is shown alone — the reader picks a level and sees that text and nothing else — so none of them may depend on another one being on screen.
+  "simple"   = the whole point in one short sentence, with the main figure or date in it.
+  "standard" = the same point, plus how it actually works: the deadline, the mechanism, what the reader has to do. Two to three sentences.
+  "detailed" = the same again, plus the fine print: the exception, the consequence, what the contract leaves unsaid. Three to five sentences.
+- CUMULATIVE, and this is the hard rule: every figure, date, amount and qualifier that appears in a lower level MUST still appear in the higher one. Asking for more detail may never take information away. A reader who switches from "standard" to "detailed" and loses the amount will not trust anything else on the page.
+- Each level is longer and more precise than the one below it — never a shortened rewrite.
+- WRONG ("detailed" is an add-on fragment that makes no sense alone, and the amount is gone):
+  simple: "Sie zahlen 5.800 € Kaution." / standard: "Der volle Betrag muss fünf Werktage vor der Schlüsselübergabe auf dem Konto sein." / detailed: "Ohne vollständigen Eingang sieht der Vertrag keinen Anspruch auf die Schlüssel vor."
+  RIGHT (each level stands alone, and each keeps everything the one below it said):
+  simple: "Sie zahlen 5.800 € Kaution." / standard: "Sie zahlen 5.800 € Kaution, und zwar in einer Summe: fünf Werktage vor der Schlüsselübergabe muss der volle Betrag auf dem Konto sein." / detailed: "Sie zahlen 5.800 € Kaution in einer Summe, fällig fünf Werktage vor der Schlüsselübergabe. Der Vertrag knüpft die Übergabe daran: ohne vollständigen Eingang sieht er keinen Anspruch auf die Schlüssel vor. Eine Ratenzahlung sieht er nicht vor."
 - "detailed" must not mean more legalese.
+- Any figure you state that is NOT written in this clause — an annual total you worked out, a statutory minimum, a date you calculated — must be recognisable as such from the sentence itself ("das sind rund ...", "gesetzlich sind es mindestens ...", "rechnerisch bis zum ..."). Never present a figure you derived as though the contract printed it.
 - In German, address the reader as "Sie" and keep the same plain register.
 
 Financial framing (from the user's perspective):
@@ -113,7 +114,7 @@ const ANALYSIS_SHAPE = `Return a single JSON object with this exact shape:
     "level": "important"|"check"|"standard",
     "tags": ("money"|"deadline"|"responsibility"|"risk")[],
     "title": string,
-    "simple": { "simple": string, "standard": string, "detailed": string },   // INCREMENTS: the app renders 1, then 1+2, then 1+2+3
+    "simple": { "simple": string, "standard": string, "detailed": string },   // three complete explanations, each readable alone, each keeping every figure the level below it states
     "means": string, "legal"?: string,
     "legalRefs"?: [{ "label": string, "law": string, "section"?: string }]   // citation only, no URL
   }],
