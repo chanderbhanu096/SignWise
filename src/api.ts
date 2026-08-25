@@ -81,3 +81,15 @@ export async function translate(analysis: Analysis, target: Lang): Promise<Analy
   }
   return AnalysisSchema.parse(JSON.parse(restore(await res.text(), jsonEscape)));
 }
+
+// The contract itself is never included in this call. The server turns the
+// existing analysis into a short script and sends only that script to ElevenLabs.
+export async function createAudioBriefing(analysis: Analysis, language: "de" | "en"): Promise<Blob> {
+  const res = await fetch("/api/audio", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ analysis, language }),
+  });
+  if (!res.ok) throw new ApiError((await res.json().catch(() => ({})))?.error ?? `http_${res.status}`);
+  return res.blob();
+}

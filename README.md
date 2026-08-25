@@ -69,6 +69,19 @@ AZURE_OPENAI_DEPLOYMENT=gpt-4o           # your deployment name
 AZURE_OPENAI_API_VERSION=2024-10-21
 ```
 
+### Audio briefing (ElevenLabs)
+
+The Overview includes an optional two-speaker audio briefing. It sends a short
+script built from the displayed analysis — never the full contract — to ElevenLabs
+only after the reader chooses a language and requests generation. Set these server
+environment variables locally and in Azure App Service:
+
+```
+ELEVENLABS_API_KEY=your-elevenlabs-api-key
+ELEVENLABS_HOST_VOICE_ID=your-first-voice-id
+ELEVENLABS_GUIDE_VOICE_ID=your-second-voice-id
+```
+
 The contract text (extracted from the PDF client-side via pdf.js, or an image
 for scanned contracts via GPT-4o vision) is sent to the model, which returns the
 structured `Analysis` JSON. That JSON is validated against the schema and its

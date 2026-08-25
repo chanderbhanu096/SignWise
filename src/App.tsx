@@ -12,7 +12,7 @@ import {
 import { extractPdfText, verifyQuote } from "./pdf";
 import { narrowRef } from "./document";
 import { styleCurrencyDeep } from "./format";
-import { analyze, ask, translate, ApiError } from "./api";
+import { analyze, ask, translate, createAudioBriefing, ApiError } from "./api";
 import { downloadDeadlineIcs } from "./ics";
 import { Upload } from "./screens/Upload";
 import { Analyzing, type Phase } from "./screens/Analyzing";
@@ -391,6 +391,7 @@ export default function App() {
               setCalMsg(s.calAdded);
             }}
             calMsg={calMsg}
+            onGenerateAudio={(audioLang) => createAudioBriefing(analysis, audioLang)}
           />
         )}
         {screen === "original" && analysis && (
