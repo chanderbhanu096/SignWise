@@ -30,7 +30,18 @@ const uniqueBy = <T>(items: T[], key: (item: T) => string) => {
 
 function commitmentPriority(item: DecisionSummary["commitments"][number]): number {
   const text = `${item.title} ${item.value ?? ""} ${item.explanation}`.toLowerCase();
-  if (/salary|gehalt|rent|miete|premium|prämie|repayment|rate\b|monthly|monat|per year|pro jahr|annual payment|jährliche zahlung|compensation|vergütung/.test(text)) return 100;
+  // "monat" as a bare stem was the recurring-payment test, and it also matches the
+  // German plural noun "Monate" — so a notice period of "3 Monate" scored as a
+  // monthly payment and outranked the deposit, while its English twin "3 months"
+  // scored as a notice period. The same contract listed its commitments in a
+  // different order depending on which language button the reader had pressed.
+  // A recurring payment has to be said adverbially in either language.
+  if (
+    /salary|gehalt|\brent\b|miete|premium|prämie|repayment|rate\b|monthly|monatlich|(?:pro|im|je) monat|per month|per year|pro jahr|annual payment|jährliche zahlung|compensation|vergütung/.test(
+      text,
+    )
+  )
+    return 100;
   if (/deposit|kaution|deductible|selbstbehalt|one.?time|einmal/.test(text)) return 95;
   if (/notice|kündig|cancel|exit|beenden/.test(text)) return 90;
   if (/probation|probezeit|duration|laufzeit|minimum term|mindestlaufzeit|renewal|verlänger/.test(text)) return 80;

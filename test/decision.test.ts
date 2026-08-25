@@ -208,3 +208,20 @@ test("a derived commitment repeating a figure the model already showed is droppe
   assert.equal(shown.length, 1, "the same figure must not appear on two cards");
   assert.equal(shown[0].title, "Monatliche Zahlung");
 });
+
+// The same contract must present the same commitments in the same order whichever
+// language the reader is using. It did not: commitmentPriority scores the localized
+// text, and the German plural noun "Monate" matched the pattern meant to catch
+// "monatlich", so a three-month notice period was ranked as a monthly payment.
+test("commitment cards are in the same order in German and in English", () => {
+  for (const build of [sampleAnalysis, employmentAnalysis]) {
+    const de = getDecisionSummary(build("de"));
+    const en = getDecisionSummary(build("en"));
+    assert.equal(de.commitments.length, en.commitments.length, "different number of cards");
+    assert.deepEqual(
+      de.commitments.map((c) => c.clauseId),
+      en.commitments.map((c) => c.clauseId),
+      "card order differs between languages",
+    );
+  }
+});

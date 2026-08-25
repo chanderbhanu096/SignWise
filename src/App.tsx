@@ -222,6 +222,15 @@ export default function App() {
     }
   }
 
+  // The page's own language attribute, not just the strings. Without this the
+  // document stayed lang="de" while the interface was in English, so a screen
+  // reader read English out with a German voice — and the tab title stayed German
+  // whatever the reader had chosen.
+  useEffect(() => {
+    document.documentElement.lang = lang;
+    document.title = t(lang).pageTitle;
+  }, [lang]);
+
   async function changeLang(l: Lang) {
     if (l === lang || translating) return;
     setLang(l);

@@ -213,12 +213,12 @@ const RAW: RawClause[] = [
   },
   {
     id: "access",
-    page: 4,
+    page: 3,
     level: "check",
     tags: ["responsibility"],
     quote:
       "§ 12 Betreten der Mieträume. Der Vermieter oder ein von ihm Beauftragter darf die Wohnung nach rechtzeitiger Ankündigung zu angemessener Tageszeit betreten. Bei Gefahr im Verzug ist der Zutritt jederzeit gestattet.",
-    ref: { de: "§ 12 Betreten der Mieträume · Seite 4", en: "§ 12 Betreten der Mieträume · page 4" },
+    ref: { de: "§ 12 Betreten der Mieträume · Seite 3", en: "§ 12 Betreten der Mieträume · page 3" },
     title: {
       de: "Der Vermieter darf nur angekündigt herein",
       en: "The landlord may only enter with notice",

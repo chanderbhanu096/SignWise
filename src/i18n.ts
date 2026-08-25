@@ -155,6 +155,7 @@ interface Strings {
   lawEmptyTitle: string;
   lawEmptyBody: (n: number) => string;
   lawPanelLabel: string;
+  pageTitle: string;
   figuresHeading: string;
   figuresNote: string;
   figInClause: (ref: string) => string;
@@ -341,12 +342,13 @@ const EN: Strings = {
   lawEmptyBody: (n) =>
     `None of the ${n} benchmark${n === 1 ? "" : "s"} that apply to this type of contract diverges from your contract. That does not mean the contract is unproblematic overall — these are the only points checked here.`,
   lawPanelLabel: "Statutory benchmark",
+  pageTitle: "SignWise — Understand before you sign",
   figuresHeading: "Where these figures come from",
   figuresNote: "Traced against the wording of your own document.",
   figInClause: (ref) => `stated in this clause (${ref})`,
   figInOther: (ref) => `stated in ${ref}`,
-  figDerived: (expr, ref) => `not in the text — worked out as ${expr}${ref ? ` (${ref})` : ""}`,
-  figContext: "not in the contract text — general information",
+  figDerived: (expr, ref) => `not stated — worked out as ${expr}${ref ? ` (${ref})` : ""}`,
+  figContext: "not stated verbatim in the contract",
   legalNoticeLink: "Legal notice & data protection",
   legalNoticeTitle: "Legal notice & data protection",
   legalNoticeSections: [
@@ -594,12 +596,13 @@ const DE: Strings = {
   lawEmptyBody: (n) =>
     `Keiner der ${n} Maßstäbe, die für diesen Vertragstyp gelten, weicht von Ihrem Vertrag ab. Das heißt nicht, dass der Vertrag insgesamt unproblematisch ist — geprüft sind nur diese Punkte.`,
   lawPanelLabel: "Gesetzlicher Maßstab",
+  pageTitle: "SignWise — Verstehen, bevor Sie unterschreiben",
   figuresHeading: "Woher diese Zahlen kommen",
   figuresNote: "Abgeglichen mit dem Wortlaut Ihres Dokuments.",
   figInClause: (ref) => `steht in dieser Klausel (${ref})`,
   figInOther: (ref) => `steht in ${ref}`,
-  figDerived: (expr, ref) => `nicht im Text — errechnet als ${expr}${ref ? ` (${ref})` : ""}`,
-  figContext: "nicht im Vertragstext — allgemeine Information",
+  figDerived: (expr, ref) => `nicht genannt — errechnet als ${expr}${ref ? ` (${ref})` : ""}`,
+  figContext: "nicht wörtlich im Vertragstext",
   legalNoticeLink: "Rechtliches & Datenschutz",
   legalNoticeTitle: "Rechtliches & Datenschutz",
   legalNoticeSections: [

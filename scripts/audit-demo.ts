@@ -44,10 +44,26 @@ function auditOne(name: string, a: Analysis, doc: string) {
     const detailed = depthText(c.simple, "detailed");
     const own = facts(withoutDates(strip(c.quote)));
     for (const f of figureSources(a, c, detailed)) {
-      if (f.kind === "clause" && !facts(strip(c.quote)).has(f.key)) bad(`${c.id}/prov`, `claims ${f.shown} is in the clause, it is not`);
+      if (f.kind === "clause" && !f.parts.every((x) => facts(strip(c.quote)).has(x)))
+        bad(`${c.id}/prov`, `claims ${f.shown} is in the clause, it is not`);
       if (f.kind === "derived" && !f.expr) bad(`${c.id}/prov`, `derived without an expression`);
     }
     void own;
+  }
+
+  // 5b. page numbers must not run backwards against document order — a clause
+  // sitting between two "page 3" clauses cannot be on page 4.
+  const docOrder = splitDocument(doc, a.clauses).map((b) => b.clauseId).filter(Boolean) as string[];
+  let lastPage = 0;
+  let lastId = "";
+  for (const id of docOrder) {
+    const c = a.clauses.find((x) => x.id === id)!;
+    if (c.page < lastPage) bad(`${id}/page`, `page ${c.page} comes after ${lastId} on page ${lastPage}`);
+    // the label the reader sees has to agree with the page field behind it
+    const inRef = c.ref.match(/(?:Seite|page)\s*(\d+)/i);
+    if (inRef && Number(inRef[1]) !== c.page) bad(`${id}/ref`, `label says page ${inRef[1]}, clause says ${c.page}`);
+    lastPage = c.page;
+    lastId = id;
   }
 
   // 6. every clause the document shows must be reachable, and vice versa

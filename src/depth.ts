@@ -20,7 +20,7 @@ export type DepthSet = { simple: string; standard: string; detailed: string };
 // made a level look like a restatement of one that mentioned a 1. English "one" is
 // left out for the same reason ("one side"). Missing a figure only costs precision
 // in the harmless direction: at worst a sentence repeats, never a fact disappears.
-const NUMERALS: Record<string, string> = {
+export const NUMERALS: Record<string, string> = {
   zwei: "2", drei: "3", vier: "4", fünf: "5", sechs: "6",
   sieben: "7", acht: "8", neun: "9", zehn: "10", elf: "11", zwölf: "12",
   two: "2", three: "3", four: "4", five: "5", six: "6", seven: "7",
