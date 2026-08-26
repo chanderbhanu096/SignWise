@@ -140,6 +140,23 @@ against a Zod schema and its quotes are checked against the document before any 
 reaches a screen. Because only this one file talks to a model, swapping providers is a
 one-file change.
 
+## The audio briefing (optional)
+
+The Overview offers a two-voice spoken summary, about two minutes, in German or
+English. It is built from the explanation already on the screen — the top three
+findings, one key date, and a line telling you to go back to the original. The
+contract itself never leaves the server, and nothing is generated until the reader
+picks a language and asks for it.
+
+```
+ELEVENLABS_API_KEY=your-elevenlabs-api-key
+ELEVENLABS_HOST_VOICE_ID=your-first-voice-id
+ELEVENLABS_GUIDE_VOICE_ID=your-second-voice-id
+```
+
+Leave them unset and the card does not appear at all — the same rule the rest of the
+app follows: a feature that cannot work should not offer itself.
+
 ## Deploying (Azure App Service)
 
 One Node process ([`server.ts`](server.ts)) serves the built SPA and the API. No

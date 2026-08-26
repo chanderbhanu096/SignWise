@@ -6,6 +6,7 @@ import { euro } from "../format";
 import { getContractCategory, getFinancialCopy, getContractSuggestions, getMoneyState } from "../contract";
 import { Severity, MARK } from "../components/Severity";
 import { Section } from "../components/Section";
+import { AudioBriefing } from "../components/AudioBriefing";
 
 export function Overview({
   analysis,
@@ -19,6 +20,7 @@ export function Overview({
   asking,
   onAddCalendar,
   calMsg,
+  onGenerateAudio,
 }: {
   analysis: Analysis;
   filename: string;
@@ -31,6 +33,7 @@ export function Overview({
   asking: boolean;
   onAddCalendar: (summary: string, iso: string) => void;
   calMsg: string;
+  onGenerateAudio: (language: "de" | "en") => Promise<Blob>;
 }) {
   const s = t(analysis.lang);
   const { money } = analysis;
@@ -169,6 +172,8 @@ export function Overview({
           </div>
         ))}
       </dl>
+
+      <AudioBriefing appLang={analysis.lang} onGenerate={onGenerateAudio} />
 
       {/* Findings — always open, with the attention triage as its header */}
       <div className="card block">

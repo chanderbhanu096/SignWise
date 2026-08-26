@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import analyze from "./api/analyze";
 import ask from "./api/ask";
 import translate from "./api/translate";
+import audio from "./api/audio";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const dist = path.join(here, "dist");
@@ -16,6 +17,7 @@ app.use(express.json({ limit: "8mb" }));
 app.post("/api/analyze", (req, res) => analyze(req, res));
 app.post("/api/ask", (req, res) => ask(req, res));
 app.post("/api/translate", (req, res) => translate(req, res));
+app.all("/api/audio", (req, res) => audio(req, res)); // GET = "is audio configured?", POST = generate
 
 app.use(express.static(dist));
 // SPA fallback: any non-api GET returns index.html.

@@ -189,6 +189,20 @@ section.screen { padding-top: 40px; }
    .block on specificity and cut the 30px section rhythm down to 18px. */
 .block { margin-top: 30px; }
 
+/* Audio briefing stays near the document identity, before the detailed findings.
+   It is a secondary way to consume the same analysis, never a competing CTA. */
+.audio-briefing { margin-top: 22px; padding: 18px 20px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; border: 1px solid #b9dbdd; border-radius: var(--radius-lg); background: linear-gradient(120deg, #edf8f8, #fff); }
+.audio-briefing > div:first-child { min-width: 0; }
+.audio-briefing-kicker { display: block; margin-bottom: 4px; color: var(--brand-strong); font-size: 11px; font-weight: 700; letter-spacing: 0.08em; }
+.audio-briefing h2 { font-size: 19px; }
+.audio-briefing p { margin-top: 3px; color: var(--muted); font-size: 14px; }
+.audio-player { flex: 1 1 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding-top: 2px; }
+.audio-player audio { width: min(100%, 430px); height: 42px; }
+.audio-error { flex-basis: 100%; color: #7a1a13 !important; }
+.audio-dialog { width: min(460px, calc(100vw - 32px)); }
+.audio-language { display: flex; gap: 8px; margin-top: 16px; }
+.audio-privacy { font-size: 13px !important; }
+
 /* Upload */
 .upload-screen { max-width: 1180px; }
 section.screen.upload-screen { position: relative; isolation: isolate; padding-top: 22px; }

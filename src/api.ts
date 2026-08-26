@@ -81,3 +81,27 @@ export async function translate(analysis: Analysis, target: Lang): Promise<Analy
   }
   return AnalysisSchema.parse(JSON.parse(restore(await res.text(), jsonEscape)));
 }
+
+// Does this deployment have ElevenLabs credentials at all? Anything other than a
+// clear yes counts as no, so a broken or missing endpoint hides the card rather
+// than offering a button that cannot work.
+export async function audioAvailable(): Promise<boolean> {
+  try {
+    const res = await fetch("/api/audio");
+    return res.ok && (await res.json())?.configured === true;
+  } catch {
+    return false;
+  }
+}
+
+// The contract itself is never included in this call. The server turns the
+// existing analysis into a short script and sends only that script to ElevenLabs.
+export async function createAudioBriefing(analysis: Analysis, language: "de" | "en"): Promise<Blob> {
+  const res = await fetch("/api/audio", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ analysis, language }),
+  });
+  if (!res.ok) throw new ApiError((await res.json().catch(() => ({})))?.error ?? `http_${res.status}`);
+  return res.blob();
+}
