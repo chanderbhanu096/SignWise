@@ -626,3 +626,63 @@ test PDF returned **200**, which looks like the contract is published. It is not
 alone cannot tell you whether a file is gone on an SPA host**; the content type
 can. `text/html, 584b` = absent, `application/vnd...presentation, 1784465b` =
 very much present.
+
+---
+
+## 16 — The audio briefing branch, merged — 26 August 2026
+
+`origin/NewFeatureTesting` had been sitting on the remote since before the
+whole-contract pass, one commit, "Add ElevenLabs audio briefing but it needs to
+be tested". It never showed up in `git branch -vv` because there was no local
+copy of it — **`git branch -vv` lists local branches only; a remote-only branch
+is invisible to it.** Use `git branch -a` when the question is "is there anything
+I have not merged".
+
+It still fitted after twelve commits of drift. One conflict, in the README, which
+was mine to resolve because I had rewritten the file underneath it. `App.tsx`,
+`Overview.tsx` and `styles.css` auto-merged. The script builder reads `findings`,
+`clause.means`, `dates[].tone` and `contractType`, all of which survived.
+
+Two things changed on the way in.
+
+**`@elevenlabs/elevenlabs-js` and `dotenv` were dependencies that nothing
+imported.** The handler talks to ElevenLabs with plain `fetch`, and nothing in
+the repo loads dotenv — vite.config puts the env on `process.env` itself. Both
+removed.
+
+**The card rendered whether or not the server could ever produce audio.**
+Neither App Service app has `ELEVENLABS_API_KEY`, `ELEVENLABS_HOST_VOICE_ID` or
+`ELEVENLABS_GUIDE_VOICE_ID`, so `/api/audio` could only answer 503 — which the UI
+catches as "Die Audio-Zusammenfassung konnte gerade nicht erstellt werden." A
+"Create audio" button that fails on every press in front of a judge is worse than
+no button at all. A `GET /api/audio` now answers `{"configured":boolean}` and the
+card returns `null` until that comes back true.
+
+The probe lives **inside the handler**, not as a route in `server.ts`. The dev
+middleware in `vite.config.ts` routes every method of `/api/<name>` to that
+module's default export, so a GET mounted only on the express side would have
+answered `{"configured":…}` in production and `405 POST only` in dev — the exact
+class of dev/prod split that hides until the demo.
+
+`server.ts` uses `app.all("/api/audio", …)` rather than `app.post`, so both
+methods reach the same handler the way dev does.
+
+### Verified on the preview host
+
+`assets/index-BuyQNuon.js`, `signwise-hero-7c21`:
+
+- `GET /api/audio` → `200 {"configured":false}`
+- `POST /api/audio` → `503 {"error":"audio_not_configured"}`
+- Overview renders with **no audio card** and no console errors.
+- With the probe stubbed to `true`, the card appears — kicker, "Lieber zuhören?",
+  the language dialog, and the ElevenLabs privacy line — and pressing Create audio
+  runs the **real** POST, takes the 503 and shows the German error without
+  crashing or leaving a spinner running.
+
+### Not done, and why
+
+**The ElevenLabs call itself has still never run.** Everything above tests the
+paths around it; `text-to-dialogue` with `eleven_v3` has not once been executed,
+because there is no API key. Until it has, this stays off `master`. Setting the
+three values on `signwise-hero-7c21` is the only thing standing between here and
+a real answer.
