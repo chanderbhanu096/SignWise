@@ -294,5 +294,15 @@ export function figureSources(analysis: Analysis, clause: Clause, text: string):
         : { shown, key: id, parts: [...keys], kind: "context" },
     );
   }
-  return out;
+  // A figure that only appears as a term of a derivation already on the list is not
+  // an untraced claim about the contract — it is the working being shown. A live run
+  // listed "20.160 € — errechnet als 12 × 1.680" and then, underneath, "zwölf Monate
+  // — nicht wörtlich im Vertragstext", which reads like a warning about the twelve
+  // months the line above just explained.
+  const inWorking = new Set(
+    out.flatMap((f) => (f.kind === "derived" ? [...(f.expr ?? "").matchAll(NUMBER_IN_EXPR)] : [])).map((m) => canonical(m[0]) ?? ""),
+  );
+  return out.filter((f) => !(f.kind === "context" && f.parts.length === 1 && inWorking.has(f.parts[0])));
 }
+
+const NUMBER_IN_EXPR = /\d+(?:[.,]\d+)*/g;

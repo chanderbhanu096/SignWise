@@ -125,3 +125,16 @@ test("a unit only counts as a whole word", () => {
   const shown = figureSources(a, c, "Zusammen mit zwölf Monatsgehältern von 3.440 €.").map((f) => f.shown);
   assert.ok(!shown.some((x) => /zwölf/i.test(x)), `matched inside a longer word: ${shown.join(", ")}`);
 });
+
+// A live run listed "20.160 € — errechnet als 12 × 1.680" and then, underneath,
+// "zwölf Monate — nicht wörtlich im Vertragstext": a warning about the twelve
+// months the line above had just explained.
+test("a figure that is only a term of a listed derivation is not also flagged", () => {
+  const a = employmentAnalysis("de");
+  const c = a.clauses.find((x) => x.id === "holiday")!;
+  const out = figureSources(a, c, "Zusammen mit zwölf Monaten von 3.440 € ergibt das 42.480 € brutto.");
+  const derived = out.find((f) => f.kind === "derived");
+  assert.ok(derived, "expected the total to be derived");
+  assert.match(derived!.expr!, /12 ×/);
+  assert.ok(!out.some((f) => f.kind === "context" && f.parts[0] === "12"), JSON.stringify(out.map((f) => f.shown)));
+});
