@@ -37,6 +37,15 @@ const ORDINALS: Record<string, string> = {
   seventh: "7", eighth: "8", ninth: "9", tenth: "10", eleventh: "11", twelfth: "12",
 };
 
+// German writes numbers into compound words — "sechsmonatige Probezeit",
+// "Dreimonatsfrist", "zweiwöchige Kündigungsfrist". That is one token, so the numeral
+// inside it was invisible: an explanation saying "sechs Monate" about a clause that
+// says "sechsmonatig" shared no figure with it, and the provenance panel reported the
+// figure as not stated in the contract. Only a numeral followed by a time or quantity
+// stem counts — which is what keeps "zweifellos" from reading as a 2, "Achtung" as an
+// 8 and "vierteljährlich" as a 4.
+const COMPOUND = new RegExp(`^(${Object.keys(NUMERALS).join("|")})(?:monat|woch|wöch|jahr|jähr|tag|täg|stund|stünd|zimmer|fach)`);
+
 // A date is not a number. "01.11.2026" was read as the figure 1112026, because the
 // dots were stripped as grouping separators — so a contract's start date could not
 // be matched against anything and counted as a fact of its own on every comparison.
@@ -86,7 +95,7 @@ export function facts(text: string): Set<string> {
   }
   for (const m of text.toLowerCase().matchAll(/[a-zä-ÿ]+/g)) {
     const w = m[0];
-    const n = NUMERALS[w] ?? ORDINALS[w.replace(/(en|em|er|es|e)$/, "")];
+    const n = NUMERALS[w] ?? ORDINALS[w.replace(/(en|em|er|es|e)$/, "")] ?? NUMERALS[w.match(COMPOUND)?.[1] ?? ""];
     if (n) out.add(n);
   }
   return out;

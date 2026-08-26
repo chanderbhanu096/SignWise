@@ -111,6 +111,34 @@ function auditParity(name: string, de: Analysis, en: Analysis) {
     }
     if (cde.title === cen.title && /[äöüß]/.test(cde.title)) bad(`${cde.id}/title`, "EN title left in German");
   }
+
+  // The clause explanations were the only thing compared, so a figure could differ
+  // between the languages anywhere else on the screen and nothing noticed. The
+  // employment timeline did exactly that: the German said "sechsmonatige Probezeit"
+  // and the English "six-month probation period" — the same fact, but only one of
+  // them stated a 6 that a reader (or a checker) could see.
+  const list = (a: Analysis) => [
+    ...a.glance.map((g, i) => [`glance[${i}] ${g.key}`, g.value] as const),
+    ...a.dates.map((d, i) => [`dates[${i}]`, `${d.date} ${d.title} ${d.body}`] as const),
+    ...a.money.oneTime.map((m, i) => [`money.oneTime[${i}]`, `${m.label} ${m.amount ?? ""}`] as const),
+    ...a.money.variable.map((m, i) => [`money.variable[${i}]`, `${m.label} ${m.note}`] as const),
+    ...a.rights.map((r, i) => [`rights[${i}]`, r.text] as const),
+    ...a.duties.map((d, i) => [`duties[${i}]`, d.text] as const),
+    ...(a.decisionSummary?.commitments ?? []).map((c, i) => [`commitments[${i}]`, `${c.title} ${c.value ?? ""} ${c.explanation}`] as const),
+    ...(a.decisionSummary?.reviewItems ?? []).map((r, i) => [`reviewItems[${i}]`, `${r.title} ${r.explanation} ${r.reason}`] as const),
+    ...(a.decisionSummary?.understandingQuestions ?? []).map((q, i) => [`questions[${i}]`, `${q.question} ${q.answer}`] as const),
+  ];
+  const ld = list(de);
+  const le = list(en);
+  if (ld.length !== le.length) bad("parity", `DE has ${ld.length} display strings, EN has ${le.length}`);
+  for (let i = 0; i < Math.min(ld.length, le.length); i++) {
+    const fd = facts(strip(ld[i][1]));
+    const fe = facts(strip(le[i][1]));
+    const onlyDe = [...fd].filter((x) => !fe.has(x));
+    const onlyEn = [...fe].filter((x) => !fd.has(x));
+    if (onlyDe.length || onlyEn.length)
+      bad(ld[i][0], `DE and EN state different figures — only DE: [${onlyDe}] only EN: [${onlyEn}]\n      DE: ${ld[i][1]}\n      EN: ${le[i][1]}`);
+  }
 }
 
 auditOne("rental / de", sampleAnalysis("de"), SAMPLE_DOC_TEXT);

@@ -132,3 +132,27 @@ test("the last part keeps its own punctuation", () => {
   const out = depthText({ simple: "Sie zahlen 1.240 €.", standard: "Und wann genau?", detailed: "" }, "standard");
   assert.ok(out.endsWith("?"), out);
 });
+
+// German writes numbers into compounds. Before this, the German fixture's
+// "sechsmonatige Probezeit" stated no figure at all while the English "six-month
+// probation period" stated a 6 — the same fact, invisible on one side.
+test("a numeral inside a German compound is still a figure", () => {
+  for (const [text, want] of [
+    ["Beginn der sechsmonatigen Probezeit.", "6"],
+    ["Start of the six-month probation period.", "6"],
+    ["eine zweiwöchige Kündigungsfrist", "2"],
+    ["Dreimonatsfrist", "3"],
+    ["achtstündige Schicht", "8"],
+    ["zwölfmonatiger Abrechnungszeitraum", "12"],
+  ] as const) {
+    assert.ok(facts(text).has(want), `${text} → ${[...facts(text)]}`);
+  }
+});
+
+// The stem is what keeps the rule honest: without it "zweifellos" reads as a 2 and
+// "vierteljährlich" as a 4, and a provenance panel then reports figures nobody wrote.
+test("a word that merely starts like a numeral is not a figure", () => {
+  for (const text of ["zweifellos", "vierteljährlich", "vierzehn Tage", "dreist"]) {
+    for (const wrong of ["2", "4", "3"]) assert.ok(!facts(text).has(wrong), `${text} → ${[...facts(text)]}`);
+  }
+});
