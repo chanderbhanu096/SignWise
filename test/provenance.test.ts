@@ -138,3 +138,22 @@ test("a figure that is only a term of a listed derivation is not also flagged", 
   assert.match(derived!.expr!, /12 ×/);
   assert.ok(!out.some((f) => f.kind === "context" && f.parts[0] === "12"), JSON.stringify(out.map((f) => f.shown)));
 });
+
+// "Ruhezeit ist von 22:00 bis 6:00 Uhr" scanned as plain numbers gave three rows,
+// one of them reading "00 — steht in dieser Klausel".
+test("a clock time is one figure, not two", () => {
+  const a = sampleAnalysis("de");
+  const out = trace(a, "houserules");
+  assert.deepEqual(out.map((f) => f.shown), ["22:00", "6:00"]);
+  assert.ok(out.every((f) => f.kind === "clause"), JSON.stringify(out));
+});
+
+// The house number is a number in the text and nothing to do with the rent.
+test("a street number is not traced as a figure", () => {
+  for (const lang of ["de", "en"] as const) {
+    const a = sampleAnalysis(lang);
+    const out = trace(a, "premises");
+    assert.ok(!out.some((f) => f.parts.includes("14")), `${lang}: ${JSON.stringify(out.map((f) => f.shown))}`);
+    assert.ok(out.some((f) => f.parts.includes("3")), `${lang}: the room count should still be traced`);
+  }
+});

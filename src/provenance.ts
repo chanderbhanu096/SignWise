@@ -1,5 +1,6 @@
 import type { Analysis, Clause } from "./types";
 import { NUMERALS, canonical, facts, withoutDates } from "./depth";
+import { ADDRESS_PATTERNS } from "./redact";
 
 // Where the figures in an explanation actually come from.
 //
@@ -30,6 +31,11 @@ export type FigureSource = {
 // Leaving them in made "§ 13" report the figure 13 as missing from the contract.
 const CITATION = /§+\s?\d+[a-z]?|\bAbs\.?\s?\d+|\bNr\.?\s?\d+|\bSatz\s?\d+|\b(?:Seite|page|S\.)\s?\d+/gi;
 
+// So is a street number. "Gemietet sind die 3-Zimmer-Wohnung ... der Kastanienallee
+// 14 in Berlin" listed a 14 next to the rooms, and 14 is not a figure about this
+// tenancy — it is where the building is.
+const withoutAddresses = (text: string) => ADDRESS_PATTERNS.reduce((acc, re) => acc.replace(re, " "), text);
+
 // What makes a figure a claim about the contract rather than sentence furniture: a
 // currency, a percentage, a quantity, or a month. A bare number is usually prose —
 // a multiplier in a calculation the sentence is already showing, an ordinal, the day
@@ -55,6 +61,9 @@ const NUMWORD = Object.keys(NUMERALS).join("|");
 const SHOWN = new RegExp(
   [
     String.raw`\d{1,2}[.\/]\d{1,2}[.\/]\d{2,4}`,
+    // A clock time is one figure. Scanned as plain numbers, "Ruhezeit von 22:00 bis
+    // 6:00 Uhr" produced a row reading "00 — steht in dieser Klausel".
+    String.raw`\d{1,2}:\d{2}`,
     String.raw`\d{1,2}\.?\s(?:${MONTH})(?:\s+\d{4})?`,
     // The word units need a trailing boundary — without it "zwölf Monatsgehältern"
     // matched as "zwölf Monat". The currency marks must not have one: \b after "€"
@@ -66,6 +75,7 @@ const SHOWN = new RegExp(
   "gi",
 );
 const IS_WORD_DATE = new RegExp(String.raw`^\d{1,2}\.?\s(?:${MONTH})`, "i");
+const IS_TIME = /^\d{1,2}:\d{2}$/;
 
 /** The parts of a date, however it is written, so the two spellings compare equal. */
 function dateParts(shown: string): Set<string> {
@@ -251,13 +261,15 @@ export function figureSources(analysis: Analysis, clause: Clause, text: string):
 
   const out: FigureSource[] = [];
   const seen = new Set<string>();
-  const scan = text.replace(CITATION, " ");
+  const scan = withoutAddresses(text).replace(CITATION, " ");
   for (const m of scan.matchAll(SHOWN)) {
     const shown = m[0].trim();
     const word = NUMERALS[shown.split(/\s+/)[0].toLowerCase()];
     const key = word ?? canonical(shown.replace(/[^\d.,]/g, ""));
     if (!key) continue;
-    const dated = IS_DATE.test(shown) || IS_WORD_DATE.test(shown);
+    // A clock time joins the dates: compared by its parts, never derived from other
+    // figures. It is a position on a clock, not a quantity.
+    const dated = IS_DATE.test(shown) || IS_WORD_DATE.test(shown) || IS_TIME.test(shown);
     // A date is compared by its parts. facts() splits "01.03.2027" into 1, 3 and 2027
     // while canonical() would read it as the figure 103.2027, so a start date printed
     // in the contract was being reported as not in the contract at all.

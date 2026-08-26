@@ -41,6 +41,12 @@ const PATTERNS: Array<[string, RegExp]> = [
   ["ADRESSE", /\b[A-ZÄÖÜ][a-zäöüß-]{2,}(?:[ -][A-ZÄÖÜ][a-zäöüß-]+)?\s+(?:Stra(?:ß|ss)e|Str\.|Weg|Platz|Allee|Gasse|Ring|Damm|Ufer)\s+\d{1,4}[a-z]?\b(?:\s*,?\s*\d{5}\s+[A-ZÄÖÜ][a-zäöüß-]+)?/g],
 ];
 
+// Shared with provenance.ts. A house number and a postal code are numbers in the
+// text, but nobody reads "14 — stated in this clause" as a fact about their rent.
+// These are the shapes that already decide what an address is, so they decide here
+// too rather than a second, worse pattern being written next door.
+export const ADDRESS_PATTERNS = PATTERNS.filter(([name]) => name === "ADRESSE").map(([, re]) => re);
+
 /** Replace direct identifiers with placeholders, and give back the inverse. */
 export function redact(text: string): Redaction {
   const map = new Map<string, string>(); // placeholder -> original
