@@ -356,8 +356,10 @@ stopped. Three lines of print CSS.
 - The screen-reader counter under the level filter said *"Showing 6 of 14 findings"*
   next to a heading that says there are 5. It counts clauses; it now says clauses.
 - The README claimed severity Important was navy and that "red is reserved and unused".
-  `--imp-fg` is `#8e0a0a`. The claim is gone; whether the colour itself should be is a
-  design question, not a documentation one.
+  Both were left over from before the severity scale became a warm attention ramp on
+  23 August — `--imp-fg` is `#8e0a0a`, deliberately, and the scale deliberately has no
+  green in it because green would endorse a clause. Stale documentation, not drift; the
+  claim is gone.
 
 ## 18. Two silly rows in the provenance panel
 
