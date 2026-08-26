@@ -404,4 +404,6 @@ they decide it here rather than a second, worse pattern being written next door.
   session, still not rotated.
 - The Art. 13 DSGVO notice names "das Projektteam SignWise"; a production
   deployment needs a real named controller.
-- `qa/end-user-pass` has not been merged to master.
+- ~~`qa/end-user-pass` has not been merged to master.~~ Fast-forwarded into `master`
+  on 26 August and deployed to both hosts; the two branches and both sites are now the
+  same commit.
