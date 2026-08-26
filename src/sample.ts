@@ -244,9 +244,235 @@ const RAW: RawClause[] = [
       en: "During the tenancy the flat is in the tenant’s possession; the landlord has no general right of entry without a reason (§ 535 BGB).",
     },
   },
+  // ---------------------------------------------------------------------------
+  // The rest of the contract. Every numbered section a reader can click, not just
+  // the ones a finding points at: the ANALYZE prompt asks a real upload for exactly
+  // this ("surface EVERY numbered section"), and a demo that explains 7 of 14 was
+  // the one place the app fell short of what it tells the model to do. The routine
+  // ones stay level "standard", which carries no tint in the document pane — the
+  // colour still marks what needs attention, and the click still explains.
+  // ---------------------------------------------------------------------------
+  {
+    id: "premises",
+    page: 1,
+    level: "standard",
+    tags: ["responsibility"],
+    quote:
+      "§ 1 Mietsache. Vermietet werden die im Anwesen Kastanienallee 14, 10435 Berlin, gelegene Wohnung im 3. Obergeschoss, bestehend aus 3 Zimmern, Küche, Bad, Balkon, sowie ein Kellerabteil.",
+    ref: { de: "§ 1 Mietsache · Seite 1", en: "§ 1 Mietsache · page 1" },
+    title: { de: "Vermietet sind 3 Zimmer, Balkon und ein Kellerabteil", en: "What is rented: 3 rooms, balcony and a cellar" },
+    simple: {
+      de: {
+        simple: "Gemietet sind eine 3-Zimmer-Wohnung im 3. Obergeschoss und ein Kellerabteil.",
+        standard: "Gemietet sind die 3-Zimmer-Wohnung im 3. Obergeschoss der Kastanienallee 14 in Berlin — mit Küche, Bad und Balkon — sowie ein Kellerabteil. Was hier nicht aufgezählt ist, ist auch nicht mitvermietet.",
+        detailed: "Gemietet sind die 3-Zimmer-Wohnung im 3. Obergeschoss der Kastanienallee 14 in Berlin, mit Küche, Bad und Balkon, sowie ein Kellerabteil. Diese Aufzählung ist der Umfang des Vertrags: Nebenräume, Garten oder ein Stellplatz gehören nicht dazu, wenn sie hier nicht genannt sind. Eine Quadratmeterzahl nennt der Vertrag nicht — es gibt also keine vereinbarte Wohnfläche, an der sich später etwas messen ließe.",
+      },
+      en: {
+        simple: "You are renting a 3-room flat on the 3rd floor and a cellar unit.",
+        standard: "You are renting the 3-room flat on the 3rd floor of Kastanienallee 14 in Berlin — kitchen, bathroom and balcony included — plus a cellar unit. Anything not listed here is not part of the tenancy.",
+        detailed: "You are renting the 3-room flat on the 3rd floor of Kastanienallee 14 in Berlin, with kitchen, bathroom and balcony, plus a cellar unit. That list is the scope of the contract: side rooms, a garden or a parking space are not included unless they are named here. The contract gives no floor area, so there is no agreed size to measure anything against later.",
+      },
+    },
+    means: {
+      de: "Vergleichen Sie diese Liste bei der Übergabe mit dem, was Sie tatsächlich bekommen — den Keller eingeschlossen.",
+      en: "At handover, check this list against what you actually get — the cellar included.",
+    },
+    legal: {
+      de: "Der Vermieter schuldet die Mietsache in dem Umfang und Zustand, in dem der Vertrag sie beschreibt (§ 535 BGB).",
+      en: "The landlord owes the property in the scope and condition the contract describes (§ 535 BGB).",
+    },
+  },
+  {
+    id: "term",
+    page: 2,
+    level: "standard",
+    tags: ["deadline"],
+    quote: "§ 3 Mietzeit. Das Mietverhältnis beginnt am 01.10.2026 und läuft auf unbestimmte Zeit. Eine Befristung ist nicht vereinbart.",
+    ref: { de: "§ 3 Mietzeit · Seite 2", en: "§ 3 Mietzeit · page 2" },
+    title: { de: "Beginn am 1. Oktober 2026, unbefristet", en: "Starts 1 October 2026, no end date" },
+    simple: {
+      de: {
+        simple: "Das Mietverhältnis beginnt am 1. Oktober 2026 und läuft unbefristet.",
+        standard: "Das Mietverhältnis beginnt am 1. Oktober 2026 und ist unbefristet: Der Vertrag hat kein Enddatum, eine Befristung ist ausdrücklich nicht vereinbart. Er endet also nur, wenn eine Seite kündigt.",
+        detailed: "Das Mietverhältnis beginnt am 1. Oktober 2026 und ist unbefristet; eine Befristung ist ausdrücklich nicht vereinbart. Der Vertrag läuft deshalb weiter, bis eine der beiden Seiten kündigt — für Sie mit der Frist aus der Kündigungsklausel, für die Vermieterin nur mit einem gesetzlichen Grund. Von diesem Datum an laufen auch alle anderen Fristen des Vertrags, etwa die 15 Monate bis zur ersten möglichen Mieterhöhung.",
+      },
+      en: {
+        simple: "The tenancy starts on 1 October 2026 and runs indefinitely.",
+        standard: "The tenancy starts on 1 October 2026 and is open-ended: the contract has no end date, and no fixed term was agreed. It ends only when one side gives notice.",
+        detailed: "The tenancy starts on 1 October 2026 and is open-ended; no fixed term was agreed. The contract therefore keeps running until one of the parties gives notice — for you with the period in the termination clause, for the landlord only with a statutory reason. Every other deadline in the contract runs from this date too, such as the 15 months until the first possible rent increase.",
+      },
+    },
+    means: {
+      de: "Notieren Sie den 1. Oktober 2026: Ab da zählen Miete, Kaution und jede Frist in diesem Vertrag.",
+      en: "Note 1 October 2026: rent, deposit and every deadline in this contract count from that day.",
+    },
+    legal: {
+      de: "Ein unbefristetes Mietverhältnis läuft bis zu einer wirksamen Kündigung fort; für den Vermieter setzt eine Kündigung ein berechtigtes Interesse voraus (§ 573 BGB).",
+      en: "An open-ended tenancy continues until notice is effectively given; for the landlord, notice requires a legitimate interest (§ 573 BGB).",
+    },
+  },
+  {
+    id: "utilities",
+    page: 3,
+    level: "check",
+    tags: ["money", "responsibility"],
+    quote:
+      "§ 5 Betriebskosten. Die Betriebskosten im Sinne der Betriebskostenverordnung trägt der Mieter. Über die geleisteten Vorauszahlungen wird jährlich abgerechnet; die Abrechnung erfolgt spätestens zwölf Monate nach Ende des Abrechnungszeitraums.",
+    ref: { de: "§ 5 Betriebskosten · Seite 3", en: "§ 5 Betriebskosten · page 3" },
+    title: { de: "Die Betriebskosten zahlen Sie zusätzlich", en: "Utilities come on top of the rent" },
+    simple: {
+      de: {
+        simple: "Die Betriebskosten tragen Sie zusätzlich zur Miete.",
+        standard: "Die Betriebskosten tragen Sie zusätzlich zur Miete. Einmal im Jahr wird abgerechnet: Sie zahlen nach, wenn Ihre Vorauszahlungen zu niedrig waren, oder bekommen etwas zurück. Die Abrechnung muss spätestens zwölf Monate nach Ende des Abrechnungszeitraums bei Ihnen sein.",
+        detailed: "Die Betriebskosten tragen Sie zusätzlich zur Grundmiete von 1.240 €; welche Posten dazuzählen, bestimmt die Betriebskostenverordnung — Heizung, Wasser, Müll, Hausreinigung und ähnliche laufende Kosten. Einmal im Jahr wird abgerechnet: Sie zahlen nach, wenn Ihre Vorauszahlungen zu niedrig waren, oder bekommen etwas zurück. Die Abrechnung muss spätestens zwölf Monate nach Ende des Abrechnungszeitraums bei Ihnen sein. Eine Höhe nennt der Vertrag an keiner Stelle — es steht keine monatliche Vorauszahlung darin, und damit auch keine Zahl, die Sie einplanen könnten.",
+      },
+      en: {
+        simple: "You pay the utilities on top of the rent.",
+        standard: "You pay the utilities on top of the rent. They are settled once a year: you pay the difference if your advance payments were too low, or you get money back. The statement has to reach you no later than twelve months after the end of the billing period.",
+        detailed: "You pay the utilities on top of the €1,240 base rent; which items count is set by the Betriebskostenverordnung — heating, water, refuse, cleaning of the building and similar running costs. They are settled once a year: you pay the difference if your advance payments were too low, or you get money back. The statement has to reach you no later than twelve months after the end of the billing period. The contract names no amount anywhere — there is no monthly advance payment in it, and so no figure you could budget for.",
+      },
+    },
+    means: {
+      de: "Fragen Sie vor der Unterschrift nach der letzten Abrechnung. Ohne sie unterschreiben Sie eine laufende Zahlung, deren Höhe Sie nicht kennen.",
+      en: "Ask for last year’s statement before you sign. Without it you are signing up to a recurring payment whose size you do not know.",
+    },
+    legal: {
+      de: "Betriebskosten dürfen auf den Mieter umgelegt werden, wenn das vereinbart ist; über Vorauszahlungen ist jährlich abzurechnen, und eine Nachforderung nach Ablauf des zwölften Monats ist ausgeschlossen (§ 556 BGB).",
+      en: "Utilities may be passed on to the tenant where that is agreed; advance payments must be settled annually, and a back claim after the twelfth month is excluded (§ 556 BGB).",
+    },
+  },
+  {
+    id: "houserules",
+    page: 3,
+    level: "standard",
+    tags: ["responsibility"],
+    quote:
+      "§ 7 Hausordnung. Der Mieter verpflichtet sich, die als Anlage beigefügte Hausordnung einzuhalten. Ruhezeiten gelten von 22:00 bis 6:00 Uhr sowie sonn- und feiertags.",
+    ref: { de: "§ 7 Hausordnung · Seite 3", en: "§ 7 Hausordnung · page 3" },
+    title: { de: "Die Hausordnung gilt mit — Ruhe ab 22:00 Uhr", en: "The house rules apply — quiet from 22:00" },
+    simple: {
+      de: {
+        simple: "Sie müssen die Hausordnung einhalten; ab 22:00 Uhr gilt Ruhezeit.",
+        standard: "Sie müssen die beigefügte Hausordnung einhalten — als Anlage ist sie Teil des Vertrags, nicht bloß ein Aushang. Ruhezeit ist von 22:00 bis 6:00 Uhr sowie an Sonn- und Feiertagen.",
+        detailed: "Sie müssen die als Anlage beigefügte Hausordnung einhalten; weil sie zum Vertrag gehört, gilt sie wie jede andere Klausel und nicht bloß wie ein Aushang im Treppenhaus. Ruhezeit ist von 22:00 bis 6:00 Uhr und ganztägig an Sonn- und Feiertagen. Was genau in der Hausordnung steht, gibt der Vertrag nicht wieder — sie liegt als eigenes Blatt bei, und genau das sollten Sie vor der Unterschrift gelesen haben.",
+      },
+      en: {
+        simple: "You have to keep to the house rules; quiet hours start at 22:00.",
+        standard: "You have to keep to the attached house rules — as an annex they are part of the contract, not just a notice in the hallway. Quiet hours run from 22:00 to 6:00, and on Sundays and public holidays.",
+        detailed: "You have to keep to the house rules attached to the contract; because they belong to it, they bind you like any other clause and not like a notice in the stairwell. Quiet hours run from 22:00 to 6:00 and all day on Sundays and public holidays. The contract does not reproduce the house rules themselves — they come as a separate sheet, and that is the sheet to read before you sign.",
+      },
+    },
+    means: {
+      de: "Lassen Sie sich die Hausordnung vor der Unterschrift zeigen. Sie unterschreiben sie mit.",
+      en: "Ask to see the house rules before you sign. You are signing them too.",
+    },
+    legal: {
+      de: "Eine Hausordnung kann als Anlage Vertragsbestandteil werden; sie darf die Rechte des Mieters aus dem Mietvertrag aber nicht einschränken (§ 535 BGB).",
+      en: "House rules can become part of the contract as an annex, but they may not cut down the tenant’s rights under the tenancy (§ 535 BGB).",
+    },
+  },
+  {
+    id: "sublet",
+    page: 3,
+    level: "check",
+    tags: ["responsibility", "risk"],
+    quote:
+      "§ 8 Untervermietung. Der Mieter darf die Wohnung oder Teile davon nur mit vorheriger Zustimmung des Vermieters untervermieten. Die Zustimmung ist schriftlich einzuholen.",
+    ref: { de: "§ 8 Untervermietung · Seite 3", en: "§ 8 Untervermietung · page 3" },
+    title: { de: "Untervermieten nur mit schriftlicher Zustimmung", en: "Subletting needs written permission first" },
+    simple: {
+      de: {
+        simple: "Untervermieten dürfen Sie nur, wenn die Vermieterin vorher zustimmt.",
+        standard: "Untervermieten dürfen Sie nur mit vorheriger Zustimmung der Vermieterin, und die Zustimmung muss schriftlich vorliegen. Das gilt für die ganze Wohnung genauso wie für ein einzelnes Zimmer.",
+        detailed: "Untervermieten dürfen Sie nur mit vorheriger Zustimmung der Vermieterin, und zwar schriftlich — für die ganze Wohnung genauso wie für ein einzelnes Zimmer. „Vorher“ ist wörtlich gemeint: Wer jemanden einziehen lässt und hinterher fragt, verstößt gegen den Vertrag, auch wenn die Zustimmung später kommt. Wann die Vermieterin zustimmen muss und wann sie ablehnen darf, sagt der Vertrag nicht; das steht im Gesetz.",
+      },
+      en: {
+        simple: "You may only sublet if the landlord agrees in advance.",
+        standard: "You may only sublet with the landlord’s prior permission, and that permission has to be in writing. It applies to the whole flat and to a single room alike.",
+        detailed: "You may only sublet with the landlord’s prior permission, in writing — for the whole flat and for a single room alike. “Prior” is meant literally: moving someone in and asking afterwards breaks the contract, even if permission follows later. When the landlord has to agree and when they may refuse is not in the contract; that is left to the law.",
+      },
+    },
+    means: {
+      de: "Planen Sie eine WG oder eine längere Reise mit Zwischenmieter, fragen Sie schriftlich an — und heben Sie die Antwort auf.",
+      en: "Planning a flatshare or a long trip with someone taking over? Ask in writing — and keep the answer.",
+    },
+    legal: {
+      de: "Entsteht dem Mieter nach Vertragsschluss ein berechtigtes Interesse, einen Teil der Wohnung einem Dritten zu überlassen, kann er vom Vermieter die Erlaubnis dazu verlangen (§ 553 BGB).",
+      en: "If a legitimate interest in letting part of the flat to someone else arises after signing, the tenant may require the landlord’s permission (§ 553 BGB).",
+    },
+  },
+  {
+    id: "pets",
+    page: 3,
+    level: "standard",
+    tags: ["responsibility"],
+    quote:
+      "§ 10 Tierhaltung. Das Halten von Kleintieren ist gestattet. Die Haltung von Hunden und Katzen bedarf der Zustimmung des Vermieters.",
+    ref: { de: "§ 10 Tierhaltung · Seite 3", en: "§ 10 Tierhaltung · page 3" },
+    title: { de: "Kleintiere ja, Hund oder Katze nur mit Zustimmung", en: "Small pets yes, dog or cat only with permission" },
+    simple: {
+      de: {
+        simple: "Kleintiere dürfen Sie halten; für Hund oder Katze brauchen Sie die Zustimmung.",
+        standard: "Kleintiere wie Hamster, Vögel oder Fische dürfen Sie ohne Rückfrage halten. Für einen Hund oder eine Katze brauchen Sie dagegen die Zustimmung der Vermieterin.",
+        detailed: "Kleintiere wie Hamster, Vögel oder Fische dürfen Sie ohne Rückfrage halten; der Vertrag erlaubt sie ausdrücklich. Für einen Hund oder eine Katze brauchen Sie dagegen die Zustimmung der Vermieterin, und der Vertrag nennt weder eine Frist für ihre Antwort noch einen Grund, an den sie gebunden wäre. Eine erteilte Zustimmung sollten Sie sich schriftlich geben lassen — sonst steht bei einem späteren Streit Aussage gegen Aussage.",
+      },
+      en: {
+        simple: "You may keep small pets; a dog or a cat needs permission.",
+        standard: "You may keep small pets such as hamsters, birds or fish without asking. A dog or a cat, on the other hand, needs the landlord’s permission.",
+        detailed: "You may keep small pets such as hamsters, birds or fish without asking; the contract allows them outright. A dog or a cat needs the landlord’s permission, and the contract sets neither a deadline for their answer nor a ground they would be bound by. Get any permission you are given in writing — otherwise a later dispute comes down to one person’s word against the other’s.",
+      },
+    },
+    means: {
+      de: "Fragen Sie vor dem Einzug, wenn ein Hund oder eine Katze mitkommen soll. Nachträglich ist es schwerer.",
+      en: "Ask before you move in if a dog or a cat is coming with you. Afterwards is harder.",
+    },
+    legal: {
+      de: "Ob die Haltung eines Hundes oder einer Katze zum vertragsgemäßen Gebrauch gehört, ist eine Abwägung im Einzelfall; ein pauschales Verbot ohne Abwägung ist in vorformulierten Bedingungen problematisch (§ 535 BGB).",
+      en: "Whether keeping a dog or a cat counts as ordinary use is weighed case by case; a blanket ban with no weighing is problematic in standard terms (§ 535 BGB).",
+    },
+  },
+  {
+    id: "final",
+    page: 4,
+    level: "standard",
+    tags: ["responsibility"],
+    quote:
+      "§ 14 Schlussbestimmungen. Änderungen und Ergänzungen dieses Vertrages bedürfen der Schriftform. Sollte eine Bestimmung unwirksam sein, bleibt die Wirksamkeit der übrigen Bestimmungen unberührt.",
+    ref: { de: "§ 14 Schlussbestimmungen · Seite 4", en: "§ 14 Schlussbestimmungen · page 4" },
+    title: { de: "Änderungen gelten nur schriftlich", en: "Changes only count in writing" },
+    simple: {
+      de: {
+        simple: "Spätere Änderungen am Vertrag gelten nur schriftlich.",
+        standard: "Spätere Änderungen und Ergänzungen gelten nur, wenn sie schriftlich festgehalten werden. Fällt eine einzelne Bestimmung weg, bleibt der übrige Vertrag bestehen.",
+        detailed: "Spätere Änderungen und Ergänzungen gelten nur, wenn sie schriftlich festgehalten werden — eine Zusage am Küchentisch oder am Telefon reicht dafür nicht. Fällt eine einzelne Bestimmung weg, bleibt der übrige Vertrag bestehen; es steht also nie der ganze Vertrag auf dem Spiel. Praktisch heißt das: Alles, was von diesem Papier abweicht, gehört auf Papier und unterschrieben.",
+      },
+      en: {
+        simple: "Later changes to the contract only count in writing.",
+        standard: "Later changes and additions only count if they are put in writing. If a single provision drops out, the rest of the contract stays in force.",
+        detailed: "Later changes and additions only count if they are put in writing — a promise at the kitchen table or over the phone is not enough. If a single provision drops out, the rest of the contract stays in force, so the whole agreement is never at stake. In practice: anything that differs from this paper belongs on paper, and signed.",
+      },
+    },
+    means: {
+      de: "Was Ihnen bei der Besichtigung versprochen wurde, gilt nur, wenn es im Vertrag steht oder nachträglich unterschrieben wird.",
+      en: "Whatever you were promised at the viewing only counts if it is in the contract, or signed afterwards.",
+    },
+    legal: {
+      de: "Ist für eine Erklärung die Schriftform vereinbart, ist eine formlose Erklärung im Zweifel nichtig (§ 125 BGB).",
+      en: "Where written form is agreed for a declaration, an informal one is void in case of doubt (§ 125 BGB).",
+    },
+  },
 ];
 
 const pick = <T>(l: L10n<T>, lang: Lang): T => (lang === "de" ? l.de : l.en);
+
+// Document order, taken from the section number each quote opens with. The
+// fixtures are written finding-first, which is how they are ranked — but the
+// screens that list *every* clause (the level filter, the document pane's
+// fallback) say "in document order", so this is where that becomes true.
+// Ranking lives in `findings`, an explicit list this does not touch.
+const sectionNo = (quote: string) => Number(quote.match(/^§+\s?(\d+)/)?.[1] ?? 0);
+const inDocOrder = <T extends { quote: string }>(raw: T[]): T[] =>
+  [...raw].sort((a, b) => sectionNo(a.quote) - sectionNo(b.quote));
 
 // Cited provisions per clause. The app maps law + section to the official URL.
 type RawLegalRef = { label: L10n<string>; law: string; section?: string };
@@ -260,6 +486,11 @@ const LEGAL_REFS: Record<string, RawLegalRef[]> = {
   increase: [{ label: { de: "§ 558 BGB — Mieterhöhung bis zur ortsüblichen Vergleichsmiete", en: "§ 558 BGB — Rent increase to the local comparative rent" }, law: "BGB", section: "§ 558" }],
   repairs: [{ label: { de: "§ 307 BGB — Inhaltskontrolle von AGB", en: "§ 307 BGB — Review of standard terms" }, law: "BGB", section: "§ 307" }],
   condition: [{ label: { de: "§ 535 BGB — Pflichten aus dem Mietvertrag", en: "§ 535 BGB — Duties under the tenancy" }, law: "BGB", section: "§ 535" }],
+  premises: [{ label: { de: "§ 535 BGB — Pflichten aus dem Mietvertrag", en: "§ 535 BGB — Duties under the tenancy" }, law: "BGB", section: "§ 535" }],
+  term: [{ label: { de: "§ 573 BGB — Ordentliche Kündigung des Vermieters", en: "§ 573 BGB — Ordinary notice by the landlord" }, law: "BGB", section: "§ 573" }],
+  utilities: [{ label: { de: "§ 556 BGB — Vereinbarungen über Betriebskosten", en: "§ 556 BGB — Agreements on utilities" }, law: "BGB", section: "§ 556" }],
+  sublet: [{ label: { de: "§ 553 BGB — Gestattung der Gebrauchsüberlassung an Dritte", en: "§ 553 BGB — Permission to let to a third party" }, law: "BGB", section: "§ 553" }],
+  final: [{ label: { de: "§ 125 BGB — Nichtigkeit wegen Formmangels", en: "§ 125 BGB — Voidness for lack of form" }, law: "BGB", section: "§ 125" }],
 };
 const refsFor = (id: string, lang: Lang) =>
   LEGAL_REFS[id]?.map((r) => ({ label: pick(r.label, lang), law: r.law, section: r.section }));
@@ -298,7 +529,7 @@ const RENTAL_DECISION: RawDecision = {
     { question: { de: "Welche Reparaturen könnten mich etwas kosten?", en: "Which repairs could I have to pay for?" }, answer: { de: "Bestimmte Kleinreparaturen bis 150 € je Fall, insgesamt höchstens 8 % der Jahresgrundmiete.", en: "Certain small repairs up to €150 per case, capped at 8% of the annual basic rent." }, clauseId: "repairs" },
   ],
   clarificationQuestions: [
-    { question: { de: "Mit welchen monatlichen Nebenkosten sollte ich rechnen?", en: "What monthly utilities should I budget for?" }, reason: { de: "Sie werden laut Vertrag zusätzlich nach Verbrauch abgerechnet, aber nicht beziffert.", en: "The contract bills them separately by consumption but gives no amount." }, clauseId: "rent" },
+    { question: { de: "Mit welchen monatlichen Nebenkosten sollte ich rechnen?", en: "What monthly utilities should I budget for?" }, reason: { de: "§ 5 legt sie auf Sie um, nennt aber keinen Betrag und keine Vorauszahlung.", en: "§ 5 passes them on to you but names neither an amount nor an advance payment." }, clauseId: "utilities" },
     { question: { de: "Welche Kleinreparaturen muss ich genau zahlen?", en: "Which small repairs exactly must I pay for?" }, reason: { de: "§ 13 nennt Grenzen, aber keine konkrete Liste.", en: "§ 13 gives limits but no concrete list." }, clauseId: "repairs" },
   ],
 };
@@ -424,7 +655,7 @@ const DUTIES: { clauseId: string; text: L10n<string> }[] = [
 export const SAMPLE_FILENAME = "Beispiel-Mietvertrag_Kastanienallee.pdf";
 
 export function sampleAnalysis(lang: Lang): Analysis {
-  const clauses: Clause[] = RAW.map((c) => ({
+  const clauses: Clause[] = inDocOrder(RAW).map((c) => ({
     id: c.id,
     ref: pick(c.ref, lang),
     page: c.page,
@@ -465,7 +696,7 @@ export function sampleAnalysis(lang: Lang): Analysis {
       variable: [
         {
           label: lang === "de" ? "Nebenkosten" : "Utilities (Nebenkosten)",
-          clauseId: "rent",
+          clauseId: "utilities",
           note:
             lang === "de"
               ? "Im Vertrag nicht beziffert — nach Verbrauch. Fragen Sie nach der letzten Abrechnung."
@@ -490,21 +721,21 @@ export function sampleAnalysis(lang: Lang): Analysis {
 export const SAMPLE_DOC_TEXT = [
   "Mietvertrag über Wohnraum",
   "zwischen Frau Beate Wagner, Kastanienallee 14, 10435 Berlin — nachfolgend Vermieterin — und Herrn Malik Osei, Sonnenallee 3, 12045 Berlin — nachfolgend Mieter — wird folgender Mietvertrag geschlossen:",
-  "§ 1 Mietsache. Vermietet werden die im Anwesen Kastanienallee 14, 10435 Berlin, gelegene Wohnung im 3. Obergeschoss, bestehend aus 3 Zimmern, Küche, Bad, Balkon, sowie ein Kellerabteil.",
+  RAW.find((c) => c.id === "premises")!.quote,
   RAW.find((c) => c.id === "condition")!.quote,
-  "§ 3 Mietzeit. Das Mietverhältnis beginnt am 01.10.2026 und läuft auf unbestimmte Zeit. Eine Befristung ist nicht vereinbart.",
+  RAW.find((c) => c.id === "term")!.quote,
   RAW.find((c) => c.id === "rent")!.quote,
-  "§ 5 Betriebskosten. Die Betriebskosten im Sinne der Betriebskostenverordnung trägt der Mieter. Über die geleisteten Vorauszahlungen wird jährlich abgerechnet; die Abrechnung erfolgt spätestens zwölf Monate nach Ende des Abrechnungszeitraums.",
+  RAW.find((c) => c.id === "utilities")!.quote,
   RAW.find((c) => c.id === "deposit")!.quote +
     " Die erste Teilzahlung ist zu Beginn des Mietverhältnisses fällig.",
-  "§ 7 Hausordnung. Der Mieter verpflichtet sich, die als Anlage beigefügte Hausordnung einzuhalten. Ruhezeiten gelten von 22:00 bis 6:00 Uhr sowie sonn- und feiertags.",
-  "§ 8 Untervermietung. Der Mieter darf die Wohnung oder Teile davon nur mit vorheriger Zustimmung des Vermieters untervermieten. Die Zustimmung ist schriftlich einzuholen.",
+  RAW.find((c) => c.id === "houserules")!.quote,
+  RAW.find((c) => c.id === "sublet")!.quote,
   RAW.find((c) => c.id === "notice")!.quote,
-  "§ 10 Tierhaltung. Das Halten von Kleintieren ist gestattet. Die Haltung von Hunden und Katzen bedarf der Zustimmung des Vermieters.",
+  RAW.find((c) => c.id === "pets")!.quote,
   RAW.find((c) => c.id === "increase")!.quote,
   RAW.find((c) => c.id === "access")!.quote,
   RAW.find((c) => c.id === "repairs")!.quote,
-  "§ 14 Schlussbestimmungen. Änderungen und Ergänzungen dieses Vertrages bedürfen der Schriftform. Sollte eine Bestimmung unwirksam sein, bleibt die Wirksamkeit der übrigen Bestimmungen unberührt.",
+  RAW.find((c) => c.id === "final")!.quote,
 ].join("\n\n");
 
 // Convenience: what the Overview needs alongside the analysis for display.
@@ -755,6 +986,69 @@ const EMP: EmpClause[] = [
       en: "Daily working time may not exceed eight hours and may only be extended to ten hours where it is averaged out (§ 3 ArbZG).",
     },
   },
+  {
+    id: "role",
+    page: 1,
+    level: "check",
+    tags: ["responsibility"],
+    quote:
+      "§ 3 Tätigkeit. Die Arbeitnehmerin wird als Sachbearbeiterin im Bereich Kundenbetreuung eingestellt. Der Arbeitgeber kann ihr auch andere zumutbare Tätigkeiten zuweisen, die ihrer Vorbildung und ihren Fähigkeiten entsprechen.",
+    ref: { de: "§ 3 Tätigkeit · Seite 1", en: "§ 3 Tätigkeit · page 1" },
+    title: { de: "Ihre Aufgabe — und wann sie sich ändern darf", en: "Your role — and when it can change" },
+    simple: {
+      de: {
+        simple: "Sie werden als Sachbearbeiterin in der Kundenbetreuung eingestellt.",
+        standard: "Sie werden als Sachbearbeiterin in der Kundenbetreuung eingestellt. Der Arbeitgeber darf Ihnen aber auch andere zumutbare Aufgaben zuweisen, wenn sie zu Ihrer Vorbildung und Ihren Fähigkeiten passen.",
+        detailed: "Sie werden als Sachbearbeiterin in der Kundenbetreuung eingestellt — das ist die Tätigkeit, für die Sie unterschreiben. Daneben behält sich der Arbeitgeber vor, Ihnen andere zumutbare Aufgaben zuzuweisen, solange sie zu Ihrer Vorbildung und Ihren Fähigkeiten passen; Ihre Aufgabe ist damit nicht auf Dauer festgeschrieben. Was der Vertrag offenlässt: ob auch ein anderer Arbeitsort dazugehören kann und ob sich Ihre Vergütung ändert, wenn sich die Aufgabe ändert.",
+      },
+      en: {
+        simple: "You are hired as a case handler in customer support.",
+        standard: "You are hired as a case handler in customer support. The employer may also assign you other reasonable duties, as long as they fit your training and your abilities.",
+        detailed: "You are hired as a case handler in customer support — that is the job you are signing for. Alongside it, the employer reserves the right to assign you other reasonable duties, as long as they match your training and abilities; your role is therefore not fixed for good. What the contract leaves open: whether a different place of work can come with that, and whether your pay changes when the duties do.",
+      },
+    },
+    means: {
+      de: "Fragen Sie, was „andere zumutbare Tätigkeiten“ konkret heißen kann — und ob ein Ortswechsel dazugehört.",
+      en: "Ask what “other reasonable duties” can mean in practice — and whether a change of location is included.",
+    },
+    legal: {
+      de: "Der Arbeitgeber kann Inhalt, Ort und Zeit der Arbeitsleistung nach billigem Ermessen näher bestimmen, soweit der Arbeitsvertrag sie nicht festlegt (§ 106 GewO).",
+      en: "The employer may specify the content, place and time of the work at their reasonable discretion, so far as the contract does not fix them (§ 106 GewO).",
+    },
+    legalRefs: [
+      { label: { de: "§ 106 GewO — Weisungsrecht des Arbeitgebers", en: "§ 106 GewO — The employer’s right to give instructions" }, law: "GewO", section: "§ 106" },
+    ],
+  },
+  {
+    id: "final",
+    page: 2,
+    level: "standard",
+    tags: ["responsibility"],
+    quote:
+      "§ 10 Schlussbestimmungen. Änderungen und Ergänzungen dieses Vertrages bedürfen der Schriftform. Mündliche Nebenabreden bestehen nicht.",
+    ref: { de: "§ 10 Schlussbestimmungen · Seite 2", en: "§ 10 Schlussbestimmungen · page 2" },
+    title: { de: "Änderungen gelten nur schriftlich", en: "Changes only count in writing" },
+    simple: {
+      de: {
+        simple: "Spätere Änderungen am Vertrag gelten nur schriftlich.",
+        standard: "Spätere Änderungen und Ergänzungen gelten nur, wenn sie schriftlich festgehalten werden. Mündliche Nebenabreden gibt es laut Vertrag nicht.",
+        detailed: "Spätere Änderungen und Ergänzungen gelten nur, wenn sie schriftlich festgehalten werden. Der Vertrag stellt außerdem fest, dass keine mündlichen Nebenabreden bestehen — was im Vorstellungsgespräch zugesagt wurde, zählt also nur, wenn es hier oder in einem späteren Schreiben steht. Gehen Sie den Text deshalb vor der Unterschrift daraufhin durch, ob alles Zugesagte wirklich darin vorkommt.",
+      },
+      en: {
+        simple: "Later changes to the contract only count in writing.",
+        standard: "Later changes and additions only count if they are put in writing. According to the contract there are no verbal side agreements.",
+        detailed: "Later changes and additions only count if they are put in writing. The contract also states that no verbal side agreements exist — so anything promised in the interview counts only if it appears here or in a later letter. Before signing, read the text once with that question in mind: is everything you were promised actually in it?",
+      },
+    },
+    means: {
+      de: "Was im Gespräch zugesagt wurde — Homeoffice, Bonus, Weiterbildung — gilt nur, wenn es im Vertrag steht.",
+      en: "Anything promised in conversation — home office, bonus, training — only counts if it is in the contract.",
+    },
+    legal: {
+      de: "Ist für eine Erklärung die Schriftform vereinbart, ist eine formlose Erklärung im Zweifel nichtig (§ 125 BGB).",
+      en: "Where written form is agreed for a declaration, an informal one is void in case of doubt (§ 125 BGB).",
+    },
+  },
 ];
 
 const EMP_GLANCE: { key: L10n<string>; value: L10n<string>; derived?: boolean; clauseId?: string }[] = [
@@ -801,7 +1095,7 @@ const EMP_DUTIES: { clauseId: string; text: L10n<string> }[] = [
 export const EMPLOYMENT_FILENAME = "Beispiel-Arbeitsvertrag.pdf";
 
 export function employmentAnalysis(lang: Lang): Analysis {
-  const clauses: Clause[] = EMP.map((c) => ({
+  const clauses: Clause[] = inDocOrder(EMP).map((c) => ({
     id: c.id,
     ref: pick(c.ref, lang),
     page: c.page,
@@ -866,12 +1160,12 @@ export const EMPLOYMENT_DOC_TEXT = [
   "zwischen der Nordlicht Systeme GmbH, Gertrudenstraße 8, 20095 Hamburg — nachfolgend Arbeitgeberin — und Frau Ayla Demir, Beim Grünen Jäger 21, 20359 Hamburg — nachfolgend Arbeitnehmerin — wird folgender Arbeitsvertrag geschlossen:",
   EMP.find((c) => c.id === "duration")!.quote,
   EMP.find((c) => c.id === "probation")!.quote,
-  "§ 3 Tätigkeit. Die Arbeitnehmerin wird als Sachbearbeiterin im Bereich Kundenbetreuung eingestellt. Der Arbeitgeber kann ihr auch andere zumutbare Tätigkeiten zuweisen, die ihrer Vorbildung und ihren Fähigkeiten entsprechen.",
+  EMP.find((c) => c.id === "role")!.quote,
   EMP.find((c) => c.id === "salary")!.quote,
   EMP.find((c) => c.id === "holiday")!.quote,
   EMP.find((c) => c.id === "hours")!.quote,
   EMP.find((c) => c.id === "vacation")!.quote,
   EMP.find((c) => c.id === "overtime")!.quote,
   EMP.find((c) => c.id === "notice")!.quote,
-  "§ 10 Schlussbestimmungen. Änderungen und Ergänzungen dieses Vertrages bedürfen der Schriftform. Mündliche Nebenabreden bestehen nicht.",
+  EMP.find((c) => c.id === "final")!.quote,
 ].join("\n\n");

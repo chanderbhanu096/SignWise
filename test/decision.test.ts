@@ -39,13 +39,15 @@ test("deriver runs when the model gives no brief, and caps review items at 3", (
 });
 
 test("deriver only asks clarification questions the contract justifies", () => {
-  // Utilities are explicitly mentioned but unquantified. The fixture's synthetic
-  // null admin-fee row has no source clause, so it must not imply that a fee exists.
+  // Utilities are explicitly mentioned but unquantified, and the section that says
+  // so is § 5 — the clause the question has to point at, not § 4 Miete, which only
+  // mentions them in passing. The fixture's synthetic null admin-fee row has no
+  // source clause at all, so it must not imply that a fee exists.
   const { decisionSummary, ...rental } = sampleAnalysis("de");
   void decisionSummary;
   const b = getDecisionSummary(rental as Analysis);
   assert.equal(b.clarificationQuestions.length, 1);
-  assert.equal(b.clarificationQuestions[0].clauseId, "rent");
+  assert.equal(b.clarificationQuestions[0].clauseId, "utilities");
   assert.doesNotMatch(JSON.stringify(b.clarificationQuestions), /Bearbeitungsgebühr/i);
 });
 
@@ -82,7 +84,10 @@ test("model review order is preserved while output counts are capped and dedupli
   };
 
   const brief = getDecisionSummary(analysis);
-  assert.deepEqual(brief.reviewItems.map((item) => item.clauseId), ["increase", "repairs", "notice"]);
+  // The model gave two review items; the third is the deriver filling the slot,
+  // and it picks the highest-scoring clause the model left out — § 5, a recurring
+  // cost the contract never puts a number on.
+  assert.deepEqual(brief.reviewItems.map((item) => item.clauseId), ["increase", "repairs", "utilities"]);
   assert.equal(brief.commitments.length, 4);
   assert.equal(brief.understandingQuestions.length, 5);
   assert.equal(brief.clarificationQuestions.length, 2);

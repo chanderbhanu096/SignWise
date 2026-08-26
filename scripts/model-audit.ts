@@ -68,6 +68,17 @@ async function run(label: string, text: string, lang: string) {
     const derived = src.filter((f) => f.kind === "derived");
     if (derived.length) console.log(`  · ${c.id}: derived → ${derived.map((f) => `${f.shown} = ${f.expr}`).join(" | ")}`);
   }
+  // Coverage: the reader can click any section of the document, so a section the
+  // model never surfaced is a paragraph that stays unexplained on screen. The
+  // prompt asks for every numbered section; this is where that gets checked.
+  const sections = [...text.matchAll(/^§\s?(\d+[a-z]?)\s/gm)].map((m) => m[1]);
+  const covered = new Set(
+    a.clauses.flatMap((c) => [...`${c.quote} ${c.ref}`.matchAll(/§+\s?(\d+[a-z]?)/g)].map((m) => m[1])),
+  );
+  const missed = sections.filter((n) => !covered.has(n));
+  if (missed.length) bad("coverage", `${missed.length} of ${sections.length} sections never surfaced: § ${missed.join(", § ")}`);
+  else console.log(`  · coverage: all ${sections.length} sections surfaced`);
+
   const law = lawCheckScope(a);
   console.log(`  · law: ${law.checked} benchmarks, ${law.hits.length} hits: ${law.hits.map((h) => h.cite).join(", ")}`);
   console.log(`  ${problems === 0 ? "→ clean" : `→ ${problems} problem(s)`}`);
