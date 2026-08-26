@@ -116,3 +116,26 @@ test("justification padding is collapsed, line structure is not", () => {
   assert.ok(block.text.includes("zu Beginn fällig"));
   assert.ok(block.text.includes("\n(2)"));
 });
+
+test("a page footer does not swallow the first section on the page", () => {
+  // Extracted PDF text: pages joined with a blank line, each page carrying its own
+  // footer. The footer ends in a digit, which used to stop HEADING from recognising
+  // the heading right after it — so § 2 merged into § 1 and lost its clause.
+  const paged = [
+    "§ 1 Mietsache. Vermietet werden drei Zimmer, Balkon und ein Kellerabteil.\n\nSeite 1",
+    "Seite 2  § 2 Übergabe. Die Wohnung wird im vereinbarten Zustand übergeben.",
+    "- 3 -  § 3 Mietzeit. Das Mietverhältnis beginnt am 01.10.2026 und läuft unbefristet.",
+    "Page 4 of 4  § 4 Miete. Die monatliche Grundmiete beträgt 1.240,00 EUR.",
+  ].join("\n\n");
+
+  const blocks = splitDocument(paged, []);
+  const heads = blocks.map((b) => b.text.match(/^§\s?(\d+)/)?.[1]);
+  assert.deepEqual(heads, ["1", "2", "3", "4"], "every section starts its own block");
+  assert.ok(!blocks.some((b) => /Seite \d|Page \d|- \d -/.test(b.text)), "no page furniture on screen");
+});
+
+test("a page number inside a clause is not mistaken for a footer", () => {
+  const doc = "§ 7 Hausordnung. Die Hausordnung nach Seite 3 der Anlage 1 gilt als vereinbart.";
+  const [block] = splitDocument(doc, []);
+  assert.ok(block.text.includes("Seite 3 der Anlage"), "mid-sentence page reference survives");
+});
