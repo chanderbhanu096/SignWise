@@ -94,7 +94,7 @@ examples need no API key — a Berlin rental contract and an employment contract
 explained instantly.
 
 ```bash
-npm test                        # 98 tests
+npm test                        # 100 tests
 npm run build                   # typecheck + production build
 ```
 

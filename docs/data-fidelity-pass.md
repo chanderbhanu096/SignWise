@@ -359,9 +359,27 @@ stopped. Three lines of print CSS.
   `--imp-fg` is `#8e0a0a`. The claim is gone; whether the colour itself should be is a
   design question, not a documentation one.
 
+## 18. Two silly rows in the provenance panel
+
+Opening up the routine sections put two clauses under *Where these figures come from*
+that had never been there, and both showed something a reader would laugh at.
+
+§ 7's "Ruhezeit ist von 22:00 bis 6:00 Uhr" was scanned as plain numbers, so it
+produced three rows and one of them read **"00 — steht in dieser Klausel"**. A clock
+time now matches as one token and joins the dates: compared by its parts, never
+derived from other figures, because it is a position on a clock and not a quantity.
+
+§ 1 listed the **14** of "Kastanienallee 14" beside the number of rooms. A house
+number is a number in the text and nothing to do with the tenancy. Addresses now come
+out of the scanned text before figures are read, using the two patterns `redact.ts`
+already has — they are what decides what an address is everywhere else in the app, so
+they decide it here rather than a second, worse pattern being written next door.
+
+**Guard**: two tests in `test/provenance.test.ts`, one per case.
+
 ## Verified after
 
-- `npm test` — 98 pass, 0 fail. `tsc --noEmit` clean.
+- `npm test` — 100 pass, 0 fail. `tsc --noEmit` clean.
 - `npx tsx scripts/audit-demo.ts` — ALL CLEAN across rental × employment × DE × EN,
   now with 14 and 10 clauses instead of 7 and 8.
 - `npx tsx scripts/model-audit.ts de` and `en` — live Azure, clean, all 10 sections
