@@ -232,6 +232,152 @@ in German and in English", over both fixtures.
 - **Timeline dates are computed, and the audit says so** rather than treating it
   as a defect: a notice deadline is arithmetic on the start date by definition.
 
+---
+
+# Whole-contract pass — 26 August 2026
+
+The report this time: *should every clause be selectable in the contract view, not
+just the ones a finding points at? A German contract read by someone who works in
+English has no "straightforward" sections.* The answer was yes, and the app already
+said so — `ANALYZE_SYSTEM` has told the model to surface every substantive section
+since the first legal-quality pass. The demo fixture was the thing that never caught
+up. Making it catch up surfaced eight more issues; six of them were nothing to do
+with the fixture.
+
+## 10. Half the demo contract could not be clicked
+
+**Severity: high — the main screen of the main demo.**
+
+Seven of the fourteen rental sections (§§ 1, 3, 5, 7, 8, 10, 14) and two of the ten
+employment sections (§§ 3, 10) had no explanation. They rendered as `.doc-plain`:
+smaller, grey, no hover, no cursor, nothing on click. A judge clicking through the
+document finds seven dead paragraphs between live ones.
+
+The cause was that the fixture only ever carried the clauses a *finding* points at,
+while the app's own prompt asks a real upload for every section. The demo was behind
+the spec the app holds the model to.
+
+**Fixed** by writing all nine sections as full clauses — German and English, three
+depth levels each, level `standard` for the routine ones (no tint in the document
+pane, so the colour still marks attention) and `check` for § 5 Betriebskosten, an
+unquantified recurring cost, and § 8 Untervermietung, a restriction whose relevance
+depends entirely on the reader. `SAMPLE_DOC_TEXT` and `EMPLOYMENT_DOC_TEXT` now quote
+the clause objects instead of repeating their text, so the document and the
+explanation cannot drift apart.
+
+Two knock-on improvements fell out of it: the "Nebenkosten" variable-cost row and the
+clarification question about it now point at § 5, the section that actually states
+them, instead of § 4 Miete which only mentions them in passing — and the derived
+review list picks § 5 as its third item, which is the strongest thing in this
+contract that no number is attached to.
+
+**Guard**: `audit-demo.ts` already fails when a clause is never marked in the rendered
+document. It now also reports the block count, so 14 clauses / 14 blocks is visible.
+
+## 11. An uploaded contract could still have dead sections
+
+The prompt asked for every section "that carries an obligation, a cost, a deadline or
+a right". Boilerplate — Schriftformklausel, salvatorische Klausel, Schlussbestimmungen
+— failed that test and stayed grey.
+
+**Fixed**: the prompt now asks for every numbered section without exception, names the
+boilerplate explicitly, and says why (the reader can click any of them, and the dull
+ones are exactly what a non-native reader cannot skip).
+
+**Guard**: `scripts/model-audit.ts` gained a coverage check — every `§ N` heading in
+the source text must appear in some clause's quote or ref. Live Azure runs on the
+ten-section trap contract: **all 10 surfaced, in German and in English.**
+
+## 12. A numeral inside a German compound was invisible
+
+**Severity: medium — wrong in shipping logic.**
+
+German writes numbers into words: *sechsmonatige Probezeit*, *Dreimonatsfrist*,
+*zweiwöchige Kündigungsfrist*. `facts()` matched whole words, so the German timeline
+entry "Beginn der sechsmonatigen Probezeit" stated no figure at all, while the English
+"Start of the six-month probation period" stated a 6 — the hyphen split the token.
+
+The same fact, visible on one side and invisible on the other. Two things depend on
+`facts()`: the depth-cumulative repair (which then cannot tell that a level dropped a
+figure) and provenance (which then reports a figure as *not stated in the contract*
+when the clause states it as a compound).
+
+**Fixed**: a numeral counts when it is followed by a time or quantity stem
+(`monat`, `woch`, `jahr`, `tag`, `stund`, `zimmer`, `fach`). The stem is the whole
+point — without it "zweifellos" reads as a 2, "vierteljährlich" as a 4 and "Achtung"
+as an 8.
+
+**Guard**: two tests in `test/depth.test.ts`, one for each direction.
+
+## 13. Switching language during the analysis left the two out of step
+
+**Severity: high — a judge switching to English on the progress screen sees it.**
+
+The job captured the language it started with (`sampleAnalysis(lang)`,
+`analyze(file, lang, …)`), and `changeLang` returned early while `analysis` was still
+null. Pick EN while the progress bar is running and you land on a German analysis
+under an English interface.
+
+**Fixed**: one function, `toLang(analysis, lang)`, used by both the language buttons
+and the moment an analysis arrives. The resolve effect already re-runs on a language
+change, so the arriving analysis is brought into whatever language is current.
+
+## 14. A translated analysis was never re-verified
+
+`changeLang` set the model's translated copy straight into state. `verified` and the
+currency notation were then whatever the model echoed back through a 16k JSON
+round-trip — both are client-side facts that the app derives deterministically.
+
+**Fixed**: both language paths now run through `verifyAnalysis`, which re-checks every
+quote against the extracted document text and re-applies the app's currency notation.
+
+## 15. Parity checking stopped at the clause explanations
+
+This is why #12 survived. `auditParity` compared `simple` / `standard` / `detailed`
+and nothing else — so the glance row, the timeline, the money items, the rights and
+duties and the whole decision brief could state different figures in the two languages
+and nothing noticed.
+
+**Fixed**: `auditParity` now walks every display string in both analyses, position by
+position, and fails on any figure one language states and the other does not. It
+caught #12 the first time it ran.
+
+## 16. The contract pane printed clipped
+
+`.doc` scrolls inside `max-height: 70vh`. Nothing in `@media print` released it, so
+Ctrl+P from the contract screen produced one screenful of a 1,938 px document and
+stopped. Three lines of print CSS.
+
+## 17. Wording that no longer described the behaviour
+
+- The contract screen said *"Marked passages are the ones a finding came from — select
+  one to see its explanation."* Colour now means attention, not availability. Rewritten
+  in both languages, along with the empty-state hint.
+- The screen-reader counter under the level filter said *"Showing 6 of 14 findings"*
+  next to a heading that says there are 5. It counts clauses; it now says clauses.
+- The README claimed severity Important was navy and that "red is reserved and unused".
+  `--imp-fg` is `#8e0a0a`. The claim is gone; whether the colour itself should be is a
+  design question, not a documentation one.
+
+## Verified after
+
+- `npm test` — 98 pass, 0 fail. `tsc --noEmit` clean.
+- `npx tsx scripts/audit-demo.ts` — ALL CLEAN across rental × employment × DE × EN,
+  now with 14 and 10 clauses instead of 7 and 8.
+- `npx tsx scripts/model-audit.ts de` and `en` — live Azure, clean, all 10 sections
+  surfaced in both, the same six statutory benchmarks fired in both.
+- In the browser, both fixtures: every screen snapshotted in DE, in EN and in DE again.
+  Structure, figures and ordering identical; the DE → EN → DE round trip is
+  byte-identical. The only difference between the languages is the labels.
+- Every clause × every depth × both languages: identical figures, each level strictly
+  longer than the one below, the same number of provenance rows.
+- All 17 legal citations across both fixtures resolve to a real section page.
+- Language buttons clicked 24 times in a row: one pressed state, consistent
+  `<html lang>`, nothing lost. Panel open across a language switch: same clause, same
+  depth, contract wording still German.
+- 375 px: no horizontal page scroll on any screen, the compensation chart scrolls
+  inside its own container, tapping a routine section opens the sheet.
+
 ## Still open
 
 - Rotate the Azure OpenAI API key — pasted in plain text in chat in an earlier
