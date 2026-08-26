@@ -30,6 +30,24 @@ const IS_HEADING = /^§\s?\d+[a-z]?\s+[A-ZÄÖÜ][a-zäöüß]/;
 // (when it sits right before the rule) removes the whole footer in one go.
 const SIGNATURE = /(?:[A-ZÄÖÜ][^.\n]{0,40},\s*den\s+\d{1,2}\.\d{1,2}\.\d{2,4}\s*)?_{3,}[\s\S]*$/;
 
+// Page furniture — "Seite 3", "Seite 3 von 4", "- 3 -" — is not a contract term. It
+// arrives in the extracted text at a page join, because extractPdfText concatenates
+// every text item on the page, header and footer included. It has to go before the
+// split rather than after: it ENDS IN A DIGIT, and HEADING only recognises a heading
+// that follows the end of a sentence. So the first section on every page after the
+// first was not recognised, merged into the section before it, and lost its clause —
+// § 2, § 4 and § 14 of a four-page tenancy agreement, silently.
+const PAGE_MARK = /^\s*(?:seite|page)\s*\d+(?:\s*(?:von|of|\/)\s*\d+)?\s*|\s*(?:seite|page)\s*\d+(?:\s*(?:von|of|\/)\s*\d+)?\s*$|^\s*[-–—]\s*\d{1,3}\s*[-–—]\s*/gi;
+
+// Pages are joined with a blank line, so each chunk is one page and the marker can
+// only be at its very start or its very end. Anchoring on that keeps a figure inside
+// a clause ("Seite 3 der Anlage") from being mistaken for a footer.
+const stripPageFurniture = (docText: string) =>
+  docText
+    .split("\n\n")
+    .map((page) => page.replace(PAGE_MARK, " ").trim())
+    .join("\n\n");
+
 // Numbered paragraphs run together on one line once a PDF is flattened to text.
 const PARAGRAPH = / (\(\d{1,2}\)) /g;
 
@@ -66,7 +84,7 @@ export function splitDocument(
 ): DocBlock[] {
   const quotes = clauses.map((c) => ({ id: c.id, q: norm(c.quote) })).filter((c) => c.q.length >= 8);
 
-  const blocks = docText
+  const blocks = stripPageFurniture(docText)
     .replace(SIGNATURE, "")
     .split(HEADING)
     .map((raw) => raw.replace(PAD, " ").replace(PARAGRAPH, "\n$1 ").trim())
