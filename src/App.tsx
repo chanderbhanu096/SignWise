@@ -100,9 +100,15 @@ export default function App() {
     if (screen !== "analyzing") return;
     let cancelled = false;
     pendingRef.current
-      ?.then(({ a, text, pages }) => {
+      ?.then(async ({ a, text, pages }) => {
         if (cancelled) return;
-        setAnalysis(verifyAnalysis(a, text));
+        // The language can be switched *while* the analysis is being produced, and
+        // the job captured the language it started with — sampleAnalysis(lang),
+        // analyze(file, lang, ...). Without this, picking EN on the progress screen
+        // landed you on a German analysis under an English interface.
+        const shown = await toLang(a, lang);
+        if (cancelled) return;
+        setAnalysis(verifyAnalysis(shown, text));
         setDocText(text);
         setDocPages(pages);
         setScreen("overview");
@@ -231,36 +237,39 @@ export default function App() {
     document.title = t(lang).pageTitle;
   }, [lang]);
 
+  // One analysis, in language `l`. Both callers go through here — the language
+  // buttons and the moment an analysis arrives — so there is one answer to "what
+  // does switching language do", instead of two that can drift apart.
+  async function toLang(a: Analysis, l: Lang): Promise<Analysis> {
+    if (a.lang === l) return a;
+    if (source === "sample") return sampleKind === "employment" ? employmentAnalysis(l) : sampleAnalysis(l);
+    // Uploaded contract: translating the analysis is a model call and takes seconds.
+    // Cache what we already have, reuse it on the way back, and say out loud that
+    // the wait is a translation — silence is what made this read as "slow".
+    langCacheRef.current.set(a.lang as Lang, a);
+    const cached = langCacheRef.current.get(l);
+    if (cached) return cached;
+    setTranslating(true);
+    try {
+      const translated = await translate(a, l);
+      langCacheRef.current.set(l, translated);
+      return translated;
+    } catch {
+      return a; // leave the analysis as it is; the language label still switches
+    } finally {
+      setTranslating(false);
+    }
+  }
+
   async function changeLang(l: Lang) {
     if (l === lang || translating) return;
     setLang(l);
     if (!analysis) return;
-    if (source === "sample") {
-      setAnalysis(sampleKind === "employment" ? employmentAnalysis(l) : sampleAnalysis(l));
-      setAnswer(null);
-      return;
-    }
-    // Uploaded contract: translating the analysis is a model call and takes seconds.
-    // Cache what we already have, reuse it on the way back, and say out loud that
-    // the wait is a translation — silence is what made this read as "slow".
-    langCacheRef.current.set(analysis.lang as Lang, analysis);
-    const cached = langCacheRef.current.get(l);
-    if (cached) {
-      setAnalysis(cached);
-      setAnswer(null);
-      return;
-    }
-    setTranslating(true);
-    try {
-      const translated = styleCurrencyDeep(await translate(analysis, l), analysis.money.currency, l);
-      langCacheRef.current.set(l, translated);
-      setAnalysis(translated);
-      setAnswer(null);
-    } catch {
-      /* leave current analysis; language label still switches */
-    } finally {
-      setTranslating(false);
-    }
+    setAnswer(null);
+    // verifyAnalysis, not the raw result: quote verification and the currency
+    // notation are client-side facts, and a translated copy comes back from the
+    // model with whatever it echoed for them. Re-deriving both is deterministic.
+    setAnalysis(verifyAnalysis(await toLang(analysis, l), docText));
   }
 
   // The document's chrome — the screen switcher and the banners that describe an

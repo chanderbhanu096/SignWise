@@ -803,4 +803,10 @@ li.law-ref > .law-ref-label { display: inline-block; padding: 6px 2px; } /* plai
   .commitment-card, .review-card, .clarification-card, .understanding-item { break-inside: avoid; box-shadow: none; }
   .understanding-item .understanding-answer { display: block !important; }
   .decision-disclaimer { background: #fff; border: 1px solid #ccc; }
+  /* The contract pane scrolls inside a 70vh box on screen. On paper that box is
+     the whole print: Ctrl+P from the contract screen came out as one screenful of
+     the document and nothing after it. */
+  .doc { max-height: none; overflow: visible; }
+  .doc-clause, .doc-plain { break-inside: avoid; }
+  .doc-side { position: static; }
 }
