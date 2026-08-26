@@ -464,6 +464,9 @@ section.screen.upload-screen::after {
 .attn-chip.on[data-level="check"] { background: var(--chk-bg); border-color: var(--chk-bd); color: var(--chk-fg); }
 .attn-chip.on[data-level="standard"] { background: var(--std-bg); border-color: var(--std-bd); color: var(--std-fg); }
 .attn-chip.on .attn-n { color: inherit; }
+/* The "all levels" chip has no severity to wear, so it wears the brand the way
+   the view tabs do — selected, without claiming a level. */
+.attn-chip.on:not([data-level]) { background: var(--brand-tint); border-color: var(--brand); color: var(--brand); }
 .attn-note { margin-top: 12px; }
 .attn-note summary { display: inline-flex; align-items: center; min-height: 44px; color: var(--brand); font-size: 13.5px; font-weight: 600; cursor: pointer; }
 .attn-note p { margin-top: 8px; max-width: 62em; color: var(--muted); font-size: 13.5px; }

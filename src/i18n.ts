@@ -268,7 +268,7 @@ const EN: Strings = {
     "These levels show how much attention something deserves. They do not say whether a clause is legally valid — SignWise never judges that.",
   attentionScope: (clauses, findings) =>
     `SignWise looked at ${clauses} clauses. Below are the ${findings} that matter most — select a level to see every clause in it.`,
-  filterAll: "Show all",
+  filterAll: "All levels",
   filterShowing: (shown, total) => `Showing ${shown} of ${total} clauses.`,
   sectionCount: (n) => `${n} ${n === 1 ? "item" : "items"}`,
   noAmounts: "This contract does not state any amounts.",
@@ -522,7 +522,7 @@ const DE: Strings = {
     "Die Stufen zeigen, welche Punkte besondere Aufmerksamkeit verdienen. Sie bewerten nicht die rechtliche Wirksamkeit einer Klausel — das beurteilt SignWise nie.",
   attentionScope: (clauses, findings) =>
     `SignWise hat ${clauses} Klauseln geprüft. Unten stehen die ${findings} wichtigsten — wählen Sie eine Stufe, um alle Klauseln darin zu sehen.`,
-  filterAll: "Alle anzeigen",
+  filterAll: "Alle Stufen",
   filterShowing: (shown, total) => `${shown} von ${total} Klauseln werden angezeigt.`,
   sectionCount: (n) => `${n} ${n === 1 ? "Eintrag" : "Einträge"}`,
   noAmounts: "Dieser Vertrag nennt keine Beträge.",

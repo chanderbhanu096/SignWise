@@ -180,13 +180,22 @@ export function Overview({
         <div className="attn">
           <div className="attn-top">
             <span className="attn-label">{s.attentionHeading}</span>
-            {filter && (
-              <button className="link-btn" onClick={() => setFilter(null)}>
-                {s.filterAll}
-              </button>
-            )}
           </div>
           <div className="attn-chips" role="group" aria-label={s.attentionHeading}>
+            {/* Clearing the filter used to be a text link in the corner of the
+                header — the one control nobody could find once they had filtered,
+                and the only one that was not in the row it undoes. It is a chip
+                now: same shape, same row, and visibly on when nothing is filtered,
+                so the four states read as one control instead of three plus an
+                escape hatch. No count on it, because the unfiltered list is the
+                ranked shortlist and not every clause — the line below says so. */}
+            <button
+              className={"attn-chip" + (filter === null ? " on" : "")}
+              aria-pressed={filter === null}
+              onClick={() => setFilter(null)}
+            >
+              {s.filterAll}
+            </button>
             {LEVELS.map((lv) => (
               <button
                 key={lv}
