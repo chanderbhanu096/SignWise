@@ -1,6 +1,39 @@
-# SignWise
+<div align="center">
+  <img
+    src="https://github.com/user-attachments/assets/7de15e54-9a30-4903-8cfe-667697f1a9b5"
+    alt="SignWise Logo"
+    width="180"
+  />
 
-**Verstehen, bevor Sie unterschreiben.** — Understand before you sign.
+  <h1>SignWise</h1>
+
+  <h3>AI-Powered Contract Understanding</h3>
+
+  <p>
+    <b>Verstehen, bevor Sie unterschreiben.</b><br>
+    Understand before you sign.
+  </p>
+
+  <p>
+    <a href="https://signwise-hero-7c21.azurewebsites.net">
+      <img src="https://img.shields.io/badge/Live%20Demo-Visit%20SignWise-4F46E5.svg" alt="Live Demo">
+    </a>
+    <a href="https://legallovestech.vercel.app/">
+      <img src="https://img.shields.io/badge/Legal%20Loves%20Tech-Hackathon%202026-6366F1.svg" alt="Legal Loves Tech">
+    </a>
+    <a href="https://www.typescriptlang.org/">
+      <img src="https://img.shields.io/badge/TypeScript-blue.svg" alt="TypeScript">
+    </a>
+    <a href="https://react.dev/">
+      <img src="https://img.shields.io/badge/React-61DAFB.svg" alt="React">
+    </a>
+    <a href="https://vite.dev/">
+      <img src="https://img.shields.io/badge/Vite-646CFF.svg" alt="Vite">
+    </a>
+  </p>
+</div>
+
+---
 
 SignWise reads a contract and explains it in plain language, clause by clause, in
 German or English. The point is that you know what you are agreeing to before you
