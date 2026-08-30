@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="300" viewBox="0 0 1200 300" role="img" aria-labelledby="title desc">
+  <title id="title">How SignWise turns a contract into a clear explanation</title>
+  <desc id="desc">An animated six-step workflow: upload, extract, protect, analyse, verify and explain.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0" stop-color="#f7fbfb"/>
+      <stop offset="0.52" stop-color="#edf6f5"/>
+      <stop offset="1" stop-color="#f7faf6"/>
+    </linearGradient>
+    <linearGradient id="flow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0" stop-color="#0f5f6b"/>
+      <stop offset="0.55" stop-color="#2f8d97"/>
+      <stop offset="1" stop-color="#1a6d4a"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="8" stdDeviation="9" flood-color="#12373d" flood-opacity="0.1"/>
+    </filter>
+    <filter id="glow" x="-250%" y="-250%" width="600%" height="600%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#7da7aa"/>
+    </marker>
+    <path id="motion-path" d="M115 155 H1080"/>
+    <style>
+      text { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .card { fill: rgba(255,255,255,0.92); stroke: #d5e3e2; stroke-width: 1.4; filter: url(#shadow); }
+      .step { font-size: 12px; font-weight: 700; letter-spacing: 1px; fill: #547075; }
+      .label { font-size: 19px; font-weight: 700; fill: #12262b; }
+      .detail { font-size: 12px; fill: #5c7074; }
+      .number { fill: #0f5f6b; }
+      .number-text { font-size: 13px; font-weight: 700; fill: white; text-anchor: middle; }
+      .stage { transform-box: fill-box; transform-origin: center; animation: focus 7.2s ease-in-out infinite; }
+      .s2 { animation-delay: -6s; }
+      .s3 { animation-delay: -4.8s; }
+      .s4 { animation-delay: -3.6s; }
+      .s5 { animation-delay: -2.4s; }
+      .s6 { animation-delay: -1.2s; }
+      .traveller { filter: url(#glow); }
+      @keyframes focus {
+        0%, 13% { transform: translateY(-5px); opacity: 1; }
+        18%, 100% { transform: translateY(0); opacity: 0.78; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .stage { animation: none; opacity: 1; }
+        .traveller { display: none; }
+      }
+    </style>
+  </defs>
+
+  <rect x="1" y="1" width="1198" height="298" rx="26" fill="#f3f8f7" stroke="#d9e8e6"/>
+  <circle cx="90" cy="30" r="125" fill="#cfe8e7" opacity="0.42"/>
+  <circle cx="1120" cy="275" r="145" fill="#dcecdf" opacity="0.5"/>
+  <text x="48" y="43" font-size="15" font-weight="700" letter-spacing="1.8" fill="#0a5964">FROM CONTRACT TO CLARITY</text>
+  <text x="48" y="66" font-size="13" fill="#60777a">Every result stays connected to the wording it came from.</text>
+
+  <g stroke="#7da7aa" stroke-width="2" fill="none" marker-end="url(#arrow)" opacity="0.72">
+    <path d="M195 155 H222"/><path d="M385 155 H412"/><path d="M575 155 H602"/>
+    <path d="M765 155 H792"/><path d="M955 155 H982"/>
+  </g>
+
+  <g class="stage s1">
+    <rect class="card" x="35" y="91" width="160" height="142" rx="17"/>
+    <circle class="number" cx="61" cy="119" r="15"/><text class="number-text" x="61" y="124">1</text>
+    <text class="step" x="84" y="123">INPUT</text>
+    <text class="label" x="55" y="164">Upload</text>
+    <text class="detail" x="55" y="189">PDF or image</text>
+    <text class="detail" x="55" y="207">Built-in examples</text>
+  </g>
+  <g class="stage s2">
+    <rect class="card" x="225" y="91" width="160" height="142" rx="17"/>
+    <circle class="number" cx="251" cy="119" r="15"/><text class="number-text" x="251" y="124">2</text>
+    <text class="step" x="274" y="123">BROWSER</text>
+    <text class="label" x="245" y="164">Extract</text>
+    <text class="detail" x="245" y="189">Read the text layer</text>
+    <text class="detail" x="245" y="207">Use vision for scans</text>
+  </g>
+  <g class="stage s3">
+    <rect class="card" x="415" y="91" width="160" height="142" rx="17"/>
+    <circle class="number" cx="441" cy="119" r="15"/><text class="number-text" x="441" y="124">3</text>
+    <text class="step" x="464" y="123">PRIVACY</text>
+    <text class="label" x="435" y="164">Protect</text>
+    <text class="detail" x="435" y="189">Replace identifiers</text>
+    <text class="detail" x="435" y="207">with placeholders</text>
+  </g>
+  <g class="stage s4">
+    <rect class="card" x="605" y="91" width="160" height="142" rx="17"/>
+    <circle class="number" cx="631" cy="119" r="15"/><text class="number-text" x="631" y="124">4</text>
+    <text class="step" x="654" y="123">MODEL</text>
+    <text class="label" x="625" y="164">Analyse</text>
+    <text class="detail" x="625" y="189">Find clauses, costs</text>
+    <text class="detail" x="625" y="207">and deadlines</text>
+  </g>
+  <g class="stage s5">
+    <rect class="card" x="795" y="91" width="160" height="142" rx="17"/>
+    <circle class="number" cx="821" cy="119" r="15"/><text class="number-text" x="821" y="124">5</text>
+    <text class="step" x="844" y="123">QUALITY</text>
+    <text class="label" x="815" y="164">Verify</text>
+    <text class="detail" x="815" y="189">Validate structure</text>
+    <text class="detail" x="815" y="207">Match exact quotes</text>
+  </g>
+  <g class="stage s6">
+    <rect class="card" x="985" y="91" width="180" height="142" rx="17"/>
+    <circle class="number" cx="1011" cy="119" r="15"/><text class="number-text" x="1011" y="124">6</text>
+    <text class="step" x="1034" y="123">RESULT</text>
+    <text class="label" x="1005" y="164">Explain</text>
+    <text class="detail" x="1005" y="189">Clear screens with</text>
+    <text class="detail" x="1005" y="207">links to every source</text>
+  </g>
+
+  <g class="traveller">
+    <circle r="7" fill="#ffffff" stroke="url(#flow)" stroke-width="4">
+      <animateMotion dur="7.2s" repeatCount="indefinite" rotate="auto">
+        <mpath href="#motion-path"/>
+      </animateMotion>
+    </circle>
+  </g>
+</svg>
