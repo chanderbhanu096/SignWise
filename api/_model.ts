@@ -153,11 +153,60 @@ function userContent(input: AnalyzeInput): ChatContent {
   throw new Error("no_readable_content"); // e.g. scanned PDF with no text layer
 }
 
+// Keys where the schema says null and MEANS it: a figure the contract does not state.
+// These must survive untouched — "not stated" rendered as 0 would be a wrong number on
+// screen, which is the one thing this app must never do. Kept in step with the
+// .nullable() fields in src/types.ts by a test.
+const NULL_IS_MEANINGFUL = new Set(["amount", "timingMonth", "monthly", "yearly"]);
+
+// Everywhere else the model uses null to say "not applicable" — legal: null on a
+// clause that cites no statute, commitments[].value: null on a commitment with no
+// figure. Both are .optional() in the schema, and Zod's optional() accepts undefined
+// but rejects null, so a perfectly good analysis was thrown away over a field the
+// schema does not even require. Dropping those keys turns "explicitly absent" into
+// "absent", which is what optional() wants.
+function dropNulls(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(dropNulls);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>)
+        .filter(([k, v]) => v !== null || NULL_IS_MEANINGFUL.has(k))
+        .map(([k, v]) => [k, v === null ? v : dropNulls(v)]),
+    );
+  }
+  return value;
+}
+
+/** Exported for the null-handling test. */
+export const extractJsonForTest = (text: string) => extractJson(text);
+
+// response_format: json_object guarantees the answer PARSES, not that it obeys the
+// schema: the model still invents a tag, borrows a value from the neighbouring enum,
+// or runs out of tokens mid-object. Those drifts are independent — a different field
+// each attempt — so retrying the whole call converts most of them into a success.
+//
+// This is mitigation, not a cure. The cure is a model that holds the schema; on
+// gpt-5.6-sol this path effectively never fired. Kept deliberately dumb: no feeding
+// the error back, no partial repair, because a wrong-but-valid analysis is worse than
+// a retry.
+async function withRetry<T>(produce: () => Promise<string>, parse: (raw: string) => T, attempts = 3): Promise<T> {
+  let last: unknown;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return parse(await produce());
+    } catch (err) {
+      last = err;
+    }
+  }
+  throw last;
+}
+
 function extractJson(text: string): unknown {
   const start = text.indexOf("{");
   const end = text.lastIndexOf("}");
   if (start === -1 || end <= start) throw new Error("no_json_in_response");
-  return JSON.parse(text.slice(start, end + 1));
+  // Every model response reaches the schema through here — analyze, ask and translate.
+  return dropNulls(JSON.parse(text.slice(start, end + 1)));
 }
 
 async function complete(system: string, content: ChatContent, maxTokens: number): Promise<string> {
@@ -172,6 +221,9 @@ async function complete(system: string, content: ChatContent, maxTokens: number)
       { role: "user", content: content as any },
     ],
   });
+  // A truncated response is not "no JSON in the answer", it is "the answer did not
+  // fit". Saying so turns a mystery into a budget decision.
+  if (res.choices[0]?.finish_reason === "length") throw new Error("response_truncated");
   return res.choices[0]?.message?.content ?? "";
 }
 
@@ -180,7 +232,10 @@ export async function analyzeContract(input: AnalyzeInput): Promise<Analysis> {
     const a = sampleAnalysis(input.lang);
     return { ...a, warnings: [...a.warnings, "stub"] };
   }
-  return AnalysisSchema.parse(extractJson(await complete(ANALYZE_SYSTEM, userContent(input), 16000)));
+  return withRetry(
+    () => complete(ANALYZE_SYSTEM, userContent(input), 16000),
+    (raw) => AnalysisSchema.parse(extractJson(raw)),
+  );
 }
 
 export async function askContract(
@@ -206,5 +261,8 @@ export async function translateAnalysis(analysis: Analysis, target: Lang): Promi
   const content = `Translate the human-readable text of this analysis into language "${target}". Keep every quote and ref unchanged. Set "lang" to "${target}". Return the translated JSON object, same shape.\n\n${JSON.stringify(
     analysis,
   )}`;
-  return AnalysisSchema.parse(extractJson(await complete(TRANSLATE_SYSTEM, content, 16000)));
+  return withRetry(
+    () => complete(TRANSLATE_SYSTEM, content, 16000),
+    (raw) => AnalysisSchema.parse(extractJson(raw)),
+  );
 }
