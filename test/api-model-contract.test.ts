@@ -7,7 +7,7 @@ import { sampleAnalysis } from "../src/sample.ts";
 // Exercise the real Azure SDK and model adapter against a local fake endpoint.
 // No credentials, contract data or requests leave this test process/machine.
 test("model adapter validates responses and has bounded, cancellable provider calls", async (t) => {
-  const queue: Array<{ status?: number; value?: unknown; hold?: boolean }> = [];
+  const queue: Array<{ status?: number; value?: unknown; hold?: boolean; finishReason?: "stop" | "length" }> = [];
   const requests: any[] = [];
   const server = createServer(async (req, res) => {
     const parts = [];
@@ -19,7 +19,7 @@ test("model adapter validates responses and has bounded, cancellable provider ca
     res.setHeader("content-type", "application/json");
     res.statusCode = reply?.status ?? 200;
     res.end(JSON.stringify(res.statusCode === 200 ? {
-      choices: [{ finish_reason: "stop", message: { content: JSON.stringify(reply?.value ?? {}) } }],
+      choices: [{ finish_reason: reply?.finishReason ?? "stop", message: { content: JSON.stringify(reply?.value ?? {}) } }],
     } : { error: { message: "synthetic provider failure", type: "test" } }));
   }).listen(0, "127.0.0.1");
   t.after(() => new Promise<void>((resolve) => { server.closeAllConnections(); server.close(() => resolve()); }));
@@ -44,6 +44,18 @@ test("model adapter validates responses and has bounded, cancellable provider ca
   await t.test("Q&A retries a fabricated source before returning a valid answer", async () => {
     queue.push({ value: { answer: "Invalid source", clauseId: "missing" } }, { value: { answer: "A grounded answer.", clauseId: a.clauses[0].id } });
     assert.deepEqual(await model.askContract("What do I pay?", a), { answer: "A grounded answer.", clauseId: a.clauses[0].id });
+  });
+
+  await t.test("analysis recovers from a truncated response instead of stopping before output validation", async () => {
+    const count = requests.length;
+    queue.push({ finishReason: "length", value: { incomplete: true } }, { value: a });
+    try {
+      const result = await model.analyzeContract({ lang: "de", filename: "synthetic.pdf", mime: "text/plain", text: "Synthetic local contract: rent is EUR 1200 per month." });
+      assert.equal(result.lang, "de");
+      assert.equal(requests.length, count + 2, "a truncated model response must receive one bounded recovery attempt");
+    } finally {
+      queue.length = 0;
+    }
   });
 
   await t.test("translation retries a changed financial amount", async () => {

@@ -4,6 +4,7 @@ import { EventEmitter } from "node:events";
 import { Readable } from "node:stream";
 import type { IncomingMessage } from "node:http";
 import { once } from "node:events";
+import { APIConnectionTimeoutError, AuthenticationError } from "openai";
 import { sampleAnalysis } from "../src/sample.ts";
 import { ApiFailure, MAX_BODY_BYTES, readApiJson } from "../api/_http.ts";
 import { parseAnalyzeInput, parseAnswer, parseTranslation } from "../api/_validation.ts";
@@ -107,6 +108,26 @@ test("provider failures are safe JSON errors rather than leaked contract or cred
   await handler(req, res);
   assert.equal(res.code, 502);
   assert.deepEqual(res.body, { error: "analysis_failed" });
+});
+
+test("an SDK timeout is reported as a timeout rather than a generic analysis failure", async () => {
+  const handler = createAnalyzeHandler(async () => { throw new APIConnectionTimeoutError(); });
+  const { req, res } = exchange({ lang: "en", text: "Synthetic local contract." });
+  await handler(req, res);
+  assert.equal(res.code, 504);
+  assert.deepEqual(res.body, { error: "request_timeout" });
+});
+
+test("provider authentication failures have a safe actionable error without leaking provider details", async () => {
+  const handler = createAnalyzeHandler(async () => {
+    throw new AuthenticationError(401,
+      { code: "401", message: "PRIVATE_PROVIDER_DETAIL_AND_CREDENTIAL" },
+      "PRIVATE_PROVIDER_DETAIL_AND_CREDENTIAL", {});
+  });
+  const { req, res } = exchange({ lang: "en", text: "Synthetic local contract." });
+  await handler(req, res);
+  assert.equal(res.code, 503);
+  assert.deepEqual(res.body, { error: "service_authentication_failed" });
 });
 
 test("an unavailable model is reported explicitly without substituting a sample contract", async () => {

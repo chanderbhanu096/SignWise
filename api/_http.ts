@@ -1,4 +1,5 @@
 import type { IncomingMessage } from "node:http";
+import { APIConnectionError, APIConnectionTimeoutError } from "openai";
 
 export const MAX_BODY_BYTES = 8 * 1024 * 1024;
 export const MAX_ANALYSIS_BYTES = 1024 * 1024;
@@ -27,9 +28,21 @@ export function checkAnalysisSize(analysis: unknown) {
 // contain contract excerpts, infrastructure details, and request identifiers.
 export function sendFailure(res: any, error: unknown, fallback: string) {
   if (res.destroyed || res.writableEnded) return;
-  return error instanceof ApiFailure
-    ? res.status(error.status).json({ error: error.code })
-    : res.status(502).json({ error: fallback });
+  let failure: ApiFailure;
+  const providerStatus = error && typeof error === "object" && "status" in error ? error.status : undefined;
+  if (error instanceof ApiFailure) failure = error;
+  else if (error instanceof APIConnectionTimeoutError) failure = new ApiFailure("request_timeout", 504);
+  else if (providerStatus === 401) failure = new ApiFailure("service_authentication_failed", 503);
+  else if (providerStatus === 403) failure = new ApiFailure("service_access_denied", 503);
+  else if (providerStatus === 404) failure = new ApiFailure("service_configuration_error", 503);
+  else if (providerStatus === 429) failure = new ApiFailure("service_limit_reached", 503);
+  else if (error instanceof APIConnectionError || (typeof providerStatus === "number" && providerStatus >= 500)) {
+    failure = new ApiFailure("service_unavailable", 503);
+  } else failure = new ApiFailure(fallback, 502);
+  // Log only our own fixed categories, never error.message/stack/body. Provider
+  // errors can embed the submitted contract or authentication details.
+  if (failure.status >= 500) console.warn("[SignWise request failed]", { operation: fallback, code: failure.code, status: failure.status });
+  return res.status(failure.status).json({ error: failure.code });
 }
 
 export function requestSignal(req: any, res: any) {

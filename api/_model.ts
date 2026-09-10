@@ -19,7 +19,7 @@ const API_VERSION = process.env.AZURE_OPENAI_API_VERSION ?? "2025-01-01-preview"
 const live = !!(ENDPOINT && API_KEY);
 
 function client() {
-  return new AzureOpenAI({ endpoint: ENDPOINT, apiKey: API_KEY, apiVersion: API_VERSION, deployment: DEPLOYMENT, timeout: 90_000, maxRetries: 0 });
+  return new AzureOpenAI({ endpoint: ENDPOINT, apiKey: API_KEY, apiVersion: API_VERSION, deployment: DEPLOYMENT, timeout: 180_000, maxRetries: 0 });
 }
 
 // ---- System prompts (version-controlled next to the call) --------------------
@@ -208,14 +208,23 @@ async function withRetry<T>(produce: () => Promise<string>, parse: (raw: string)
   for (let i = 0; i < attempts; i++) {
     // Retry invalid output only. Repeating authentication failures, cancellations
     // or rate limits adds delay and provider load without repairing the response.
-    const raw = await produce();
+    let raw: string;
+    try {
+      raw = await produce();
+    } catch (error) {
+      // Truncation is unusable model output, not a transport/provider failure.
+      // It belongs to the same bounded recovery path as malformed JSON.
+      if (!(error instanceof ApiFailure) || error.code !== "response_truncated") throw error;
+      last = error;
+      continue;
+    }
     try {
       return parse(raw);
     } catch (err) {
       last = err;
     }
   }
-  throw last;
+  throw last instanceof ApiFailure ? last : new ApiFailure("model_response_invalid", 502);
 }
 
 function extractJson(text: string): unknown {
@@ -240,7 +249,7 @@ async function complete(system: string, content: ChatContent, maxTokens: number,
   }, { signal });
   // A truncated response is not "no JSON in the answer", it is "the answer did not
   // fit". Saying so turns a mystery into a budget decision.
-  if (res.choices[0]?.finish_reason === "length") throw new Error("response_truncated");
+  if (res.choices[0]?.finish_reason === "length") throw new ApiFailure("response_truncated", 502);
   return res.choices[0]?.message?.content ?? "";
 }
 

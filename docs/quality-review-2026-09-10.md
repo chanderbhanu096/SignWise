@@ -136,3 +136,34 @@ environment loading, blocks API routes, and uses only synthetic documents.
 The remaining items are distinct from the reproducible code and interface bugs
 fixed here. They require operational configuration, broader model evaluation or
 specialist review rather than a stronger claim in the interface.
+
+## Follow-up: reported upload failure
+
+After the initial review, a real upload displayed the generic analysis-failed
+message. A synthetic live request using the local configuration reproduced an
+immediate provider **401 authentication failure**. Read-only comparison found
+that the local endpoint and key differed from both deployed SignWise apps.
+
+The existing deployed connection successfully analysed a four-clause synthetic
+agreement in about 21 seconds. The four Azure OpenAI settings in the ignored
+local `.env.local` file were then aligned with that existing working connection,
+without printing secrets, rotating keys, changing Azure settings or deploying.
+After a full development-server restart, a synthetic PDF uploaded through the
+actual UI successfully reached the overview with four clauses and source links.
+The user's private contract was not resent for these checks.
+
+Error handling now distinguishes authentication, access, configuration, service
+limits, timeouts, truncated output and invalid responses. Diagnostics contain
+fixed safe categories only. Two separate regressions were also reproduced and
+fixed: provider timeouts were hidden by the generic error, and truncated output
+incorrectly bypassed bounded retries. Provider attempts now allow 180 seconds,
+within an overall 210-second browser limit; cancellation still stops the work.
+Transport/authentication/limit failures are not automatically multiplied by
+model-output retries. This handling follows the
+[OpenAI Docs error guidance](https://developers.openai.com/api/docs/guides/error-codes).
+
+Verification after the follow-up: **173 automated tests pass**, production build
+passes, and the real browser PDF upload succeeds. This narrow synthetic live
+check resolves the connection failure; it is not a comprehensive evaluation of
+model accuracy or long/scanned contracts. The broader operational limits above
+still apply.

@@ -132,6 +132,19 @@ The model integration is isolated in [`api/_model.ts`](api/_model.ts). If the
 credentials are missing or the service cannot be reached, uploads show an error;
 they are never replaced with sample results. The prepared examples remain available.
 
+### If an upload fails
+
+- **AI connection needs updating:** check that the Azure endpoint and key belong
+  to the same resource. Local `.env.local` settings can differ from the deployed
+  app. Restart the development server after changing them; never commit keys.
+- **Capacity or usage limit:** wait and check the Azure deployment's limits.
+- **Timed out or cut short:** retry, or use a shorter document. Cancellation stays
+  available, and failed output is never presented as your analysis.
+
+Authentication, timeout and invalid-response failures are reported separately.
+Server diagnostics record safe categories, not contract text or provider error
+messages. See the [OpenAI error-code guidance](https://developers.openai.com/api/docs/guides/error-codes).
+
 ## Project structure
 
 ```text

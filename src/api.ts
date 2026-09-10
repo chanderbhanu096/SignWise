@@ -23,7 +23,9 @@ async function post(path: string, body: string, signal?: AbortSignal): Promise<s
   const cancel = () => controller.abort();
   signal?.addEventListener("abort", cancel, { once: true });
   if (signal?.aborted) cancel();
-  const timeout = setTimeout(() => controller.abort(new ApiError("request_timeout")), 120_000);
+  // Longer than the provider's 180-second per-attempt limit, but still an overall
+  // cap covering retries. Cancellation remains available throughout the wait.
+  const timeout = setTimeout(() => controller.abort(new ApiError("request_timeout")), 210_000);
   try {
     const res = await fetch(path, {
       method: "POST",
