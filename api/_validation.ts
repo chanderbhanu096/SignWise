@@ -3,7 +3,7 @@ import { isDeepStrictEqual } from "node:util";
 import { AnalysisSchema, type Analysis } from "../src/types";
 import type { AnalyzeInput } from "./_model";
 import { ApiFailure, requireJsonObject, validLanguage } from "./_http";
-import { facts } from "../src/depth";
+import { canonical } from "../src/depth";
 
 const MAX_TEXT = 200_000;
 const MAX_IMG_BYTES = 4 * 1024 * 1024;
@@ -61,6 +61,11 @@ export function parseAnswer(value: unknown, analysis: Analysis): { answer: strin
   return { answer: result.answer, clauseId: result.clauseId ?? null };
 }
 
+// A ref is a label a reader sees — "§ 6 · Seite 3" — and a translation is supposed
+// to turn "Seite" into "page". What it must not change is which section and which
+// page the label points at, so only that part is compared.
+const refPointer = (ref?: string) => ref?.replace(/[^\d§]+/g, " ").trim();
+
 // Translation is allowed to change prose only. Model-valid JSON can still change
 // the amount due or a supporting quote; reject that response before it is shown.
 function translationFacts(a: Analysis) {
@@ -69,15 +74,19 @@ function translationFacts(a: Analysis) {
     glance: a.glance.map(({ clauseId, derived }) => ({ clauseId, derived })),
     money: {
       ...a.money,
-      oneTime: a.money.oneTime.map(({ label: _label, ...facts }) => facts),
+      // label is what a reader sees ("Kaution") and a translation is meant to change
+      // it; clauseId is the machine link and is compared as it is.
+      oneTime: a.money.oneTime.map(({ label: _label, ref, ...facts }) => ({ ...facts, ref: refPointer(ref) })),
       variable: a.money.variable.map(({ clauseId }) => ({ clauseId })),
     },
     dates: a.dates.map(({ iso, tone }) => ({ iso, tone })),
     findings: a.findings,
     rights: a.rights.map(({ clauseId }) => clauseId),
     duties: a.duties.map(({ clauseId }) => clauseId),
+    // quote stays exact — it is the contract's own wording and the thing the browser
+    // matches against the document.
     clauses: a.clauses.map(({ id, quote, ref, page, level, tags, legalRefs }) => ({
-      id, quote, ref, page, level, tags,
+      id, quote, page, level, tags, ref: refPointer(ref),
       legalRefs: legalRefs?.map(({ law, section }) => ({ law, section })),
     })),
     confidence: a.confidence,
@@ -90,20 +99,31 @@ function translationFacts(a: Analysis) {
   };
 }
 
-// Numeric fields are not the only place users read money and dates: glance.value,
-// explanations and the decision brief all contain prose. Check each corresponding
-// field so an unchanged money object cannot conceal a changed displayed amount.
-// This is a conservative figure check, not a proof of semantic equivalence.
-const MONTH_WORDS = [
-  "jan|januar|january", "feb|februar|february", "mär|märz|mar|march", "apr|april", "mai|may", "jun|juni|june",
-  "jul|juli|july", "aug|august", "sep|sept|september", "okt|oct|oktober|october", "nov|november", "dez|dec|dezember|december",
-];
+// Numeric fields are not the only place users read an amount: glance.value, the
+// explanations and the decision brief all state money in prose, and an unchanged
+// money object cannot be allowed to conceal a changed displayed amount.
+//
+// Only money is compared, because only money survives a translation unchanged. Every
+// other figure is written differently in each language by any correct translation —
+// "zwölf Monate" becomes "12 months", "30. September 2027" becomes "September 30,
+// 2027", "22:00 Uhr" becomes "10 PM", "einem Dritten" carries no number in English at
+// all — and comparing those rejected two of four faithful translations of this app's
+// own example contract, which is a language switch that never works. The figures
+// behind those words are pinned exactly by translationFacts above (dates[].iso,
+// money.*, freq, timingMonth), so nothing is left unchecked; this catches the one
+// thing that is only ever stated in prose.
+const AMOUNT = String.raw`(?<![\d.,])\d{1,3}(?:[.,\s]\d{3})*(?:[.,]\d{1,2})?`;
+const CURRENCY = String.raw`€|EUR|Euro|CHF|£|GBP|\$|USD|%`;
+const MONEY_FIGURE = new RegExp(String.raw`(${AMOUNT})\s*(?:${CURRENCY})|(?:${CURRENCY})\s*(${AMOUNT})`, "gi");
+
 function proseFigures(value: unknown): unknown {
   if (typeof value === "string") {
-    const normalized = MONTH_WORDS.reduce((text, names, i) => text
-      .replace(new RegExp(`(\\b\\d{1,2}\\.?\\s+)(?:${names})\\b`, "gi"), `$1${i + 1}`)
-      .replace(new RegExp(`\\b(?:${names})\\b(?=\\.?\\s+\\d{1,2}\\b)`, "gi"), String(i + 1)), value);
-    return [...facts(normalized)].sort();
+    const out = new Set<string>();
+    for (const m of value.matchAll(MONEY_FIGURE)) {
+      const figure = canonical(m[1] ?? m[2]);
+      if (figure) out.add(figure);
+    }
+    return [...out].sort();
   }
   if (Array.isArray(value)) return value.map(proseFigures);
   if (value && typeof value === "object") return Object.fromEntries(
@@ -113,12 +133,37 @@ function proseFigures(value: unknown): unknown {
   return value;
 }
 
+// Which field broke the comparison. This message stays inside the thrown Error: it
+// quotes contract prose, so it is never logged and never sent to a browser (see
+// sendFailure). It exists for the person reproducing a rejection locally, because
+// "translation_changed_contract_facts" alone gives no way to tell a model that
+// really changed an amount from a rule that is too strict to satisfy — and this
+// check has been both.
+function firstDifference(a: unknown, b: unknown, path = ""): string | null {
+  if (isDeepStrictEqual(a, b)) return null;
+  if (Array.isArray(a) && Array.isArray(b)) {
+    if (a.length !== b.length) return `${path}.length ${a.length}!=${b.length}`;
+    for (let i = 0; i < a.length; i++) {
+      const d = firstDifference(a[i], b[i], `${path}[${i}]`);
+      if (d) return d;
+    }
+  }
+  if (a && b && typeof a === "object" && typeof b === "object" && !Array.isArray(a)) {
+    for (const key of new Set([...Object.keys(a), ...Object.keys(b)])) {
+      const d = firstDifference((a as any)[key], (b as any)[key], `${path}.${key}`);
+      if (d) return d;
+    }
+  }
+  return `${path}: ${JSON.stringify(a)?.slice(0, 80)} != ${JSON.stringify(b)?.slice(0, 80)}`;
+}
+
 export function parseTranslation(value: unknown, source: Analysis, target: string): Analysis {
   const translated = AnalysisSchema.parse(value);
-  if (translated.lang !== target || !isDeepStrictEqual(translationFacts(translated), translationFacts(source)) ||
-      !isDeepStrictEqual(proseFigures(translated), proseFigures(AnalysisSchema.parse(source)))) {
-    throw new Error("translation_changed_contract_facts");
-  }
+  const changed =
+    translated.lang !== target ? `lang: ${translated.lang} != ${target}`
+      : firstDifference(translationFacts(translated), translationFacts(source), "facts")
+        ?? firstDifference(proseFigures(translated), proseFigures(AnalysisSchema.parse(source)), "figures");
+  if (changed) throw new Error(`translation_changed_contract_facts (${changed})`);
   // Verification is a deterministic check against the document, never a model opinion.
   return {
     ...translated,

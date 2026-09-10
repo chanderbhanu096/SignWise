@@ -35,13 +35,21 @@ const TEXT_PAINT = new Set<number>([
   pdfjs.OPS.nextLineShowText, pdfjs.OPS.nextLineSetSpacingShowText,
 ]);
 
-// A blank page is not a scan. Only pages without extracted text or paint
-// operations can be ignored when choosing text vs vision. A readable text layer
-// can coexist with a photographed clause, vector lettering or a signature, so
-// graphical content forces vision too. Decorative graphics may also trigger this
-// conservative fallback; their contents cannot safely be inferred from metadata.
-// Render every page in that case, including blanks, to retain page numbering and
-// report no independent text verification. The original PDF stays in the browser.
+// Text or vision. Vision is the fallback for a scan — a page with ink on it that
+// the text layer does not account for — and it is expensive: the pages go to the
+// model as unmasked pixels, redaction cannot run on an image, and no quote can be
+// verified against a text layer afterwards.
+//
+// So the test is how much text the page actually yields, not whether anything was
+// painted on it. Treating any paint operation as evidence of a scan sent 20 of 22
+// ordinary readable PDFs down the vision path, because a table border, a letterhead
+// logo and a signature rule are on nearly every contract. A page with a photographed
+// clause and a real text layer is therefore read as text: the model sees what the
+// text layer holds, which is a smaller loss than sending someone's whole contract as
+// pixels for the sake of a picture we cannot measure.
+//
+// When vision is chosen, every page is rendered including blanks, so page numbering
+// still matches the file. The original PDF stays in the browser either way.
 export async function extractPdfText(data: ArrayBuffer, signal?: AbortSignal): Promise<PreparedPdf> {
   signal?.throwIfAborted();
   const task = pdfjs.getDocument({ data, isEvalSupported: false, stopAtErrors: true });
@@ -50,7 +58,6 @@ export async function extractPdfText(data: ArrayBuffer, signal?: AbortSignal): P
   try {
     const doc = await task.promise;
     signal?.throwIfAborted();
-    if (doc.numPages > 12) throw new UploadError("too_many_pages");
     const pages: string[] = [];
     let hasContent = false;
     let needsVision = false;
@@ -66,12 +73,16 @@ export async function extractPdfText(data: ArrayBuffer, signal?: AbortSignal): P
       const blank = !text.trim() && !graphics && !textPaint;
       if (blank) continue;
       hasContent = true;
-      if (graphics || (text.match(/[\p{L}\p{N}]/gu) ?? []).length < 30) needsVision = true;
+      if (graphics && (text.match(/[\p{L}\p{N}]/gu) ?? []).length < 30) needsVision = true;
     }
     if (!hasContent) throw new UploadError("no_readable_content");
     if (!needsVision) {
       return { text: pages.join("\n\n"), pages: doc.numPages };
     }
+    // The page limit bounds the vision payload, which is megabytes of JPEG. Extracted
+    // text is bounded by its own character limit on the server, so a long readable
+    // contract is not rejected for being long.
+    if (doc.numPages > 12) throw new UploadError("too_many_pages");
 
     const images: string[] = [];
     let bytes = 0;
@@ -89,7 +100,12 @@ export async function extractPdfText(data: ArrayBuffer, signal?: AbortSignal): P
       const context = canvas.getContext("2d");
       if (!context) throw new UploadError("unreadable_pdf");
       try {
-        await page.render({ canvasContext: context, viewport, background: "white" }).promise;
+        // intent "print": the default display intent schedules its work through
+        // requestAnimationFrame, which a browser stops delivering to a background
+        // tab — the render promise then never settles and the upload hangs on
+        // "reading your contract" with no error and no timeout. Print intent is
+        // scheduled on microtasks instead, and draws the same page.
+        await page.render({ canvasContext: context, viewport, background: "white", intent: "print" }).promise;
         signal?.throwIfAborted();
         const image = canvas.toDataURL("image/jpeg", 0.85);
         if (!image.startsWith("data:image/jpeg;base64,")) throw new UploadError("unreadable_pdf");

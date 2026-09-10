@@ -65,11 +65,16 @@ test("model adapter validates responses and has bounded, cancellable provider ca
     assert.equal(result.money.monthly, a.money.monthly);
   });
 
-  await t.test("provider failures are not multiplied by adapter or SDK retries", async () => {
+  // A rate limit is a transport failure and comes back in milliseconds, so the SDK
+  // retries it — a single 429 on a small deployment quota must not become a hard
+  // "service limit reached" for the user. What must not happen is the adapter
+  // retrying on top of that: 3 adapter attempts x 3 SDK attempts is 9 requests at a
+  // provider that is already saying stop.
+  await t.test("a rate limit is retried by the SDK only, never multiplied by the adapter", async () => {
     const count = requests.length;
-    queue.push({ status: 429 });
+    queue.push({ status: 429 }, { status: 429 }, { status: 429 });
     await assert.rejects(model.askContract("What do I pay?", a));
-    assert.equal(requests.length, count + 1);
+    assert.equal(requests.length, count + 3);
   });
 
   await t.test("cancellation reaches the SDK without another model attempt", async () => {

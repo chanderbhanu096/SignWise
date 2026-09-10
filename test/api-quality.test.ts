@@ -5,9 +5,10 @@ import { Readable } from "node:stream";
 import type { IncomingMessage } from "node:http";
 import { once } from "node:events";
 import { APIConnectionTimeoutError, AuthenticationError } from "openai";
-import { sampleAnalysis } from "../src/sample.ts";
+import { sampleAnalysis, employmentAnalysis } from "../src/sample.ts";
 import { ApiFailure, MAX_BODY_BYTES, readApiJson } from "../api/_http.ts";
 import { parseAnalyzeInput, parseAnswer, parseTranslation } from "../api/_validation.ts";
+import { AnalysisSchema } from "../src/types.ts";
 import { createAnalyzeHandler } from "../api/analyze.ts";
 import { createAskHandler } from "../api/ask.ts";
 import { createTranslateHandler } from "../api/translate.ts";
@@ -198,4 +199,17 @@ test("production API returns JSON for malformed requests and unknown paths and p
   const wrongMethod = await fetch(`${base}/api/analyze`);
   assert.equal(wrongMethod.status, 405);
   assert.equal(wrongMethod.headers.get("allow"), "POST");
+});
+
+// The strictest rule in the API is the one that decides whether a translation is
+// allowed on screen, and it has no natural test subject — except that the app ships
+// the same two contracts in German and English, written by hand. If the check calls
+// those a changed contract, it will reject every faithful model translation too.
+test("the bundled examples pass the translation check in both directions", () => {
+  for (const make of [sampleAnalysis, employmentAnalysis]) {
+    for (const [from, to] of [["de", "en"], ["en", "de"]] as const) {
+      const source = AnalysisSchema.parse(make(from));
+      assert.doesNotThrow(() => parseTranslation(make(to), source, to), `${from} -> ${to}`);
+    }
+  }
 });
