@@ -230,3 +230,24 @@ test("commitment cards are in the same order in German and in English", () => {
     );
   }
 });
+
+test("equal money in different clauses does not hide a distinct commitment", () => {
+  const analysis = sampleAnalysis("en");
+  analysis.money.monthly = 3000;
+  analysis.decisionSummary = {
+    commitments: [{ title: "Monthly rent", value: "€3,000", explanation: "Pay every month.", clauseId: analysis.money.monthlyClauseId! }],
+    reviewItems: [], clarificationQuestions: [],
+  };
+  const brief = getDecisionSummary(analysis);
+  assert.ok(brief.commitments.some((item) => item.title === "Monthly rent"));
+  assert.ok(brief.commitments.some((item) => item.title === "Deposit" && item.value === "€3,000"));
+});
+
+test("an invalid model source does not suppress the sourced fallback amount", () => {
+  const analysis = sampleAnalysis("en");
+  analysis.decisionSummary = {
+    commitments: [{ title: "Monthly rent", value: "€1,240", explanation: "Pay every month.", clauseId: "missing" }],
+    reviewItems: [], clarificationQuestions: [],
+  };
+  assert.ok(getDecisionSummary(analysis).commitments.some((item) => item.value === "€1,240" && item.clauseId === analysis.money.monthlyClauseId));
+});

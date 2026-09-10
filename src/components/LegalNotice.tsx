@@ -1,6 +1,7 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import type { Lang } from "../types";
 import { t } from "../i18n";
+import { useModalFocus } from "./useModalFocus";
 
 // The three legal questions a jury — or a regulator — asks a tool like this, on one
 // screen: what it is not allowed to do (RDG), what happens to the uploaded document
@@ -10,18 +11,13 @@ import { t } from "../i18n";
 export function LegalNotice({ lang, onClose }: { lang: Lang; onClose: () => void }) {
   const s = t(lang);
   const closeRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    closeRef.current?.focus();
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  const panelRef = useRef<HTMLDivElement>(null);
+  useModalFocus(panelRef, closeRef, onClose);
 
   return (
     <>
-      <div className="scrim" onClick={onClose} aria-hidden="true" />
-      <aside className="panel legal-panel" role="dialog" aria-modal="true" aria-labelledby="legal-h">
+      <div className="scrim" onClick={onClose} aria-hidden="true" data-modal-backdrop />
+      <aside className="panel legal-panel" role="dialog" aria-modal="true" aria-labelledby="legal-h" ref={panelRef} tabIndex={-1}>
         <div className="panel-head">
           <h2 className="panel-title" id="legal-h">
             {s.legalNoticeTitle}

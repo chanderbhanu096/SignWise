@@ -82,8 +82,13 @@ function normalise(
   // Compared by the figures they contain, not the string: the model writes
   // "1.780,00 EUR" and the derived card "1.780 €", and only the client-side currency
   // styling made those two ever look alike.
-  const shownValue = (item: { value?: string }) => [...facts(item.value ?? "")].sort().join(",");
-  const modelValues = new Set(brief.commitments.map(shownValue).filter(Boolean));
+  const shownValue = (item: { value?: string; clauseId: string }) => {
+    const figures = [...facts(item.value ?? "")].sort().join(",");
+    return figures ? `${item.clauseId}:${figures}` : "";
+  };
+  // Equal amounts in different clauses are different commitments: a deposit can
+  // equal the rent. Invalid model links must not suppress a valid fallback either.
+  const modelValues = new Set(brief.commitments.filter((item) => clauses.has(item.clauseId)).map(shownValue).filter(Boolean));
   const commitments = uniqueBy(
     [...brief.commitments, ...fallback.commitments.filter((item) => !modelValues.has(shownValue(item)))].filter((item) =>
       clauses.has(item.clauseId),

@@ -115,11 +115,18 @@ function chars(line: string, upto?: number, caret?: "solid" | "blink", newest = 
   return out;
 }
 
-export function Slogan({ slogans, label }: { slogans: string[]; label: string }) {
-  const reduced = prefersReducedMotion();
-  const [{ i, n, erasing }, set] = useState({ i: 0, n: 0, erasing: false });
+export function Slogan({ slogans, label, paused = false }: { slogans: string[]; label: string; paused?: boolean }) {
+  const [reduced, setReduced] = useState(prefersReducedMotion);
+  const [{ i, n, erasing }, set] = useState({ i: 0, n: slogans[0]?.length ?? 0, erasing: false });
   const lineRef = useRef<HTMLSpanElement>(null);
   const lastWidth = useRef(0);
+
+  useEffect(() => {
+    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReduced(query.matches);
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
 
   // The headline is centred and shrink-wraps, so revealing a character does not just
   // add it on the right — it moves the whole line left by half that character's width.
@@ -143,7 +150,7 @@ export function Slogan({ slogans, label }: { slogans: string[]; label: string })
   // the text just as the next character lands.
   useLayoutEffect(() => {
     const el = lineRef.current;
-    if (!el || reduced) return;
+    if (!el || reduced || paused) return;
     const width = el.getBoundingClientRect().width; // translateX does not affect width
     const grew = width - lastWidth.current;
     lastWidth.current = width;
@@ -154,7 +161,7 @@ export function Slogan({ slogans, label }: { slogans: string[]; label: string })
   });
 
   useEffect(() => {
-    if (reduced || slogans.length === 0) return;
+    if (reduced || paused || slogans.length === 0) return;
     const text = slogans[i] ?? "";
     const [delay, next] = !erasing && n < text.length
       ? [TYPE_MS, { i, n: n + 1, erasing }]
@@ -165,7 +172,7 @@ export function Slogan({ slogans, label }: { slogans: string[]; label: string })
           : [GAP_MS, { i: (i + 1) % slogans.length, n: 0, erasing: false }];
     const id = setTimeout(() => set(next), delay);
     return () => clearTimeout(id);
-  }, [i, n, erasing, reduced, slogans]);
+  }, [i, n, erasing, reduced, paused, slogans]);
 
   const current = slogans[i] ?? "";
   // The caret only blinks when the line is at rest — fully typed and holding, or empty
@@ -194,7 +201,7 @@ export function Slogan({ slogans, label }: { slogans: string[]; label: string })
       >
         {/* zero-width space keeps the line box at full height before the first character */}
         {"​"}
-        {reduced ? chars(current) : chars(current, n, atRest ? "blink" : "solid", erasing ? -1 : n - 1)}
+        {reduced || paused ? chars(current) : chars(current, n, atRest ? "blink" : "solid", erasing ? -1 : n - 1)}
       </span>
     </span>
   );

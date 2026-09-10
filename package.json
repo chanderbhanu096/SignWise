@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "start": "tsx server.ts",
     "preview": "vite preview",
-    "test": "tsx --test test/*.test.ts"
+    "test": "tsx --test test/*.test.ts",
+    "test:pdf-browser": "node scripts/pdf-browser-qa.mjs"
   },
   "engines": {
     "node": ">=20"
@@ -29,6 +30,6 @@
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
     "typescript": "^5.5.4",
-    "vite": "^5.4.6"
+    "vite": "^6.4.3"
   }
 }

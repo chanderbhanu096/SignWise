@@ -3,6 +3,7 @@ import type { Analysis, Level } from "../types";
 import { LEVELS } from "../types";
 import { t } from "../i18n";
 import { euro } from "../format";
+import { isIsoCalendarDate } from "../ics";
 import { getContractCategory, getFinancialCopy, getContractSuggestions, getMoneyState } from "../contract";
 import { Severity, MARK } from "../components/Severity";
 import { Section } from "../components/Section";
@@ -17,6 +18,7 @@ export function Overview({
   onAsk,
   answer,
   asking,
+  disabled = false,
   onAddCalendar,
   calMsg,
 }: {
@@ -27,8 +29,9 @@ export function Overview({
   onOriginal: () => void;
   onDecision: () => void;
   onAsk: (q: string) => void;
-  answer: { text: string; clauseId: string | null } | null;
+  answer: { text: string; clauseId: string | null; question?: string; error?: boolean } | null;
   asking: boolean;
+  disabled?: boolean;
   onAddCalendar: (summary: string, iso: string) => void;
   calMsg: string;
 }) {
@@ -64,41 +67,14 @@ export function Overview({
           : " / month"
         : "";
 
-  // Chart overlays: a base monthly amount, plus any extra placed in a known month.
-  const placed = items
-    .filter((it) => it.amount != null && it.timingMonth != null)
-    .map((it) => ({ it, m: it.timingMonth as number }));
-  // Legacy/expense fallback: a deposit-like one-time cost lands in the first month.
-  let overlay = placed;
-  if (overlay.length === 0 && category === "expense") {
-    const dep = items.find((it) => it.amount != null && it.freq !== "annual" && it.freq !== "monthly");
-    if (dep) overlay = [{ it: dep, m: 0 }];
-  }
-  const bumpByMonth = Array(12).fill(0);
-  for (const o of overlay) if (o.m >= 0 && o.m < 12) bumpByMonth[o.m] += o.it.amount as number;
-
-  const months = Array.from({ length: 12 }, (_, i) =>
-    new Intl.DateTimeFormat(locale, { month: "short" }).format(new Date(2026, 9 + i, 1)),
-  );
-  const bars = months.map((m, i) => ({ label: m, base: monthly, extra: bumpByMonth[i], value: monthly + bumpByMonth[i] }));
-  const maxBar = Math.max(...bars.map((b) => b.value), 1);
-  // A deposit can be several times the rent. Drawn to a literal scale that flattens
-  // the other eleven months into stubs, so past ~1.8x the recurring amount the axis
-  // is compressed: the recurring months keep a readable share and the tall month is
-  // clearly taller without being tall in proportion. Every bar is still labelled
-  // with its real figure, and the compression is disclosed under the chart.
-  const RECUR_SHARE = 0.58;
-  const compressed = monthly > 0 && maxBar > monthly * 1.8;
-  const barPct = (v: number) =>
-    !compressed
-      ? (v / maxBar) * 100
-      : v <= monthly
-        ? (v / monthly) * RECUR_SHARE * 100
-        : (RECUR_SHARE + ((v - monthly) / (maxBar - monthly)) * (1 - RECUR_SHARE)) * 100;
+  // The response does not reliably anchor payment timing to a start date. Show
+  // only the stated recurring amount, without inventing calendar months or an
+  // upfront deposit schedule. Additional payments remain in the cards above it.
+  const months = Array.from({ length: 12 }, (_, i) => `${analysis.lang === "de" ? "Monat" : "Month"} ${i + 1}`);
   const showChart = !neutral && monthly > 0;
-
-  const depositOverlay = overlay.find((o) => o.it.kind === "deposit") || (category === "expense" ? overlay.find((o) => o.m === 0) : undefined);
-  const chartNote = income && overlay.length ? s.bonusBump : depositOverlay ? s.depositBump : "";
+  const chartExclusions = analysis.lang === "de"
+    ? "Gezeigt wird nur der monatliche Grundbetrag, unverändert über 12 Monate. Zusätzliche, einmalige und variable Zahlungen sind nicht enthalten; sie stehen separat oben. Die Monatsnummern sind keine Zahlungstermine."
+    : "Only the monthly base amount is shown, held constant over 12 months. Additional, one-off and variable payments are excluded and listed separately above. The month numbers are not payment dates.";
 
   // Income total (only when the document clearly adds an annual amount on top).
   const annualExtras = items.filter((it) => it.freq === "annual" && it.amount != null);
@@ -131,16 +107,29 @@ export function Overview({
   const shown = filter ? analysis.clauses.filter((c) => c.level === filter).map((c) => ({ c, n: 0 })) : findings;
 
   // Calendar: the first warning-tone (or first available) date with a machine date.
-  const deadline = analysis.dates.find((d) => d.tone === "warning" && d.iso) ?? analysis.dates.find((d) => d.iso);
+  const deadline = analysis.dates.find((d) => d.tone === "warning" && isIsoCalendarDate(d.iso)) ?? analysis.dates.find((d) => isIsoCalendarDate(d.iso));
   const hasUrgentDate = analysis.dates.some((d) => d.tone === "warning");
   const rdCount = analysis.rights.length + analysis.duties.length;
 
-  const itemRow = (label: string, amount: number | null, ref?: string, freq?: string, key?: string) => (
+  const sourceLink = (clauseId: string | undefined, label: string) => clauseId && byId(clauseId) ? (
+    <button
+      className="link-btn"
+      type="button"
+      style={{ display: "block" }}
+      aria-label={`${s.showClause}: ${label}`}
+      onClick={() => onOpenClause(clauseId)}
+    >
+      {s.showClause}
+    </button>
+  ) : null;
+
+  const itemRow = (label: string, amount: number | null, ref?: string, freq?: string, key?: string, clauseId?: string) => (
     <div className="money-row" key={key ?? label}>
       <span>
         {label}
         {freqNote(freq) && <span className="finding-ref">{freqNote(freq)}</span>}
         {ref && <span className="finding-ref"> · {ref}</span>}
+        {sourceLink(clauseId, label)}
       </span>
       {amount != null ? <strong>{fmt(amount)}</strong> : <span className="na">{s.notMentioned}</span>}
     </div>
@@ -165,6 +154,7 @@ export function Overview({
             <dt>{g.key}</dt>
             <dd>
               {g.value} {g.derived && <span className="derived">({analysis.lang === "de" ? "abgeleitet" : "derived"})</span>}
+              {sourceLink(g.clauseId, g.key)}
             </dd>
           </div>
         ))}
@@ -262,7 +252,11 @@ export function Overview({
         </p>
         <div className="ask-chips">
           {suggestions.map((q) => (
-            <button key={q} className="chip" onClick={() => onAsk(q)} disabled={asking}>
+            <button key={q} className="chip" onClick={() => {
+              if (asking || disabled) return;
+              setTyped(q);
+              onAsk(q);
+            }} disabled={asking || disabled}>
               {q}
             </button>
           ))}
@@ -280,10 +274,17 @@ export function Overview({
           </div>
         )}
         {answer && !asking && (
-          <div className="answer" aria-live="polite">
-            <div className="answer-label">{s.askExplanation}</div>
+          <div className="answer" role={answer.error ? "alert" : "status"}>
+            {answer.question && (
+              <p style={{ marginBottom: 12 }}>
+                <strong>{analysis.lang === "de" ? "Ihre Frage:" : "Your question:"}</strong> {answer.question}
+              </p>
+            )}
+            <div className="answer-label">{answer.error
+              ? analysis.lang === "de" ? "Antwort gerade nicht verfügbar" : "Answer unavailable right now"
+              : s.askExplanation}</div>
             <p style={{ marginTop: 6 }}>{answer.text}</p>
-            {answer.clauseId && (
+            {!answer.error && answer.clauseId && byId(answer.clauseId) && (
               <button className="link-btn" onClick={() => onOpenClause(answer.clauseId!)}>
                 {s.askShowClause}
               </button>
@@ -294,14 +295,13 @@ export function Overview({
           className="ask-row"
           onSubmit={(e) => {
             e.preventDefault();
-            if (typed.trim()) {
+            if (!asking && !disabled && typed.trim() && typed.trim().length <= 2000) {
               onAsk(typed.trim());
-              setTyped("");
             }
           }}
         >
-          <input aria-label={s.askHeading} placeholder={s.askPlaceholder} value={typed} onChange={(e) => setTyped(e.target.value)} />
-          <button className="btn btn-primary" type="submit" disabled={asking}>
+          <input aria-label={s.askHeading} placeholder={s.askPlaceholder} maxLength={2000} value={typed} disabled={disabled} onChange={(e) => setTyped(e.target.value)} />
+          <button className="btn btn-primary" type="submit" disabled={asking || disabled || !typed.trim()}>
             {s.askBtn}
           </button>
         </form>
@@ -316,9 +316,12 @@ export function Overview({
               <div className="card">
                 <div className="money-label">{moneyState.headline.period === "monthly" ? fin.monthly : fin.yearly}</div>
                 <div className="money-big">{fmt(moneyState.headline.amount)}</div>
+                {sourceLink(moneyState.headline.period === "monthly" ? money.monthlyClauseId : money.yearlyClauseId,
+                  moneyState.headline.period === "monthly" ? fin.monthly : fin.yearly)}
                 {moneyState.headline.period === "monthly" && money.yearly != null && (
                   <div className="money-year">
                     {fin.yearly}: {fmt(money.yearly)}
+                    {money.yearlyClauseId !== money.monthlyClauseId && sourceLink(money.yearlyClauseId, fin.yearly)}
                   </div>
                 )}
               </div>
@@ -330,18 +333,18 @@ export function Overview({
                   <div className="money-label">{fin.receiveHeading}</div>
                   {items
                     .filter((it) => ["salary", "bonus", "holiday_pay", "variable"].includes(it.kind ?? ""))
-                    .map((it, i) => itemRow(it.label, it.amount, it.ref, it.freq, "r" + i))}
+                    .map((it, i) => itemRow(it.label, it.amount, it.ref, it.freq, "r" + i, it.clauseId))}
                   <div className="money-label" style={{ marginTop: 14 }}>
                     {fin.payHeading}
                   </div>
                   {items
                     .filter((it) => ["rent", "deposit", "fee", "other"].includes(it.kind ?? "other"))
-                    .map((it, i) => itemRow(it.label, it.amount, it.ref, it.freq, "p" + i))}
+                    .map((it, i) => itemRow(it.label, it.amount, it.ref, it.freq, "p" + i, it.clauseId))}
                 </div>
               ) : (
                 <div className="card">
                   <div className="money-label">{fin.extrasHeading}</div>
-                  {items.map((it, i) => itemRow(it.label, it.amount, it.ref, it.freq, "it" + i))}
+                  {items.map((it, i) => itemRow(it.label, it.amount, it.ref, it.freq, "it" + i, it.clauseId))}
                   {showTotal && (
                     <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--line)" }}>
                       <div className="money-row">
@@ -372,6 +375,7 @@ export function Overview({
                     <li key={v.label}>
                       <strong>{v.label}</strong>
                       <p>{v.note}</p>
+                      {sourceLink(v.clauseId, v.label)}
                     </li>
                   ))}
                 </ul>
@@ -382,8 +386,7 @@ export function Overview({
           {showChart && (
             <div className="card block">
               <div className="overview-head" style={{ alignItems: "center" }}>
-                <h3 style={{ fontSize: 18 }}>{fin.chartTitle}</h3>
-                {chartNote && <span className="finding-ref">{chartNote}</span>}
+                <h3 style={{ fontSize: 18 }}>{analysis.lang === "de" ? "Monatlicher Grundbetrag über 12 Monate" : "Monthly base amount over 12 months"}</h3>
               </div>
               <div
                 className="chart"
@@ -391,26 +394,19 @@ export function Overview({
                 tabIndex={0}
                 aria-label={
                   analysis.lang === "de"
-                    ? `Hochrechnung über 12 Monate: Grundbetrag je ${fmt(monthly)}; hervorgehobene Monate enthalten eine zusätzliche Zahlung. Mögliche Erhöhungen sind nicht enthalten.`
-                    : `Projection over 12 months: base amount ${fmt(monthly)} each; highlighted months include an extra payment. Possible increases are not included.`
+                    ? `Hochrechnung über 12 Monate: Grundbetrag je ${fmt(monthly)}. ${chartExclusions}`
+                    : `Projection over 12 months: base amount ${fmt(monthly)} each. ${chartExclusions}`
                 }
               >
-                {bars.map((b, i) => (
-                  <div className="bar-col" key={i}>
-                    <span className="bar-amt">{new Intl.NumberFormat(locale).format(b.value)}</span>
+                {months.map((month) => (
+                  <div className="bar-col" key={month} style={{ minWidth: 54 }} aria-hidden="true">
+                    <span className="bar-amt">{new Intl.NumberFormat(locale).format(monthly)}</span>
                     {/* The track is the grid's only flexible row, so a percentage height
                         on the bar resolves against the space the bars actually have. */}
                     <div className="bar-track">
-                      <div className="bar" style={{ height: `${barPct(b.value)}%` }}>
-                        {b.extra > 0 && (
-                          <div
-                            className="bar-extra"
-                            style={{ height: `${((barPct(b.value) - barPct(b.base)) / barPct(b.value)) * 100}%` }}
-                          />
-                        )}
-                      </div>
+                      <div className="bar" style={{ height: "100%" }} />
                     </div>
-                    <span className="bar-m">{b.label}</span>
+                    <span className="bar-m">{month}</span>
                   </div>
                 ))}
               </div>
@@ -418,7 +414,7 @@ export function Overview({
                   allows an increase — and one of the findings on this very page may
                   say so — that is a projection, not a forecast. Said, not implied. */}
               <p className="chart-scale-note">{s.chartProjectionNote}</p>
-              {compressed && <p className="chart-scale-note">{s.chartScaleNote}</p>}
+              <p className="chart-scale-note">{chartExclusions}</p>
 
             </div>
           )}

@@ -34,18 +34,18 @@ const RAW: RawClause[] = [
     simple: {
       de: {
         simple: "Sie zahlen jeden Monat 1.240 € Miete.",
-        standard: "Sie zahlen jeden Monat 1.240 € Miete, und zwar im Voraus: spätestens am dritten Werktag des Monats muss das Geld auf dem Konto des Vermieters sein.",
-        detailed: "Sie zahlen jeden Monat 1.240 € Grundmiete im Voraus — spätestens am dritten Werktag muss das Geld auf dem Konto des Vermieters angekommen sein. „Kostenfrei“ heißt hier, dass Sie die Überweisungsgebühren tragen. Die Nebenkosten stecken nicht in diesem Betrag; sie werden nach Verbrauch gesondert abgerechnet.",
+        standard: "Sie zahlen jeden Monat 1.240 € Miete im Voraus. Die Klausel nennt den dritten Werktag des Monats als spätesten Zahlungstermin.",
+        detailed: "Sie zahlen jeden Monat 1.240 € Grundmiete im Voraus. Die Klausel nennt den dritten Werktag des Monats als spätesten Zahlungstermin. „Kostenfrei“ heißt hier, dass Sie die Überweisungsgebühren tragen. Die Nebenkosten stecken nicht in diesem Betrag; sie werden nach Verbrauch gesondert abgerechnet.",
       },
       en: {
         simple: "You pay €1,240 rent every month.",
-        standard: "You pay €1,240 rent every month, and you pay it in advance: the money has to be in the landlord’s account by the third working day of the month.",
-        detailed: "You pay €1,240 base rent every month in advance — the money has to have arrived in the landlord’s account by the third working day. “Kostenfrei” here means the transfer fees are yours. Utilities are not part of that amount; they are billed separately by consumption.",
+        standard: "You pay €1,240 rent every month in advance. The clause names the third working day of the month as the latest payment date.",
+        detailed: "You pay €1,240 base rent every month in advance. The clause names the third working day of the month as the latest payment date. “Kostenfrei” here means the transfer fees are yours. Utilities are not part of that amount; they are billed separately by consumption.",
       },
     },
     means: {
-      de: "Richten Sie einen Dauerauftrag ein paar Tage früher ein. Geht das Geld wiederholt zu spät ein, kann der Vermieter abmahnen.",
-      en: "Set up a standing order a few days early. If money arrives late repeatedly, the landlord can issue a warning.",
+      de: "Planen Sie Ihre Überweisung rechtzeitig vor dem vertraglich genannten Zahlungstermin ein.",
+      en: "Plan your transfer in good time for the payment date stated in the contract.",
     },
     legal: {
       de: "Die Miete ist in der Regel bis zum dritten Werktag des Monats im Voraus fällig (§ 556b BGB). Die Zahlung ist rechtzeitig, wenn die Überweisung rechtzeitig veranlasst wird, nicht erst bei Gutschrift.",
@@ -104,8 +104,8 @@ const RAW: RawClause[] = [
       },
     },
     means: {
-      de: "Wenn Sie zum 30. September 2027 ausziehen wollen, muss Ihr Brief spätestens am 30. Juni 2027 ankommen.",
-      en: "If you want to leave by 30 September 2027, your letter must arrive by 30 June 2027 at the latest.",
+      de: "Für ein gewünschtes Mietende am 30. September 2027 beschreibt § 9 einen Zugang bis zum dritten Werktag im Juli. Der 30. Juni in der Zeitleiste ist nur eine vorgeschlagene frühe Erinnerung, nicht der letzte Kündigungstag.",
+      en: "For a desired tenancy end on 30 September 2027, § 9 describes receipt by the third working day in July. The 30 June timeline entry is only a suggested early reminder, not the final notice deadline.",
     },
     legal: {
       de: "Für Mieter beträgt die gesetzliche Kündigungsfrist drei Monate (§ 573c BGB). Die Kündigung bedarf der Schriftform (§ 568 BGB).",
@@ -579,8 +579,8 @@ const DATES: { date: L10n<string>; title: L10n<string>; body: L10n<string>; tone
     date: { de: "01. Okt 2026", en: "01 Oct 2026" },
     title: { de: "Vertrag beginnt", en: "Contract begins" },
     body: {
-      de: "Erste Miete und die erste Kautionsrate sind fällig.",
-      en: "First rent and the first deposit instalment are due.",
+      de: "Die erste Kautionsrate ist zu Mietbeginn fällig. Für die Miete nennt § 4 spätestens den dritten Werktag des Monats.",
+      en: "The first deposit instalment is due when the tenancy starts. For rent, § 4 specifies payment by the third working day of the month.",
     },
     tone: "normal",
     iso: "2026-10-01",
@@ -588,22 +588,22 @@ const DATES: { date: L10n<string>; title: L10n<string>; body: L10n<string>; tone
   {
     date: { de: "30. Jun 2027", en: "30 Jun 2027" },
     title: {
-      de: "Bis hier kündigen, um zum 30. Sep auszuziehen",
-      en: "Cancel before this date to leave by 30 Sep",
+      de: "Vorgeschlagene frühe Erinnerung",
+      en: "Suggested early reminder",
     },
     body: {
-      de: "Ihr unterschriebener Brief muss angekommen sein. Ein Tag zu spät kostet eine weitere Monatsmiete.",
-      en: "Your signed letter must have arrived. One day late costs another month’s rent.",
+      de: "Für einen beispielhaften Auszug am 30. September: Kündigung vorbereiten und die Zugangsfrist aus § 9 prüfen. Dies ist ein frei gewählter Erinnerungszeitpunkt, kein vertraglicher oder gesetzlicher Stichtag.",
+      en: "For an example move-out on 30 September: prepare your notice and check the receipt deadline in § 9. This is a suggested reminder date, not a contractual or statutory deadline.",
     },
     tone: "warning",
     iso: "2027-06-30",
   },
   {
     date: { de: "30. Sep 2027", en: "30 Sep 2027" },
-    title: { de: "Mögliches Vertragsende", en: "Possible contract end" },
+    title: { de: "Beispiel: angestrebtes Mietende", en: "Example: desired tenancy end" },
     body: {
-      de: "Nur wenn Sie rechtzeitig gekündigt haben. Sonst läuft der Vertrag einfach weiter.",
-      en: "Only if you gave notice in time. Otherwise the contract simply continues.",
+      de: "Zur Veranschaulichung gewähltes Auszugsdatum, kein im Vertrag festgelegtes Ende. Das tatsächliche Ende hängt von einer rechtzeitigen Kündigung ab; ohne Kündigung läuft der Vertrag weiter.",
+      en: "A move-out date chosen for illustration, not an end date fixed in the contract. The actual end depends on timely notice; without notice, the tenancy continues.",
     },
     tone: "normal",
     iso: "2027-09-30",
@@ -1070,10 +1070,10 @@ const EMP_DATES: typeof DATES = [
   },
   {
     date: { de: "30. Apr 2027", en: "30 Apr 2027" },
-    title: { de: "Ende der Probezeit", en: "End of probation" },
+    title: { de: "Ende der Probezeit (berechnet)", en: "End of probation (calculated)" },
     body: {
-      de: "Danach gilt die längere gesetzliche Kündigungsfrist; in der Probezeit sind es nur zwei Wochen.",
-      en: "After this the longer statutory notice applies; during probation it is only two weeks.",
+      de: "Aus dem Beginn am 1. November 2026 und den sechs Monaten in § 2 berechnet; dieses Enddatum steht nicht ausdrücklich im Vertrag. Danach verweist § 9 auf die gesetzlichen Kündigungsfristen.",
+      en: "Calculated from the 1 November 2026 start and the six months in § 2; this end date is not printed in the contract. After probation, § 9 refers to the statutory notice periods.",
     },
     tone: "warning",
     iso: "2027-04-30",

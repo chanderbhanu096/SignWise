@@ -139,3 +139,16 @@ test("a page number inside a clause is not mistaken for a footer", () => {
   const [block] = splitDocument(doc, []);
   assert.ok(block.text.includes("Seite 3 der Anlage"), "mid-sentence page reference survives");
 });
+
+test("blank form fields do not remove contractual terms or later sections", () => {
+  const doc = "§ 1 Miete. Die Miete beträgt ___ EUR pro Monat. § 2 Kaution. Die Kaution beträgt 3.000 EUR. § 3 Laufzeit. Beginn am ___. Der Vertrag läuft unbefristet.";
+  const blocks = splitDocument(doc, []);
+  assert.equal(blocks.length, 3);
+  assert.ok(blocks[0].text.includes("___ EUR pro Monat"));
+  assert.ok(blocks[2].text.endsWith("Der Vertrag läuft unbefristet."));
+});
+
+test("terms following a signature line are not discarded", () => {
+  const doc = "§ 1 Miete. Die Miete beträgt 500 EUR. ___ Vermieter Mieter\n§ 2 Anlage. Die Hausordnung ist Bestandteil des Vertrags.";
+  assert.ok(splitDocument(doc, []).some((block) => block.text.includes("§ 2 Anlage")));
+});

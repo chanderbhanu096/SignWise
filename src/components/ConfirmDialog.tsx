@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 
 // Native <dialog>: the focus trap, the Escape key and the backdrop come with the
 // element, so there is no keyboard handling to get wrong here.
@@ -20,6 +20,8 @@ export function ConfirmDialog({
   onConfirm: () => void;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
+  const bodyId = useId();
 
   useEffect(() => {
     const el = ref.current;
@@ -29,9 +31,9 @@ export function ConfirmDialog({
   }, [open]);
 
   return (
-    <dialog className="confirm" ref={ref} onCancel={(e) => { e.preventDefault(); onCancel(); }} aria-labelledby="confirm-h">
-      <h2 id="confirm-h">{title}</h2>
-      <p>{body}</p>
+    <dialog className="confirm" ref={ref} onCancel={(e) => { e.preventDefault(); onCancel(); }} aria-labelledby={titleId} aria-describedby={bodyId}>
+      <h2 id={titleId}>{title}</h2>
+      <p id={bodyId}>{body}</p>
       <div className="confirm-actions">
         <button className="btn" onClick={onCancel}>
           {cancelLabel}

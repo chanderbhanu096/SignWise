@@ -31,18 +31,19 @@
 
 ---
 
-SignWise turns a German or English contract into a clear, traceable explanation.
-Upload a document, see the costs, deadlines and obligations that matter, and open
-the exact clause behind every finding.
+SignWise helps you understand a German or English contract before signing.
+Upload a document, explore its costs, deadlines and obligations, and open the
+quoted passage behind a finding.
 
-**[Try the live demo](https://signwise-hero-7c21.azurewebsites.net/)** — no upload
-is required; rental and employment examples are included.
+**[Try the live demo](https://signwise-hero-7c21.azurewebsites.net/)** — rental and
+employment examples open instantly. Their explanations are prepared in advance;
+opening an example does not run a new AI analysis.
 
 ## What SignWise gives you
 
 - **A quick overview** of important costs, dates and responsibilities.
 - **Plain-language explanations** at Simple, Standard or Detailed depth.
-- **The complete contract text**, with every section linked to its explanation.
+- **Contract text and source passages** beside their explanations.
 - **A before-you-sign brief** with commitments, review points and useful questions.
 - **Contract-based answers** that link back to the supporting clause.
 - **German and English** throughout the experience.
@@ -54,30 +55,43 @@ valid, provide legal advice or tell you whether to sign.
 
 ![Animated SignWise workflow: upload, extract, protect, analyse, verify and explain](docs/signwise-workflow.svg)
 
-1. **Upload** — choose a PDF or image, or open a built-in example.
-2. **Extract** — readable PDF text is extracted in the browser; scans use vision.
-3. **Protect** — common identifiers in extracted text are replaced with placeholders
-   before the request and restored in the browser afterwards.
-4. **Analyse** — Azure OpenAI returns a structured explanation of every contract
-   section, including findings, money, dates and source references.
-5. **Verify** — Zod validates the response and SignWise checks every quoted passage
-   against the uploaded document.
-6. **Explain** — the verified result appears in Overview, Contract Text and Before
-   You Sign.
+1. **Upload** — choose one PDF, JPG, PNG or WebP file, up to 4 MB. PDFs can have
+   up to 12 pages.
+2. **Extract** — readable PDF text is extracted in your browser. PDFs containing
+   scans, images or vector graphics conservatively use images of all pages, so
+   visible content is not silently dropped. Even decorative graphics can trigger
+   this mode.
+3. **Protect** — recognised identifiers in text are replaced with placeholders
+   before sending and restored in the browser afterwards. This is best-effort
+   masking; names and other sensitive details may remain. Filenames stay local.
+4. **Analyse** — Azure OpenAI returns findings, amounts, dates, explanations and
+   source references in a structured response.
+5. **Verify** — Zod checks the response structure. Where extracted text is
+   available, quoted wording is matched against it.
+6. **Explain** — explore the result in Overview, Contract Text and Before You Sign.
 
-Scanned images cannot be pseudonymised before vision processing, because they have
-no text layer. The upload screen states this clearly.
+Before any photo or PDF page images are sent, SignWise asks you to confirm that
+you want to share the visible details without masking. You can cancel instead.
+Rendered PDF images have a combined image-data limit of 4 MB. Their quotes are
+**not independently verified**. The PDF file itself stays in your browser.
+
+A quote match checks wording, not whether an explanation is correct, complete or
+legally sound. Text extraction and AI analysis can miss content; check important
+points against your original file.
 
 ## The three screens
 
 ### Overview
 
-The main facts, important findings, costs and deadlines—each linked to its source.
+Main facts, important findings, costs and deadlines. Available source links open
+the supporting clause. The chart projects only the recurring monthly base amount;
+additional payments are listed separately.
 
 ### Contract text
 
-The complete document split into readable sections. Select any section to see its
-plain-language explanation beside the original wording.
+Extracted text split into readable sections, with selectable source passages.
+The view can omit identifying or signature blocks, and extraction may be incomplete.
+For scans and images, it shows detected excerpts rather than the complete document.
 
 ### Before you sign
 
@@ -100,7 +114,8 @@ npm test       # automated checks
 npm run build  # type-check and create the production build
 ```
 
-The examples work without an API key.
+The prepared examples and their language switch work without an API key. Asking
+a new question or analysing your own upload requires the model connection below.
 
 ## Connect Azure OpenAI
 
@@ -114,7 +129,8 @@ AZURE_OPENAI_API_VERSION=2025-01-01-preview
 ```
 
 The model integration is isolated in [`api/_model.ts`](api/_model.ts). If the
-credentials are missing, SignWise safely falls back to the built-in demo data.
+credentials are missing or the service cannot be reached, uploads show an error;
+they are never replaced with sample results. The prepared examples remain available.
 
 ## Project structure
 
@@ -124,12 +140,16 @@ src/screens/          Upload, progress, overview, contract and decision screens
 src/components/       Shared interface components
 src/types.ts          Zod schema shared by the API and interface
 src/redact.ts         Browser-side identifier pseudonymisation
+src/session.ts        Per-contract cancellation and translation cache
 src/verify.ts         Verbatim quote verification
 src/depth.ts          Explanation-depth consistency checks
 src/lawcheck.ts       General statutory comparisons without legal verdicts
 scripts/              Demo and model audit scripts
 server.ts             Express server for the SPA and API on Azure
 ```
+
+PDF extraction loads only when a PDF is selected, keeping the initial page and
+example journey lighter.
 
 ## Deploy to Azure App Service
 
@@ -146,6 +166,8 @@ remain on the server.
 
 ## Useful technical notes
 
+- [`docs/quality-review-2026-09-10.md`](docs/quality-review-2026-09-10.md) records the
+  latest quality review, fixes and checks.
 - [`docs/data-fidelity-pass.md`](docs/data-fidelity-pass.md) explains the checks that
   keep figures and quotes tied to the contract.
 - [`docs/qa-end-user-pass.md`](docs/qa-end-user-pass.md) records the end-user QA pass.

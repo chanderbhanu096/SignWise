@@ -1,6 +1,20 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { currencyStyle, styleCurrencyDeep } from "../src/format";
+import { currencyStyle, styleCurrencyDeep, euro } from "../src/format";
+
+test("headline amounts keep real cents while whole amounts stay compact", () => {
+  assert.equal(euro(1240.5, "en"), "€1,240.50");
+  assert.equal(euro(1240.5, "de"), "1.240,50\u00a0€");
+  assert.equal(euro(0.01, "en"), "€0.01");
+  assert.equal(euro(1240, "en"), "€1,240");
+  assert.match(euro(1.234, "en", "KWD"), /1\.234/);
+});
+
+test("a model currency label cannot crash the financial summary or change the value", () => {
+  assert.equal(euro(1240.5, "en", "€"), "1,240.5\u00a0€");
+  assert.equal(euro(1240.5, "de", "Euro"), "1.240,5\u00a0Euro");
+  assert.equal(euro(1240.5, "en", ""), "1,240.5");
+});
 
 test("model prose gets the app's currency notation", () => {
   assert.equal(currencyStyle("Sie zahlen 1.180,00 EUR Kaltmiete."), "Sie zahlen 1.180\u00a0€ Kaltmiete.");

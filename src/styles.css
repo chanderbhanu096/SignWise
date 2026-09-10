@@ -250,6 +250,12 @@ section.screen.upload-screen::after {
 .upload-eyebrow::after { transform: scaleX(-1); }
 .upload-hero { margin-top: 14px; font-size: clamp(26px, 5cqw, 52px); line-height: 1.1; letter-spacing: -1.5px; }
 .upload-hero-sub { max-width: 36em; margin: 20px auto 0; color: var(--ink-2); font-size: 18px; line-height: 1.62; }
+.upload-shortcuts { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px 24px; margin-top: 14px; }
+.upload-shortcuts button { min-height: 44px; }
+.motion-toggle { background: transparent; border: 0; color: var(--muted-2); font: inherit; font-size: 12px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+button:disabled { cursor: not-allowed; opacity: 0.55; }
+button:disabled:hover { transform: none; }
+.upload-handling p { overflow-wrap: anywhere; }
 .upload-main-grid { position: relative; z-index: 1; margin-top: 40px; display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.65fr); grid-template-areas: "card benefits"; column-gap: clamp(28px, 4vw, 48px); row-gap: 28px; align-items: start; }
 .upload-benefits { grid-area: benefits; padding: 16px 18px; border-radius: 16px; border: 1px solid rgba(220,228,227,0.78); background: rgba(255,255,255,0.52); backdrop-filter: saturate(130%) blur(9px); -webkit-backdrop-filter: saturate(130%) blur(9px); }
 .upload-benefits-label { margin-bottom: 12px; color: var(--muted); font-size: 13px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
@@ -737,6 +743,7 @@ li.law-ref > .law-ref-label { display: inline-block; padding: 6px 2px; } /* plai
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .motion-toggle { display: none; }
   * { animation: none !important; transition: none !important; }
   .slogan-caret { display: none; }
   .finding:hover, .finding:focus-visible, .commitment-card:hover { transform: none; }
@@ -794,6 +801,8 @@ li.law-ref > .law-ref-label { display: inline-block; padding: 6px 2px; } /* plai
 
 @media print {
   .hdr, .nav, .banner, .overview-foot, .seg, .ask-chips, .ask-row, .link-btn, .finding-caret, .print-status, .sec-chevron, .attn-note { display: none !important; }
+  /* A saved brief must retain the same example/scan/confidence caveats as the UI. */
+  .banner.result-notice { display: block !important; background: #fff; border: 1px solid #888; color: #222; }
   /* Collapsed sections still belong in a printed summary. */
   .sec > .sec-body { display: block !important; }
   .sec { break-inside: avoid; }

@@ -56,7 +56,7 @@ export function Original({
 
   useEffect(() => {
     if (!selected || !docRef.current) return;
-    const el = docRef.current.querySelector<HTMLElement>(`[data-clause="${selected.id}"]`);
+    const el = Array.from(docRef.current.querySelectorAll<HTMLElement>("[data-clause]")).find((node) => node.dataset.clause === selected.id);
     if (!el) return;
     if (docRef.current.scrollHeight > docRef.current.clientHeight) {
       // Side-by-side: the document pane scrolls on its own. .doc is position:relative,
@@ -81,7 +81,9 @@ export function Original({
             {s.originalTitle}
           </h1>
           <p className="section-sub" style={{ marginBottom: 0 }}>
-            {s.originalSub}
+            {docText ? s.originalSub : analysis.lang === "de"
+              ? "Erkannte Auszüge aus dem Scan oder Bild, nicht der vollständige Originaltext. Wählen Sie einen Auszug für seine Erklärung und vergleichen Sie ihn mit Ihrer Datei."
+              : "Recognised excerpts from the scan or image, not the full original text. Select an excerpt for its explanation and compare it with your file."}
           </p>
         </div>
         <button className="btn" onClick={onBack}>
@@ -90,7 +92,7 @@ export function Original({
       </div>
 
       <div className="split">
-        <div className="doc" ref={docRef} lang={analysis.docLanguage}>
+        <div className="doc" ref={docRef} lang={analysis.docLanguage} role="region" aria-label={s.originalTitle} tabIndex={0}>
           <p className="doc-page">
             {analysis.contractType} · {s.fileMeta(pages)}
           </p>

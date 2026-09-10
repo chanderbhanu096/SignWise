@@ -9,7 +9,9 @@ import {
   EMPLOYMENT_DOC_TEXT,
   EMPLOYMENT_FILENAME,
 } from "./sample";
-import { extractPdfText, verifyQuote } from "./pdf";
+import { verifyQuote } from "./verify";
+import { contractMimeType, UploadError, validateContractFile } from "./upload";
+import { ContractSession } from "./session";
 import { narrowRef } from "./document";
 import { styleCurrencyDeep } from "./format";
 import { analyze, ask, translate, ApiError } from "./api";
@@ -27,6 +29,7 @@ import logoSrc from "./assets/signwise-logo.svg";
 type Screen = "upload" | "analyzing" | "overview" | "original" | "decision";
 
 type Source = "sample" | "upload";
+type PendingImages = { file: File; pages: number | null; images?: string[]; task: ReturnType<ContractSession["ticket"]> };
 
 function errMessage(code: string, lang: Lang): string {
   const de = lang === "de";
@@ -34,30 +37,44 @@ function errMessage(code: string, lang: Lang): string {
     ? {
         unsupported_type: "Nicht unterstütztes Format. Bitte PDF, JPG, PNG oder WebP.",
         too_large: "Die Datei ist zu groß (max. 4 MB).",
+        text_too_long: "Der ausgelesene Text ist zu lang (max. 200.000 Zeichen). Bitte verwenden Sie ein kürzeres Dokument.",
+        invalid_image: "Dieses Bild konnte nicht gelesen werden. Bitte laden Sie eine gültige JPG-, PNG- oder WebP-Datei hoch.",
         empty_file: "Die Datei war leer.",
+        unreadable_pdf: "Dieses PDF konnte nicht geöffnet werden. Prüfen Sie, ob es beschädigt oder passwortgeschützt ist, oder laden Sie eine lesbare Kopie hoch.",
+        no_readable_content: "Kein lesbarer Vertragstext gefunden. Bitte versuchen Sie eine deutlichere Datei.",
+        too_many_pages: "Bitte laden Sie höchstens 12 Seiten pro Vertrag hoch.",
+        scan_too_large: "Die gescannten Seiten sind zu groß. Bitte verwenden Sie ein kleineres PDF oder weniger Seiten.",
+        service_unavailable: "Die KI-Analyse ist derzeit nicht verfügbar. Versuchen Sie es später erneut oder öffnen Sie eines der Beispiele unten.",
+        request_timeout: "Die Analyse hat zu lange gedauert. Bitte versuchen Sie es erneut, gegebenenfalls mit einem kürzeren Dokument.",
         analysis_failed: "Bei der Analyse ist etwas schiefgegangen.",
       }
     : {
         unsupported_type: "Unsupported format. Please use PDF, JPG, PNG or WebP.",
         too_large: "The file is too large (max 4 MB).",
+        text_too_long: "The extracted text is too long (max 200,000 characters). Please use a shorter document.",
+        invalid_image: "This image could not be read. Please upload a valid JPG, PNG or WebP file.",
         empty_file: "The file was empty.",
+        unreadable_pdf: "This PDF could not be opened. Check whether it is damaged or password-protected, or upload a readable copy.",
+        no_readable_content: "No readable contract text was found. Please try a clearer file.",
+        too_many_pages: "Please upload no more than 12 pages per contract.",
+        scan_too_large: "The scanned pages are too large. Please use a smaller PDF or fewer pages.",
+        service_unavailable: "AI analysis is currently unavailable. Try again later or open one of the examples below.",
+        request_timeout: "The analysis took too long. Please try again, perhaps with a shorter document.",
         analysis_failed: "Something went wrong during analysis.",
       };
   return map[code] ?? (de ? "Verbindung fehlgeschlagen. Bitte erneut versuchen." : "Connection failed. Please try again.");
 }
 
-// Client-side provenance check. Only meaningful for real model output — the stub
-// fixture verifies itself, so we trust its flags and skip.
+// Verification is a browser-side check of the complete quote, including examples.
 function verifyAnalysis(a: Analysis, docText: string | null): Analysis {
   // One currency notation across the whole screen, including the amounts the model
   // wrote into its own sentences. Quotes and refs are excluded by styleCurrencyDeep.
   const styled = styleCurrencyDeep(a, a.money.currency, a.lang);
-  if (a.warnings.includes("stub") || !docText) return styled;
   return {
     ...styled,
     clauses: styled.clauses.map((c) => ({
       ...c,
-      verified: verifyQuote(docText, c.quote),
+      verified: !!docText && verifyQuote(docText, c.quote),
       ref: narrowRef(c.ref, c.quote),
     })),
   };
@@ -78,7 +95,7 @@ export default function App() {
   const [docPages, setDocPages] = useState<number | null>(null);
   const [depth, setDepth] = useState<Depth>("standard");
   const [clauseId, setClauseId] = useState<string | null>(null);
-  const [answer, setAnswer] = useState<{ text: string; clauseId: string | null } | null>(null);
+  const [answer, setAnswer] = useState<{ text: string; clauseId: string | null; question?: string; error?: boolean } | null>(null);
   const [asking, setAsking] = useState(false);
   const [calMsg, setCalMsg] = useState("");
   const [dlMsg, setDlMsg] = useState("");
@@ -86,101 +103,121 @@ export default function App() {
   const [legalOpen, setLegalOpen] = useState(false);
   const [confirmNew, setConfirmNew] = useState(false);
   const [translating, setTranslating] = useState(false);
+  const [translationError, setTranslationError] = useState(false);
+  const [imageReview, setImageReview] = useState<PendingImages | null>(null);
 
-  const pendingRef = useRef<Promise<{ a: Analysis; text: string | null; pages: number | null }> | null>(null);
-  // One translated copy per language, kept for the life of this contract. Switching
-  // back is then instant instead of a second round-trip for text we already have.
-  const langCacheRef = useRef<Map<Lang, Analysis>>(new Map());
+  const sessionRef = useRef(new ContractSession());
+  const askVersion = useRef(0);
+  const askingRef = useRef(false);
+  const translatingRef = useRef(false);
   const triggerRef = useRef<HTMLElement | null>(null);
   const s = t(lang);
 
-  // Wait for the real work. The screen reports whichever phase the job is in;
-  // leaving this screen (cancel included) makes any late result a no-op.
   useEffect(() => {
-    if (screen !== "analyzing") return;
-    let cancelled = false;
-    pendingRef.current
-      ?.then(async ({ a, text, pages }) => {
-        if (cancelled) return;
-        // The language can be switched *while* the analysis is being produced, and
-        // the job captured the language it started with — sampleAnalysis(lang),
-        // analyze(file, lang, ...). Without this, picking EN on the progress screen
-        // landed you on a German analysis under an English interface.
-        const shown = await toLang(a, lang);
-        if (cancelled) return;
-        setAnalysis(verifyAnalysis(shown, text));
-        setDocText(text);
-        setDocPages(pages);
-        setScreen("overview");
-      })
-      .catch((e) => {
-        if (cancelled) return;
-        setError(errMessage(e instanceof ApiError ? e.code : "analysis_failed", lang));
-        setScreen("upload");
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [screen, lang]);
+    const session = sessionRef.current;
+    return () => session.cancel();
+  }, []);
 
-  // Esc closes the clause panel and returns focus to whatever opened it.
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && clauseId) closePanel();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [clauseId]);
+    const heading = document.querySelector<HTMLElement>("main h1");
+    heading?.setAttribute("tabindex", "-1");
+    heading?.focus({ preventScroll: true });
+    if (screen !== "original") window.scrollTo({ top: 0, behavior: "instant" });
+  }, [screen]);
 
-  function begin(p: Promise<{ a: Analysis; text: string | null; pages: number | null }>) {
-    pendingRef.current = p;
+  function resetContract() {
+    sessionRef.current.reset();
+    askVersion.current++;
+    askingRef.current = false;
+    translatingRef.current = false;
+    setAsking(false);
+    setTranslating(false);
+    setTranslationError(false);
+    setAnalysis(null);
+    setDocText(null);
+    setDocPages(null);
+    setAnswer(null);
+    setClauseId(null);
+    setSelectedInDoc(null);
+    setCalMsg("");
+    setDlMsg("");
     setError(null);
-    setPhase("read");
-    setScreen("analyzing");
+    setImageReview(null);
   }
 
-  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-  // The bundled examples need no work at all. Walk them through the same phases so
-  // the screen reads the same way, without pretending it took as long as a real one.
-  async function runExample(a: Analysis, text: string) {
-    await sleep(600);
-    setPhase("model");
-    await sleep(1100);
-    setPhase("verify");
-    await sleep(450);
-    // A bundled fixture is not a PDF, so there is no page count to report — and an
-    // invented one is exactly the kind of number this app exists to catch.
-    return { a, text, pages: null };
+  function openExample(kind: "rental" | "employment") {
+    resetContract();
+    const a = kind === "employment" ? employmentAnalysis(lang) : sampleAnalysis(lang);
+    const text = kind === "employment" ? EMPLOYMENT_DOC_TEXT : SAMPLE_DOC_TEXT;
+    setSource("sample");
+    setSampleKind(kind);
+    setFilename(kind === "employment" ? EMPLOYMENT_FILENAME : SAMPLE_FILENAME);
+    setAnalysis(verifyAnalysis(a, text));
+    setDocText(text);
+    setScreen("overview");
   }
 
   function startExample() {
-    setSource("sample");
-    setSampleKind("rental");
-    setFilename(SAMPLE_FILENAME);
-    begin(runExample(sampleAnalysis(lang), SAMPLE_DOC_TEXT));
+    openExample("rental");
   }
 
   function startEmploymentExample() {
-    setSource("sample");
-    setSampleKind("employment");
-    setFilename(EMPLOYMENT_FILENAME);
-    begin(runExample(employmentAnalysis(lang), EMPLOYMENT_DOC_TEXT));
+    openExample("employment");
   }
 
-  function startUpload(file: File) {
+  async function startUpload(file: File) {
+    const issue = validateContractFile(file);
+    if (issue) { setError(issue); return; }
+    resetContract();
+    const task = sessionRef.current.ticket();
     setSource("upload");
     setFilename(file.name);
-    begin(
-      (async () => {
+    setPhase("read");
+    setScreen("analyzing");
+    try {
+      let text: string | null = null;
+      let pages: number | null = null;
+      let images: string[] | undefined;
+      if (contractMimeType(file) === "application/pdf") {
+        const { extractPdfText } = await import("./pdf");
+        if (!task.isCurrent()) return;
         const buf = await file.arrayBuffer();
-        const { text, pages } = await extractPdfText(buf.slice(0)); // slice: keep our own copy
-        setPhase("model");
-        const a = await analyze(file, lang, text);
-        setPhase("verify");
-        return { a, text, pages };
-      })(),
-    );
+        ({ text, pages, images } = await extractPdfText(buf, task.signal));
+      }
+      if (!task.isCurrent()) return;
+      if (!text) {
+        // The person must see this document-specific disclosure before any
+        // unmasked page/photo leaves the browser, not after the model response.
+        setImageReview({ file, pages, images, task });
+        return;
+      }
+      await completeUpload(file, text, pages, images, task);
+    } catch (e) {
+      if (!task.isCurrent()) return;
+      setError(e instanceof ApiError || e instanceof UploadError ? e.code : "analysis_failed");
+      setScreen("upload");
+    }
+  }
+
+  async function completeUpload(file: File, text: string | null, pages: number | null, images: string[] | undefined, task: PendingImages["task"]) {
+    if (!task.isCurrent()) return;
+    setPhase("model");
+    try {
+      const a = await analyze(file, lang, text, task.signal, images);
+      if (!task.isCurrent()) return;
+      if (a.warnings.includes("stub")) throw new ApiError("service_unavailable");
+      setPhase("verify");
+      const checked = verifyAnalysis(a, text);
+      sessionRef.current.translations.set(lang, checked);
+      setAnalysis(checked);
+      setDocText(text);
+      setDocPages(pages);
+      setScreen("overview");
+    } catch (e) {
+      if (!task.isCurrent()) return;
+      setError(e instanceof ApiError || e instanceof UploadError ? e.code : "analysis_failed");
+      setScreen("upload");
+    }
   }
 
   const [selectedInDoc, setSelectedInDoc] = useState<string | null>(null);
@@ -215,16 +252,24 @@ export default function App() {
   }
 
   async function handleAsk(q: string) {
-    if (!analysis) return;
+    if (!analysis || askingRef.current || translatingRef.current || !q.trim()) return;
+    const task = sessionRef.current.ticket();
+    const version = ++askVersion.current;
+    askingRef.current = true;
     setAsking(true);
     setAnswer(null);
     try {
-      const r = await ask(q, analysis);
-      setAnswer({ text: r.answer, clauseId: r.clauseId });
+      const r = await ask(q, analysis, task.signal);
+      if (!task.isCurrent() || version !== askVersion.current) return;
+      setAnswer({ text: r.answer, clauseId: r.clauseId, question: q });
     } catch {
-      setAnswer({ text: lang === "de" ? "Die Frage konnte gerade nicht beantwortet werden." : "That question couldn’t be answered right now.", clauseId: null });
+      if (!task.isCurrent() || version !== askVersion.current) return;
+      setAnswer({ text: lang === "de" ? "Die Frage konnte gerade nicht beantwortet werden. Bitte versuchen Sie es erneut; Ihre Frage bleibt erhalten." : "That question couldn’t be answered right now. Please try again; your question has been kept.", clauseId: null, question: q, error: true });
     } finally {
-      setAsking(false);
+      if (task.isCurrent() && version === askVersion.current) {
+        askingRef.current = false;
+        setAsking(false);
+      }
     }
   }
 
@@ -237,67 +282,48 @@ export default function App() {
     document.title = t(lang).pageTitle;
   }, [lang]);
 
-  // One analysis, in language `l`. Both callers go through here — the language
-  // buttons and the moment an analysis arrives — so there is one answer to "what
-  // does switching language do", instead of two that can drift apart.
-  async function toLang(a: Analysis, l: Lang): Promise<Analysis> {
-    if (a.lang === l) return a;
-    if (source === "sample") return sampleKind === "employment" ? employmentAnalysis(l) : sampleAnalysis(l);
-    // Uploaded contract: translating the analysis is a model call and takes seconds.
-    // Cache what we already have, reuse it on the way back, and say out loud that
-    // the wait is a translation — silence is what made this read as "slow".
-    langCacheRef.current.set(a.lang as Lang, a);
-    const cached = langCacheRef.current.get(l);
-    if (cached) return cached;
+  async function changeLang(l: Lang) {
+    if (l === lang || translatingRef.current || screen === "analyzing") return;
+    setTranslationError(false);
+    if (!analysis) { setLang(l); return; }
+    const task = sessionRef.current.ticket();
+    askVersion.current++;
+    askingRef.current = false;
+    setAsking(false);
+    setAnswer(null);
+    translatingRef.current = true;
     setTranslating(true);
     try {
-      const translated = await translate(a, l);
-      langCacheRef.current.set(l, translated);
-      return translated;
+      sessionRef.current.translations.set(lang, analysis);
+      const translated = source === "sample"
+        ? sampleKind === "employment" ? employmentAnalysis(l) : sampleAnalysis(l)
+        : sessionRef.current.translations.get(l) ?? await translate(analysis, l, task.signal);
+      if (!task.isCurrent()) return;
+      if (translated.lang !== l || translated.warnings.includes("translate-stub")) throw new ApiError("translation_unavailable");
+      const checked = verifyAnalysis(translated, docText);
+      sessionRef.current.translations.set(l, checked);
+      setAnalysis(checked);
+      setLang(l);
     } catch {
-      return a; // leave the analysis as it is; the language label still switches
+      if (task.isCurrent()) setTranslationError(true);
     } finally {
-      setTranslating(false);
+      if (task.isCurrent()) {
+        translatingRef.current = false;
+        setTranslating(false);
+      }
     }
   }
 
-  async function changeLang(l: Lang) {
-    if (l === lang || translating) return;
-    setLang(l);
-    if (!analysis) return;
-    setAnswer(null);
-    // verifyAnalysis, not the raw result: quote verification and the currency
-    // notation are client-side facts, and a translated copy comes back from the
-    // model with whatever it echoed for them. Re-deriving both is deterministic.
-    setAnalysis(verifyAnalysis(await toLang(analysis, l), docText));
-  }
-
-  // The document's chrome — the screen switcher and the banners that describe an
-  // analysis — belongs to the document screens only. Each of those blocks used to
-  // test `analysis && screen !== "analyzing"` separately, which also renders them
-  // over the landing page for any state that leaves an analysis in memory while the
-  // upload screen is showing. Nothing in today's flow reaches that state (starting
-  // over clears the analysis first), but that is the confirm dialog's discipline
-  // holding it, not the condition — and a reviewer has a screenshot of the landing
-  // page wearing the switcher. Stated once, it cannot drift.
+  // Navigation and result notices only belong to an open contract.
   const inDocument = !!analysis && screen !== "upload" && screen !== "analyzing";
 
   const openClauseObj = clauseId ? analysis?.clauses.find((c) => c.id === clauseId) ?? null : null;
 
-  // When the model is unreachable the server answers with the sample fixture tagged
-  // "stub". A banner says so — but the page around it still put the *uploaded* file's
-  // name above someone else's rent and dates, which reads as "here is your contract".
-  // The demo is fine; attributing it to a document we never read is not.
-  const isStub = !!analysis?.warnings.includes("stub");
-  const shownFilename = isStub ? SAMPLE_FILENAME : filename;
-  // The page count is a real fact about the file we read — which is not the file this
-  // analysis describes. Attaching it to the sample is the same error, one field over.
-  const shownPages = isStub ? null : docPages;
   const langBtn = (code: Lang, label: string) => (
     <button
       className={"pill" + (lang === code ? " on" : "")}
       aria-pressed={lang === code}
-      disabled={translating}
+      disabled={translating || screen === "analyzing"}
       onClick={() => changeLang(code)}
     >
       {label}
@@ -362,25 +388,30 @@ export default function App() {
           </div>
         </div>
       )}
+      {translationError && inDocument && (
+        <div className="banner banner-error">
+          <div className="banner-in" role="alert">
+            {lang === "de" ? "Die Übersetzung hat nicht funktioniert. Ihr Vertrag bleibt auf Deutsch verfügbar. Bitte versuchen Sie den Sprachwechsel erneut." : "Translation failed. Your contract is still available in English. Please try switching language again."}
+          </div>
+        </div>
+      )}
+      {source === "sample" && inDocument && (
+        <div className="banner banner-busy result-notice">
+          <div className="banner-in">
+            {lang === "de" ? "Beispielvertrag · Diese Erklärung ist vorbereitet. Laden Sie einen eigenen Vertrag hoch, um ihn analysieren zu lassen." : "Example contract · This explanation is prepared. Upload your own contract to have it analysed."}
+          </div>
+        </div>
+      )}
+      {source === "upload" && inDocument && !docText && (
+        <div className="banner banner-warn result-notice">
+          <div className="banner-in" role="status">
+            {lang === "de" ? "Aus Bildern gelesen: Die erkannten Passagen konnten nicht unabhängig mit einer Textebene abgeglichen werden. Bitte vergleichen Sie Zahlen und Wortlaut mit Ihrer Datei." : "Read from images: the recognised passages could not be independently checked against a text layer. Please compare the figures and wording with your file."}
+          </div>
+        </div>
+      )}
 
-      {/* Banners */}
-      {inDocument && analysis.warnings.includes("stub") && (
-        <div className="banner banner-stub">
-          <div className="banner-in">
-            <span aria-hidden="true">🛈</span>
-            <span>{s.stubBanner}</span>
-          </div>
-        </div>
-      )}
-      {inDocument && analysis.warnings.includes("translate-stub") && (
-        <div className="banner banner-warn">
-          <div className="banner-in">
-            {lang === "de" ? "Übersetzung wird aktiv, sobald das Modell verbunden ist." : "Translation activates once the model is connected."}
-          </div>
-        </div>
-      )}
       {inDocument && analysis.confidence === "low" && (
-        <div className="banner banner-warn">
+        <div className="banner banner-warn result-notice">
           <div className="banner-in" role="alert">
             <span aria-hidden="true">⚠</span>
             <span>{s.lowConfidence}</span>
@@ -390,23 +421,23 @@ export default function App() {
 
       <main>
         {screen === "upload" && (
-          <Upload lang={lang} onUpload={startUpload} onExample={startExample} onEmploymentExample={startEmploymentExample} error={error} />
+          <Upload lang={lang} onUpload={startUpload} onExample={startExample} onEmploymentExample={startEmploymentExample} error={error ? errMessage(error, lang) : null} />
         )}
-        {screen === "analyzing" && <Analyzing lang={lang} phase={phase} filename={filename} onCancel={() => setScreen("upload")} />}
+        {screen === "analyzing" && <Analyzing lang={lang} phase={phase} filename={filename} onCancel={() => { resetContract(); setScreen("upload"); }} />}
         {screen === "overview" && analysis && (
           <Overview
             analysis={analysis}
-            filename={shownFilename}
-            pages={shownPages}
+            filename={filename}
+            pages={docPages}
             onOpenClause={openClause}
             onOriginal={goOriginal}
             onDecision={() => setScreen("decision")}
             onAsk={handleAsk}
             answer={answer}
             asking={asking}
+            disabled={translating}
             onAddCalendar={(summary, iso) => {
-              downloadDeadlineIcs(summary, iso);
-              setCalMsg(s.calAdded);
+              if (downloadDeadlineIcs(summary, iso)) setCalMsg(s.calAdded);
             }}
             calMsg={calMsg}
           />
@@ -417,7 +448,7 @@ export default function App() {
             depth={depth}
             setDepth={setDepth}
             docText={docText}
-            pages={shownPages}
+            pages={docPages}
             selectedClauseId={selectedInDoc}
             onSelectClause={selectClause}
             onOpenClause={openClause}
@@ -446,6 +477,22 @@ export default function App() {
 
       {legalOpen && <LegalNotice lang={lang} onClose={() => setLegalOpen(false)} />}
 
+      <ConfirmDialog
+        open={!!imageReview}
+        title={lang === "de" ? "Dieses Dokument als Bilder analysieren?" : "Analyse this document as images?"}
+        body={lang === "de"
+          ? "Dieses Dokument enthält einen Scan, Bilder oder grafische Inhalte. Für eine vollständige Analyse werden alle Seiten als Bilder an Azure OpenAI gesendet, einschließlich sichtbarer Namen, Unterschriften und anderer persönlicher Daten. Diese Daten werden nicht maskiert. Zitate können dabei nicht unabhängig geprüft werden. Fahren Sie nur fort, wenn Sie das Dokument so teilen dürfen."
+          : "This document contains a scan, images or graphics. To avoid missing content, all pages will be sent as images to Azure OpenAI, including visible names, signatures and other personal details. These details will not be masked. Quotes cannot be independently verified in this mode. Continue only if you are allowed to share the document this way."}
+        cancelLabel={lang === "de" ? "Zurück zum Upload" : "Back to upload"}
+        confirmLabel={lang === "de" ? "Bilder senden und analysieren" : "Send images and analyse"}
+        onCancel={() => { resetContract(); setScreen("upload"); }}
+        onConfirm={() => {
+          const pending = imageReview;
+          setImageReview(null);
+          if (pending) void completeUpload(pending.file, null, pending.pages, pending.images, pending.task);
+        }}
+      />
+
       {/* key: transient panel state (the legal-context expander) belongs to one
           clause and must not carry over when a different clause is opened. */}
       {openClauseObj && analysis && (
@@ -462,11 +509,8 @@ export default function App() {
         onCancel={() => setConfirmNew(false)}
         onConfirm={() => {
           setConfirmNew(false);
+          resetContract();
           setScreen("upload");
-          setAnalysis(null);
-          setDocText(null);
-          setDocPages(null);
-          setAnswer(null);
         }}
       />
     </div>

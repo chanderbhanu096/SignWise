@@ -104,3 +104,36 @@ test("no benchmark ever calls a clause void, unfair or unenforceable about this 
     assert.doesNotMatch(hit.contract, /unwirksam|nichtig|unzulässig|rechtswidrig|void|illegal|unenforceable/i);
   }
 });
+
+test("deposit comparisons preserve all digits, cents and currency symbols", () => {
+  for (const [rent, deposit] of [["1450 EUR", "5800 EUR"], ["1.450,50 €", "5.802 €"], ["€1,450.50", "€5,802"]]) {
+    const hit = lawChecks(rental({ rent: `Die Nettokaltmiete beträgt ${rent}.`, dep: `Die Kaution beträgt ${deposit}.` })).find((h) => h.id === "kaution-hoehe");
+    assert.ok(hit, `${rent} / ${deposit}`);
+    assert.match(hit.contract, /4,0-Fache/);
+  }
+});
+
+test("the contract's deposit takes precedence over a conflicting model money row", () => {
+  const analysis = rental({ rent: RENT, dep: "Die Kaution beträgt 4.000 EUR." });
+  analysis.money.oneTime = [{ label: "Deposit", kind: "deposit", amount: 9000, clauseId: "dep" }];
+  assert.ok(!lawChecks(analysis).some((hit) => hit.id === "kaution-hoehe"));
+});
+
+test("qualified liability and subletting clauses are not reported as absolute exclusions", () => {
+  const analysis = rental({
+    liability: "Die Haftung ist ausgeschlossen, außer bei Vorsatz oder grober Fahrlässigkeit.",
+    sublet: "Untervermietung ohne Zustimmung des Vermieters ist untersagt.",
+  });
+  assert.ok(!lawChecks(analysis).some((hit) => ["haftungsausschluss", "untervermietung"].includes(hit.id)));
+});
+
+test("the recurring-service benchmark uses the current one-month notice and excludes insurance", () => {
+  const analysis = rental({ term: "Die Kündigungsfrist beträgt zwei Monate." });
+  analysis.contractType = "Fitness subscription";
+  const hit = lawChecks(analysis).find((item) => item.id === "laufzeit-abo");
+  assert.ok(hit);
+  assert.match(hit.rule, /auf einen Monat/);
+  assert.match(hit.rule, /ältere Verträge/);
+  analysis.contractType = "Insurance policy";
+  assert.ok(!lawChecks(analysis).some((item) => item.id === "laufzeit-abo"));
+});

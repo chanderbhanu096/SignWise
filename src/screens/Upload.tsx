@@ -20,6 +20,7 @@ export function Upload({
   const s = t(lang);
   const [over, setOver] = useState(false);
   const [localErr, setLocalErr] = useState<UploadValidationError | null>(null);
+  const [animationPaused, setAnimationPaused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const take = (file: File | undefined) => {
@@ -38,7 +39,11 @@ export function Upload({
         ? lang === "de"
           ? "Die Datei ist zu groß (max. 4 MB)."
           : "The file is too large (max 4 MB)."
-        : null;
+        : localErr === "empty_file"
+          ? lang === "de" ? "Diese Datei ist leer. Bitte wählen Sie eine lesbare Datei." : "This file is empty. Please choose a readable file."
+          : localErr === "multiple_files"
+            ? lang === "de" ? "Bitte laden Sie jeweils nur einen Vertrag hoch." : "Please upload one contract at a time."
+            : null;
   const shownErr = localErrorCopy ?? error;
 
   return (
@@ -50,9 +55,17 @@ export function Upload({
         {/* key={lang} remounts the slogan so none from the old language lingers;
             s.hero is the stable headline a screen reader gets. */}
         <h1 className="upload-hero" id="hero-h">
-          <Slogan key={lang} slogans={s.slogans} label={s.hero} />
+          <Slogan key={lang} slogans={s.slogans} label={s.hero} paused={animationPaused} />
         </h1>
         <p className="upload-hero-sub">{s.heroSub}</p>
+        <div className="upload-shortcuts">
+          <button type="button" className="link-btn" onClick={onExample}>
+            {lang === "de" ? "Erst das Mietvertrags-Beispiel ansehen →" : "Try the rental example first →"}
+          </button>
+          <button type="button" className="motion-toggle" aria-pressed={animationPaused} onClick={() => setAnimationPaused((v) => !v)}>
+            {animationPaused ? (lang === "de" ? "Animation fortsetzen" : "Resume animation") : (lang === "de" ? "Animation pausieren" : "Pause animation")}
+          </button>
+        </div>
       </div>
 
       <div className="upload-main-grid">
@@ -97,6 +110,7 @@ export function Upload({
             onDrop={(event) => {
               event.preventDefault();
               setOver(false);
+              if (event.dataTransfer.files.length > 1) { setLocalErr("multiple_files"); return; }
               take(event.dataTransfer.files[0]);
             }}
           >

@@ -4,6 +4,9 @@ import { figureSources } from "../src/provenance";
 import { depthText, facts } from "../src/depth";
 import { sampleAnalysis, employmentAnalysis } from "../src/sample";
 import type { Analysis } from "../src/types";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { FigureSources } from "../src/components/FigureSources";
 
 const find = (a: Analysis, id: string) => a.clauses.find((c) => c.id === id)!;
 const trace = (a: Analysis, id: string) => {
@@ -156,4 +159,51 @@ test("a street number is not traced as a figure", () => {
     assert.ok(!out.some((f) => f.parts.includes("14")), `${lang}: ${JSON.stringify(out.map((f) => f.shown))}`);
     assert.ok(out.some((f) => f.parts.includes("3")), `${lang}: the room count should still be traced`);
   }
+});
+
+test("date provenance keeps the day, month and year together and in order", () => {
+  const a = sampleAnalysis("en");
+  const c = { ...a.clauses[0], quote: "Start: 11.01.2026. End: 30.11.2027." };
+  a.clauses = [c];
+  const out = figureSources(a, c, "1 November 2026, 11 January 2026, and 30 January 2027.");
+  assert.deepEqual(out.map((f) => [f.shown, f.kind]), [
+    ["1 November 2026", "context"],
+    ["11 January 2026", "clause"],
+    ["30 January 2027", "context"],
+  ]);
+});
+
+test("ISO and month-first dates match only the same complete date", () => {
+  const a = sampleAnalysis("en");
+  const c = { ...a.clauses[0], quote: "Start: 2026-11-01." };
+  a.clauses = [c];
+  assert.equal(figureSources(a, c, "November 1, 2026")[0]?.kind, "clause");
+  assert.equal(figureSources(a, c, "2026-01-11")[0]?.kind, "context");
+});
+
+test("a clock time cannot be verified from unrelated quantities", () => {
+  const a = sampleAnalysis("en");
+  const c = { ...a.clauses[0], quote: "There are 22 days and 0 fees. Access starts at 06:00." };
+  a.clauses = [c];
+  const out = figureSources(a, c, "From 22:00 to 6:00.");
+  assert.deepEqual(out.map((f) => f.kind), ["context", "clause"]);
+});
+
+test("matching an unverified excerpt never claims independent document verification", () => {
+  const a = sampleAnalysis("en");
+  const c = { ...a.clauses[0], quote: "The monthly rent is 99,999 EUR.", verified: false };
+  a.clauses = [c];
+  const result = figureSources(a, c, "The monthly rent is 99,999 EUR.");
+  assert.equal(result[0]?.sourceVerified, false);
+  const shown = renderToStaticMarkup(createElement(FigureSources, { analysis: a, clause: c, text: c.quote, depth: "detailed" }));
+  assert.match(shown, /not independently checked against your file/);
+  assert.doesNotMatch(shown, /stated in this clause|Traced against the wording/);
+});
+
+test("cross-clause figure matches retain the supporting excerpt's verification status", () => {
+  const a = sampleAnalysis("en");
+  const source = a.clauses.find((clause) => clause.id === "rent")!;
+  source.verified = false;
+  const c = a.clauses.find((clause) => clause.id === "notice")!;
+  assert.equal(figureSources(a, c, "A further €1,240 rent.")[0]?.sourceVerified, false);
 });

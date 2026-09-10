@@ -94,11 +94,9 @@ export function Analyzing({
         <span className="analyzing-clock" aria-hidden="true">
           {ms >= 3000 && s.analyzingElapsed(clock(ms))}
         </span>
-        {ms >= 15000 && (
-          <button className="link-btn" onClick={onCancel}>
-            {s.cancelAnalysis}
-          </button>
-        )}
+        <button className="link-btn" onClick={onCancel}>
+          {s.cancelAnalysis}
+        </button>
       </div>
 
       <p className="analyzing-patience" role="status">

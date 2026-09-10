@@ -1,5 +1,6 @@
 import type { Analysis, Clause, Lang } from "./types";
 import { getContractSubtype, type Subtype } from "./contract";
+import { canonical } from "./depth";
 
 // Statutory benchmarks.
 //
@@ -37,9 +38,10 @@ const de = (lang: Lang) => lang === "de";
 // marker is the point: without it the first match in "§ 5 Kaution. ... 5.800,00 EUR"
 // is the section number, and the deposit ceiling would be compared against 5.
 function amount(text: string): number | null {
-  const m = text.match(/(\d{1,3}(?:\.\d{3})+|\d+)(?:,(\d{1,2}))?\s*(?:EUR|€|Euro)\b/i);
+  const m = text.match(/(?<![\d.,])(?:(?:EUR\b|Euro\b|€)\s*(\d+(?:[.,]\d+)*)|(\d+(?:[.,]\d+)*)\s*(?:EUR\b|Euro\b|€))/i);
   if (!m) return null;
-  return parseFloat(m[1].replace(/\./g, "") + "." + (m[2] ?? "0"));
+  const value = canonical(m[1] ?? m[2]);
+  return value == null ? null : Number(value);
 }
 
 const MONTH_WORDS: Record<string, number> = {
@@ -59,7 +61,7 @@ function months(text: string): number | null {
 function netColdRent(analysis: Analysis): number | null {
   for (const c of analysis.clauses) {
     const m = c.quote.match(
-      /(?:Nettokaltmiete|Grundmiete|Kaltmiete|Nettomiete|Grundentgelt)[^.]{0,40}?(\d{1,3}(?:\.\d{3})*(?:,\d{2})?\s*(?:EUR|€|Euro))/i,
+      /(?:Nettokaltmiete|Grundmiete|Kaltmiete|Nettomiete|Grundentgelt)[^\d.]{0,40}?((?:(?:EUR\b|Euro\b|€)\s*)?\d+(?:[.,]\d+)*(?:\s*(?:EUR\b|Euro\b|€))?)/i,
     );
     if (m) return amount(m[1]);
   }
@@ -96,8 +98,9 @@ const RULES: Rule[] = [
     subtypes: ["rental"],
     test: ({ clause, analysis, }) => {
       if (!/Kaution|Mietsicherheit|Sicherheitsleistung|deposit/i.test(clause.quote)) return null;
-      const deposit =
-        analysis.money.oneTime.find((i) => i.kind === "deposit" && i.amount != null)?.amount ?? amount(clause.quote);
+      // This is a deterministic comparison with the document, so a model's money
+      // row must never override the deposit actually printed in the cited clause.
+      const deposit = amount(clause.quote.slice(clause.quote.search(/Kaution|Mietsicherheit|Sicherheitsleistung|deposit/i)));
       const rent = netColdRent(analysis);
       if (!deposit || !rent || deposit <= rent * 3) return null;
       const x = deposit / rent;
@@ -179,9 +182,8 @@ const RULES: Rule[] = [
       en: "In standard terms, excluding liability for injury to life, body or health, or for gross fault, is void.",
     },
     test: ({ clause }) => {
-      if (!/haftet nicht|Haftung[^.]{0,40}(?:ausgeschlossen|beschränkt)|keine Haftung|excludes? (?:all )?liability/i.test(clause.quote))
-        return null;
-      if (!/vorsätzlich|Vorsatz|intent/i.test(clause.quote)) return null;
+      if (!/haftet\s+(?:ausschließlich\s+|nur\s+)(?:bei|für)[^.]{0,30}(?:Vorsatz|vorsätzlich)|haftet nicht[^.]{0,100}es sei denn[^.]{0,70}(?:vorsätzlich|Vorsatz)|liable only for intentional/i.test(clause.quote)) return null;
+      if (/grob(?:e[rsnm]?)?\s+Fahrlässigkeit|gross negligence/i.test(clause.quote)) return null;
       return {
         de: "Ihr Vertrag lässt eine Haftung nur bei Vorsatz zu.",
         en: "Your contract admits liability only for intentional harm.",
@@ -199,8 +201,8 @@ const RULES: Rule[] = [
     },
     subtypes: ["rental"],
     test: ({ clause }) => {
-      if (!/Untervermietung|untervermiet|Gebrauchsüberlassung|sublet/i.test(clause.quote)) return null;
-      if (!/ausgeschlossen|untersagt|nicht gestattet|nicht zulässig|verboten|prohibited/i.test(clause.quote)) return null;
+      if (!/(?:Untervermietung|Gebrauchsüberlassung|subletting)\s+(?:(?:ist|is)\s+)?(?:(?:grundsätzlich|generell|vollständig|entirely)\s+)?(?:ausgeschlossen|untersagt|nicht gestattet|nicht zulässig|verboten|prohibited)/i.test(clause.quote)) return null;
+      if (/ohne\s+(?:vorherige\s+|schriftliche\s+)?(?:Zustimmung|Erlaubnis)|without\s+(?:prior\s+|written\s+)?(?:consent|permission)|es sei denn|unless/i.test(clause.quote)) return null;
       return {
         de: "Ihr Vertrag schließt die Untervermietung vollständig aus.",
         en: "Your contract rules out subletting entirely.",
@@ -235,17 +237,19 @@ const RULES: Rule[] = [
     section: "§ 309",
     cite: { de: "§ 309 Nr. 9 BGB", en: "§ 309 no. 9 BGB" },
     rule: {
-      de: "In vorformulierten Bedingungen über wiederkehrende Leistungen ist eine Bindung von mehr als zwei Jahren, eine stillschweigende Verlängerung um mehr als ein Jahr oder eine Kündigungsfrist von mehr als drei Monaten unwirksam.",
-      en: "In standard terms for recurring services, a commitment longer than two years, automatic renewal by more than one year, or notice of more than three months is void.",
+      de: "Die aktuelle Regel für AGB über wiederkehrende Leistungen begrenzt die Erstlaufzeit auf zwei Jahre und die Kündigungsfrist vor deren Ende auf einen Monat. Eine stillschweigende Verlängerung muss unbefristet und mit höchstens einem Monat Frist kündbar sein. Versicherungen sind ausgenommen; für ältere Verträge können Übergangsregeln gelten.",
+      en: "The current rule for standard terms covering recurring services limits the initial term to two years and notice before its end to one month. Automatic renewal must be indefinite and cancellable with at most one month's notice. Insurance is excluded; transitional rules may apply to older contracts.",
     },
-    subtypes: ["subscription", "insurance"],
+    // Checked against https://www.gesetze-im-internet.de/bgb/__309.html,
+    // no. 9 (b), (c) and its explicit insurance exclusion, 2026-09-10.
+    subtypes: ["subscription"],
     test: ({ clause }) => {
       const term = clause.quote.match(/(?:Mindest(?:vertrags)?laufzeit|Laufzeit|Vertragsdauer)[^.]{0,40}/i);
       const t = term ? months(term[0]) : null;
       if (t && t > 24) return { de: `Ihr Vertrag bindet Sie ${t} Monate.`, en: `Your contract commits you for ${t} months.` };
       const notice = clause.quote.match(/Kündigungsfrist[^.]{0,40}/i);
       const n = notice ? months(notice[0]) : null;
-      if (n && n > 3) return { de: `Ihr Vertrag nennt ${n} Monate Kündigungsfrist.`, en: `Your contract sets ${n} months' notice.` };
+      if (n && n > 1) return { de: `Ihr Vertrag nennt ${n} Monate Kündigungsfrist.`, en: `Your contract sets ${n} months' notice.` };
       return null;
     },
   },

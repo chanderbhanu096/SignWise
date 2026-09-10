@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import type { Analysis, Clause, Depth } from "../types";
 import { t } from "../i18n";
 import { getOfficialLawUrl } from "../contract";
@@ -7,6 +7,7 @@ import { lawChecksFor } from "../lawcheck";
 import { Severity } from "./Severity";
 import { DepthPicker } from "./DepthPicker";
 import { FigureSources } from "./FigureSources";
+import { useModalFocus } from "./useModalFocus";
 
 // The clause detail. Same component renders as a right-side panel on desktop and a
 // bottom sheet on mobile (CSS decides which). The three content classes get fixed,
@@ -34,37 +35,16 @@ export function ClausePanel({
   const closeRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    closeRef.current?.focus();
-    // Trap Tab within the panel.
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== "Tab" || !panelRef.current) return;
-      const focusable = panelRef.current.querySelectorAll<HTMLElement>(
-        'button, [href], input, [tabindex]:not([tabindex="-1"])',
-      );
-      if (focusable.length === 0) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
-    };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, []);
+  useModalFocus(panelRef, closeRef, onClose);
 
   return (
     <>
-      <div className="scrim" onClick={onClose} aria-hidden="true" />
-      <aside className="panel" role="dialog" aria-modal="true" aria-label={clause.title} ref={panelRef} data-level={clause.level}>
+      <div className="scrim" onClick={onClose} aria-hidden="true" data-modal-backdrop />
+      <aside className="panel" role="dialog" aria-modal="true" aria-labelledby="clause-panel-title" ref={panelRef} data-level={clause.level} tabIndex={-1}>
         <div className="panel-head">
           <div>
             <span className="panel-ref">{clause.ref}</span>
-            <h2 className="panel-title">{clause.title}</h2>
+            <h2 className="panel-title" id="clause-panel-title">{clause.title}</h2>
             <Severity level={clause.level} lang={analysis.lang} />
           </div>
           <button className="panel-close" ref={closeRef} onClick={onClose} aria-label={s.close}>

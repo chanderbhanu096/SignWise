@@ -28,7 +28,10 @@ const IS_HEADING = /^§\s?\d+[a-z]?\s+[A-ZÄÖÜ][a-zäöüß]/;
 // The signature block: a run of underscores to sign on, usually preceded by "Ort,
 // den <date>", and nothing of substance after it. Cutting from the place-and-date
 // (when it sits right before the rule) removes the whole footer in one go.
-const SIGNATURE = /(?:[A-ZÄÖÜ][^.\n]{0,40},\s*den\s+\d{1,2}\.\d{1,2}\.\d{2,4}\s*)?_{3,}[\s\S]*$/;
+// Only a recognizable signature-only footer can be omitted. An underscore is
+// also a blank amount or date in a contract template; deleting everything after
+// the first blank used to remove whole later sections from the document view.
+const SIGNATURE = /(?:[A-ZÄÖÜ][^.\n]{0,40},\s*den\s+\d{1,2}\.\d{1,2}\.\d{2,4}\s*)?_{3,}(?:\s|_|\(|\)|Unterschrift(?:en)?|Vermieter(?:in)?|Mieter(?:in)?|Arbeitgeber(?:in)?|Arbeitnehmer(?:in)?|Signature|Landlord|Tenant|Employer|Employee)+$/i;
 
 // Page furniture — "Seite 3", "Seite 3 von 4", "- 3 -" — is not a contract term. It
 // arrives in the extracted text at a page join, because extractPdfText concatenates

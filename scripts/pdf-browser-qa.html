@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>SignWise PDF regression checks</title>
+<style>body{font:16px system-ui;margin:40px;max-width:1100px;background:#f6f8fb;color:#172340}button{font:inherit;background:#293fe0;color:white;border:0;border-radius:8px;padding:12px 20px;cursor:pointer}li{margin:12px 0;padding:12px;background:white;border-radius:8px;white-space:pre-wrap}.ok{border-left:6px solid #157d50}.fail{border-left:6px solid #c62828}code{font-size:13px}small{color:#53617a}</style>
+<h1>SignWise: local PDF regression checks</h1>
+<p>Runs the project's actual PDF extractor and API client against generated synthetic documents. API requests are intercepted in this page. Nothing is sent to Azure.</p>
+<button id="run">Run all PDF checks</button>
+<p id="summary">Ready.</p><ol id="results"></ol>
+<script type="module">
+import { extractPdfText } from "/src/pdf.ts";
+import { analyze } from "/src/api.ts";
+import { sampleAnalysis } from "/src/sample.ts";
+
+const enc = new TextEncoder();
+const bytes = (s) => typeof s === "string" ? enc.encode(s) : s;
+function concat(parts) { const out = new Uint8Array(parts.reduce((n,p) => n + p.length,0)); let pos=0; for (const p of parts) { out.set(p,pos); pos+=p.length; } return out; }
+function pdf(kinds) {
+  const objects = [null, null, bytes("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>")];
+  const add = (s) => { objects.push(bytes(s)); return objects.length; };
+  const stream = (data, extras="") => concat([bytes(`<< /Length ${data.length} ${extras} >>\nstream\n`),data,bytes("\nendstream")]);
+  const kids=[];
+  for (const [index, kind] of kinds.entries()) {
+    let imageRef;
+    let content="";
+    if(kind === "scan" || kind === "text-image") {
+      const canvas=document.createElement("canvas"); canvas.width=900; canvas.height=1200;
+      const c=canvas.getContext("2d"); c.fillStyle="white";c.fillRect(0,0,900,1200);c.fillStyle="black";c.font="24px Arial";
+      ["SYNTHETIC RENTAL CONTRACT",`Page ${index+1}: rent is EUR 1200 per month.`,"Deposit: EUR 2400. Notice: three months.","This document is generated for local testing only."].forEach((s,i)=>c.fillText(s,60,100+i*48));
+      const jpg=Uint8Array.from(atob(canvas.toDataURL("image/jpeg",0.85).split(",")[1]),s=>s.charCodeAt(0));
+      imageRef=add(stream(jpg,"/Type /XObject /Subtype /Image /Width 900 /Height 1200 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode"));
+      content="q 450 0 0 600 40 160 cm /Im0 Do Q";
+      if (kind === "text-image") content += " BT /F1 12 Tf 40 790 Td (A readable header does not cover the photographed contract below.) Tj ET";
+    } else if (kind === "text") {
+      content=`BT /F1 14 Tf 40 750 Td (SYNTHETIC RENTAL CONTRACT - page ${index+1}) Tj 0 -28 Td (Monthly rent EUR 1200. Deposit EUR 2400. Notice: three months.) Tj 0 -28 Td (Contact: test.person@example.com. Local regression fixture only.) Tj ET`;
+    } else if (kind === "drawing") {
+      content="2 w 40 500 m 70 560 90 440 130 540 c 160 450 190 570 220 510 c S";
+    }
+    const contentRef=add(stream(bytes(content)));
+    const pageRef=add(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> ${imageRef ? `/XObject << /Im0 ${imageRef} 0 R >>` : ""} >> /Contents ${contentRef} 0 R >>`);
+    kids.push(`${pageRef} 0 R`);
+  }
+  objects[0]=bytes("<< /Type /Catalog /Pages 2 0 R >>");
+  objects[1]=bytes(`<< /Type /Pages /Kids [${kids.join(" ")}] /Count ${kids.length} >>`);
+  const parts=[bytes("%PDF-1.4\n")]; const offsets=[0]; let position=parts[0].length;
+  objects.forEach((obj,i)=>{offsets.push(position);const part=concat([bytes(`${i+1} 0 obj\n`),obj,bytes("\nendobj\n")]);parts.push(part);position+=part.length;});
+  const xref=position;
+  parts.push(bytes(`xref\n0 ${objects.length+1}\n0000000000 65535 f \n${offsets.slice(1).map(p=>`${String(p).padStart(10,"0")} 00000 n \n`).join("")}trailer\n<< /Size ${objects.length+1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`));
+  return concat(parts);
+}
+function expect(value,message){if(!value)throw new Error(message);}
+async function prepared(kinds){return extractPdfText(pdf(kinds).buffer);}
+async function fails(data,code){let caught;try{await extractPdfText(data);}catch(e){caught=e;}expect(caught?.code===code,`Expected ${code}; received ${caught?.code ?? "successful extraction"}`);}
+async function posted(kinds){
+  const source=pdf(kinds); const result=await extractPdfText(source.slice().buffer);
+  const file=new File([source],"PRIVATE_PERSON_contract.pdf",{type:"application/pdf"});
+  const old=window.fetch;let captured;
+  window.fetch=async (url,options)=>{expect(url==="/api/analyze","Unexpected API request");captured=JSON.parse(options.body);return new Response(JSON.stringify(sampleAnalysis("en")),{headers:{"content-type":"application/json"}});};
+  try{await analyze(file,"en",result.text,undefined,result.images);}finally{window.fetch=old;}
+  expect(!("filename" in captured),"Private filename leaked into request");
+  return captured;
+}
+const tests=[
+  ["Readable PDF: extracts every page, no image fallback",async()=>{const r=await prepared(["text","text"]);expect(r.pages===2&&r.text?.includes("page 2")&&!r.images,"Readable pages were lost or rendered as scans");return `${r.pages} pages; ${r.text.length} text characters`;}],
+  ["Scanned PDF: renders all pages as JPEGs",async()=>{const r=await prepared(["scan","scan"]);expect(r.text===null&&r.images?.length===2&&r.images.every(i=>i.startsWith("data:image/jpeg;base64,")),"Scanned pages missing");return `2 rendered pages; ${r.images.map(i=>i.length).join(", ")} encoded characters`;}],
+  ["Mixed PDF: includes both readable and scanned pages in vision",async()=>{const r=await prepared(["text","scan"]);expect(r.text===null&&r.images?.length===2,"Mixed document lost a page or claimed independent text verification");return "2 images; independent text verification unavailable";}],
+  ["Blank PDF: rejected before model use",async()=>fails(pdf(["blank"]).buffer,"no_readable_content")],
+  ["Readable PDF with blank trailing page: keeps text protection",async()=>{const r=await prepared(["text","blank"]);expect(r.text?.includes("SYNTHETIC")&&!r.images,"Blank page forced readable personal data through vision");return `${r.pages} pages retained; text extraction used`;}],
+  ["Readable text plus embedded contract image: chooses vision",async()=>{const r=await prepared(["text-image"]);expect(r.text===null&&r.images?.length===1,"Readable header suppressed the embedded contract image");return "Photographed contract included alongside its readable header";}],
+  ["Vector signature/drawing page: not discarded as blank",async()=>{const r=await prepared(["text","drawing"]);expect(r.text===null&&r.images?.length===2,"Vector signature page was discarded");return "Both readable and signature pages retained as images";}],
+  ["Malformed PDF: clear unreadable_pdf error",async()=>fails(enc.encode("This is not a PDF file.").buffer,"unreadable_pdf")],
+  ["13-page PDF: rejected with clear page limit",async()=>fails(pdf(Array(13).fill("text")).buffer,"too_many_pages")],
+  ["Pre-cancelled extraction: aborts before processing",async()=>{const c=new AbortController();c.abort();let caught;try{await extractPdfText(pdf(["text"]).buffer,c.signal);}catch(e){caught=e;}expect(caught?.name==="AbortError","Cancellation did not reach extractor");}],
+  ["Readable PDF upload: email pseudonymised and filename omitted",async()=>{const body=await posted(["text"]);expect(body.text&&!body.text.includes("test.person@example.com")&&!body.images&&!body.dataB64,"Readable upload exposed identifiers or raw bytes");return "Text-only payload with email placeholder";}],
+  ["Mixed PDF upload: ordered images only, no raw PDF",async()=>{const body=await posted(["text","scan"]);expect(body.mime==="application/pdf"&&body.images?.length===2&&!body.text&&!body.dataB64,"Wrong mixed-PDF payload");return "2 JPEG page URLs; PDF bytes omitted";}],
+];
+document.querySelector("#run").onclick=async()=>{
+  const button=document.querySelector("#run");button.disabled=true;
+  const results=document.querySelector("#results");results.replaceChildren();let passes=0;
+  for(const [name,run] of tests){document.querySelector("#summary").textContent=`Running: ${name}`;const li=document.createElement("li");results.append(li);try{const detail=await run();passes++;li.className="ok";li.textContent=`PASS — ${name}${detail ? `\n${detail}`:""}`;}catch(error){li.className="fail";li.textContent=`FAIL — ${name}\n${error.message}`;}}
+  document.querySelector("#summary").textContent=`${passes}/${tests.length} checks passed. All fixtures synthetic; no model calls.`;button.disabled=false;
+};
+</script>
+</html>

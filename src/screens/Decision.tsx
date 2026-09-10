@@ -121,8 +121,8 @@ export function Decision({
             </ul>
           ) : (
             <div className="brief-empty compact">
-              <span className="state-badge clear">
-                <span aria-hidden="true">✓</span> {s.reviewEmptyTitle}
+              <span className="state-badge" style={{ color: "var(--muted)", background: "var(--surface-2)", border: "1px solid var(--line)" }}>
+                <span aria-hidden="true">ⓘ</span> {s.reviewEmptyTitle}
               </span>
               <p>{s.reviewEmptyBody}</p>
             </div>
@@ -203,8 +203,8 @@ export function Decision({
             </ul>
           ) : (
             <div className="brief-empty compact">
-              <span className="state-badge clear">
-                <span aria-hidden="true">✓</span> {s.lawEmptyTitle}
+              <span className="state-badge" style={{ color: "var(--muted)", background: "var(--surface-2)", border: "1px solid var(--line)" }}>
+                <span aria-hidden="true">ⓘ</span> {s.lawEmptyTitle}
               </span>
               <p>{s.lawEmptyBody(law.checked)}</p>
             </div>

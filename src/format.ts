@@ -5,11 +5,20 @@ const locale = (lang: Lang) =>
 
 // €1,240 in EN, 1.240 € in DE — the mockup hardcoded one form; Intl does both.
 export function euro(amount: number, lang: Lang, currency = "EUR"): string {
-  return new Intl.NumberFormat(locale(lang), {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
+  try {
+    return new Intl.NumberFormat(locale(lang), {
+      style: "currency",
+      currency,
+      // Omit empty cents without rounding away a real contractual amount. Keep the
+      // currency's own precision (including three-decimal currencies such as KWD).
+      minimumFractionDigits: Number.isInteger(amount) ? 0 : undefined,
+    }).format(amount);
+  } catch {
+    // The model sometimes returns a symbol or name instead of an ISO code. Show
+    // that supplied label without inventing a currency or crashing the result.
+    const value = new Intl.NumberFormat(locale(lang), { maximumFractionDigits: 20 }).format(amount);
+    return currency.trim() ? `${value}\u00a0${currency.trim()}` : value;
+  }
 }
 
 // The model writes amounts into its prose the way the contract does — "1.480,00 EUR",

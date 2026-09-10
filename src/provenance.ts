@@ -23,6 +23,7 @@ export type FigureSource = {
   key: string; // dedupe id — carries the unit, or the parts of a date
   parts: string[]; // the bare figure(s), e.g. ["1190"], or ["1", "11", "2026"] for a date
   kind: FigureKind;
+  sourceVerified?: boolean; // a matching excerpt may itself be unverified OCR/model text
   ref?: string; // the clause it came from, or the base of the derivation
   expr?: string; // the derivation, e.g. "8 % × 14.880"
 };
@@ -60,11 +61,13 @@ const NUMWORD = Object.keys(NUMERALS).join("|");
 // probation clause states.
 const SHOWN = new RegExp(
   [
+    String.raw`\d{4}-\d{2}-\d{2}`,
     String.raw`\d{1,2}[.\/]\d{1,2}[.\/]\d{2,4}`,
     // A clock time is one figure. Scanned as plain numbers, "Ruhezeit von 22:00 bis
     // 6:00 Uhr" produced a row reading "00 — steht in dieser Klausel".
     String.raw`\d{1,2}:\d{2}`,
-    String.raw`\d{1,2}\.?\s(?:${MONTH})(?:\s+\d{4})?`,
+    String.raw`\d{1,2}\.?\s+(?:${MONTH})\b(?:\s+\d{4})?`,
+    String.raw`\b(?:${MONTH})\s+\d{1,2}(?:,?\s+\d{4})?`,
     // The word units need a trailing boundary — without it "zwölf Monatsgehältern"
     // matched as "zwölf Monat". The currency marks must not have one: \b after "€"
     // can never match, and requiring it silently dropped the € from every German
@@ -74,18 +77,31 @@ const SHOWN = new RegExp(
   ].join("|"),
   "gi",
 );
-const IS_WORD_DATE = new RegExp(String.raw`^\d{1,2}\.?\s(?:${MONTH})`, "i");
-const IS_TIME = /^\d{1,2}:\d{2}$/;
+/** Dates and times retain their positions: 1 November is not 11 January. */
+function temporalFigure(shown: string): { key: string; parts: string[] } | null {
+  const time = shown.match(/^(\d{1,2}):(\d{2})$/);
+  if (time) return { key: `time:${Number(time[1])}:${Number(time[2])}`, parts: time.slice(1).map((p) => String(Number(p))) };
+  const numeric = shown.match(/^(\d{1,2})[.\/](\d{1,2})[.\/](\d{2,4})$/);
+  const iso = shown.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  const written = shown.match(new RegExp(String.raw`^(\d{1,2})\.?\s+(${MONTH})(?:\s+(\d{4}))?$`, "i"));
+  const monthFirst = shown.match(new RegExp(String.raw`^(${MONTH})\s+(\d{1,2})(?:,?\s+(\d{4}))?$`, "i"));
+  const parts = numeric ? numeric.slice(1)
+    : iso ? [iso[3], iso[2], iso[1]]
+    : written ? [written[1], String(MONTHS[written[2].toLowerCase()]), ...(written[3] ? [written[3]] : [])]
+    : monthFirst ? [monthFirst[2], String(MONTHS[monthFirst[1].toLowerCase()]), ...(monthFirst[3] ? [monthFirst[3]] : [])]
+    : null;
+  if (!parts) return null;
+  const normalized = parts.map((part) => String(Number(part)));
+  return { key: `date:${normalized.join("-")}`, parts: normalized };
+}
 
-/** The parts of a date, however it is written, so the two spellings compare equal. */
-function dateParts(shown: string): Set<string> {
-  const w = shown.match(new RegExp(String.raw`^(\d{1,2})\.?\s(${MONTH})(?:\s+(\d{4}))?`, "i"));
-  if (w) {
-    const out = new Set([String(Number(w[1])), String(MONTHS[w[2].toLowerCase()])]);
-    if (w[3]) out.add(String(Number(w[3])));
-    return out;
+function temporalFigures(text: string): Set<string> {
+  const out = new Set<string>();
+  for (const m of text.matchAll(SHOWN)) {
+    const figure = temporalFigure(m[0].trim());
+    if (figure) out.add(figure.key);
   }
-  return facts(shown);
+  return out;
 }
 
 /**
@@ -119,7 +135,6 @@ function unitFigures(text: string): Set<string> {
   }
   return out;
 }
-const IS_DATE = /^\d{1,2}[.\/]\d{1,2}[.\/]\d{2,4}$/;
 const UNIT_RE = new RegExp(`(?:${UNIT})`, "i");
 
 const shortRef = (ref: string) => ref.split("·")[0].trim();
@@ -248,12 +263,13 @@ function derive(
 
 /** Trace every figure in `text` back to the contract, in the order they are written. */
 export function figureSources(analysis: Analysis, clause: Clause, text: string): FigureSource[] {
-  const own = { plain: facts(clause.quote.replace(CITATION, " ")), united: unitFigures(clause.quote) };
+  const own = { plain: facts(clause.quote.replace(CITATION, " ")), united: unitFigures(clause.quote), temporal: temporalFigures(clause.quote) };
   const others = analysis.clauses
     .filter((c) => c.id !== clause.id)
     .map((c) => ({
       ref: shortRef(c.ref),
-      f: { plain: facts(c.quote.replace(CITATION, " ")), united: unitFigures(c.quote) },
+      verified: c.verified,
+      f: { plain: facts(c.quote.replace(CITATION, " ")), united: unitFigures(c.quote), temporal: temporalFigures(c.quote) },
     }));
   type Figures = typeof own;
   const cands = candidates(analysis);
@@ -269,17 +285,16 @@ export function figureSources(analysis: Analysis, clause: Clause, text: string):
     if (!key) continue;
     // A clock time joins the dates: compared by its parts, never derived from other
     // figures. It is a position on a clock, not a quantity.
-    const dated = IS_DATE.test(shown) || IS_WORD_DATE.test(shown) || IS_TIME.test(shown);
-    // A date is compared by its parts. facts() splits "01.03.2027" into 1, 3 and 2027
-    // while canonical() would read it as the figure 103.2027, so a start date printed
-    // in the contract was being reported as not in the contract at all.
-    const keys = dated ? dateParts(shown) : new Set([key]);
+    const temporal = temporalFigure(shown);
+    const dated = !!temporal;
+    const keys = new Set(temporal?.parts ?? [key]);
     const unit = dated ? null : unitOf(shown);
-    const id = dated ? [...keys].sort().join("-") : unit ? `${key}|${unit}` : key;
+    const id = temporal?.key ?? (unit ? `${key}|${unit}` : key);
     // A figure that says what it is has to be matched by a figure that says the same
     // thing. Without the unit, any 3 satisfied any other 3.
     const holds = (f: Figures) =>
-      unit ? f.united.has(`${key}|${unit}`) : keys.size > 0 && [...keys].every((k) => f.plain.has(k));
+      temporal ? f.temporal.has(temporal.key)
+        : unit ? f.united.has(`${key}|${unit}`) : keys.size > 0 && [...keys].every((k) => f.plain.has(k));
     if (seen.has(id)) continue;
     // Traced only if it carries a unit, is a date, or is a figure this clause really
     // does state. A bare number that is none of those is part of the sentence, not a
@@ -288,12 +303,12 @@ export function figureSources(analysis: Analysis, clause: Clause, text: string):
     seen.add(id);
 
     if (holds(own)) {
-      out.push({ shown, key: id, parts: [...keys], kind: "clause", ref: shortRef(clause.ref) });
+      out.push({ shown, key: id, parts: [...keys], kind: "clause", ref: shortRef(clause.ref), sourceVerified: clause.verified });
       continue;
     }
     const other = others.find((o) => holds(o.f));
     if (other) {
-      out.push({ shown, key: id, parts: [...keys], kind: "other", ref: other.ref });
+      out.push({ shown, key: id, parts: [...keys], kind: "other", ref: other.ref, sourceVerified: other.verified });
       continue;
     }
     // Arithmetic is only meaningful for amounts and quantities. Working out a date
