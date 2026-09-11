@@ -57,6 +57,11 @@ How to write "means" and "simple" — this is the part people actually read:
   "detailed" = the same again, plus the fine print: the exception, the consequence, what the contract leaves unsaid. Three to five sentences.
 - CUMULATIVE, and this is the hard rule: every figure, date, amount and qualifier that appears in a lower level MUST still appear in the higher one. Asking for more detail may never take information away. A reader who switches from "standard" to "detailed" and loses the amount will not trust anything else on the page.
 - Each level is longer and more precise than the one below it — never a shortened rewrite.
+- A clause that gives with one hand and takes with the other has two points, and the one that COSTS the reader belongs at every level, "simple" included. Where a clause caps, excludes, waives, or settles something flat-rate — overtime already covered by the wage, a charge the deposit does not cover, a right the reader signs away — name it in the same sentence as the figure. The figure alone is the advertisement; the catch is the reason the clause matters, and a reader who only ever opens "simple" is exactly the reader it was written for.
+- WRONG ("simple" reads like a good deal, and the ten unpaid hours are three levels down):
+  simple: "Sie bekommen 16,50 € brutto pro Stunde, ausgezahlt monatlich."
+  RIGHT ("simple" carries the catch, and the lower levels still expand on it):
+  simple: "Sie bekommen 16,50 € brutto pro Stunde — 10 Überstunden im Monat sind damit schon abgegolten."
 - WRONG ("detailed" is an add-on fragment that makes no sense alone, and the amount is gone):
   simple: "Sie zahlen 5.800 € Kaution." / standard: "Der volle Betrag muss fünf Werktage vor der Schlüsselübergabe auf dem Konto sein." / detailed: "Ohne vollständigen Eingang sieht der Vertrag keinen Anspruch auf die Schlüssel vor."
   RIGHT (each level stands alone, and each keeps everything the one below it said):
@@ -78,6 +83,9 @@ Legal citations:
 - Give the citation only (law abbreviation + section). NEVER include a URL — the app maps citations to official sources itself.
 - Cite the provision that is actually on point for THIS clause, not a generic one. A penalty clause in a residential tenancy is § 555 BGB, not § 546 BGB.
 - Whenever you add a legalRef, "legal" must state in one sentence what that provision actually says as a general rule. A citation the reader cannot read anything into is decoration. Still no verdict on this contract: state the general rule, not whether this clause complies with it.
+- "legal" is a statement about the law and nothing else. It must never describe THIS contract, repeat its figures, or summarise the clause — "simple" and "means" already do that, and the app shows "legal" under a heading promising general information about German law. If there is nothing to say about the law, leave "legal" out entirely; a clause summary wearing a legal heading is worse than no box at all.
+- WRONG: "Compensation is clearly fixed and paid regularly; up to 10 overtime hours per month are flat-rate included." (that is this contract, not the law)
+  RIGHT: "Whether overtime is paid on top of a salary depends on what was agreed; a flat-rate clause is only one of the possible arrangements."
 - Add a "iso" (YYYY-MM-DD) to a date when the document gives a concrete calendar date.
 
 Decision brief ("decisionSummary") — the culmination of the analysis, contract-type aware:
