@@ -90,3 +90,19 @@ test("model adapter validates responses and has bounded, cancellable provider ca
     assert.equal(requests.length, count + 1);
   });
 });
+
+// Measured against a real upload: the model answered "duty" where the schema says
+// "responsibility", and the whole analysis was rejected two minutes into the
+// request. A chip label is not worth a failed upload.
+test("a model's own word for a tag does not throw the analysis away", async () => {
+  // _model.ts reads credentials at module scope, so it is imported the same way the
+  // suite above does it — after the environment is set, never at file load.
+  const { extractJsonForTest } = await import("../api/_model.ts");
+  const json = (tags: unknown) => JSON.stringify({ clauses: [{ id: "c1", tags }] });
+  const tagsOf = (raw: string) => (extractJsonForTest(raw) as any).clauses[0].tags;
+  assert.deepEqual(tagsOf(json(["duty", "money"])), ["responsibility", "money"]);
+  assert.deepEqual(tagsOf(json(["Duties"])), ["responsibility"]);
+  assert.deepEqual(tagsOf(json(["obligation", "risk"])), ["risk"]); // unknown dropped, not fatal
+  assert.deepEqual(tagsOf(json(["duty", "responsibility"])), ["responsibility"]); // no duplicate chip
+  assert.deepEqual(tagsOf(json(["money", "deadline"])), ["money", "deadline"]);
+});

@@ -1,5 +1,5 @@
 import { AzureOpenAI } from "openai";
-import { AnalysisSchema, type Analysis, type Lang } from "../src/types";
+import { AnalysisSchema, TAGS, type Analysis, type Lang, type Tag } from "../src/types";
 import { ApiFailure } from "./_http";
 import { parseAnswer, parseTranslation } from "./_validation";
 
@@ -217,6 +217,31 @@ export const extractJsonForTest = (text: string) => extractJson(text);
 // gpt-5.6-sol this path effectively never fired. Kept deliberately dumb: no feeding
 // the error back, no partial repair, because a wrong-but-valid analysis is worse than
 // a retry.
+// A tag is the chip under "Why this matters" — not a fact about the contract, not a
+// figure, not a source. The shape spells the four values out and the model still
+// answers "duty" where the schema says "responsibility", and Zod then threw a whole
+// valid analysis away over one chip label, two minutes into the request. That is the
+// most expensive possible response to a cosmetic mismatch. Map the near miss, drop
+// anything still unknown, keep the analysis: a missing chip costs the reader nothing,
+// a failed upload costs them everything.
+const TAG_ALIASES: Record<string, Tag> = { duty: "responsibility", duties: "responsibility" };
+const isTag = (value: unknown): value is Tag => TAGS.includes(value as Tag);
+
+function fixTags(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(fixTags);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>).map(([key, entry]) => [
+        key,
+        key === "tags" && Array.isArray(entry)
+          ? [...new Set(entry.map((t) => (typeof t === "string" ? TAG_ALIASES[t.toLowerCase()] ?? t : t)).filter(isTag))]
+          : fixTags(entry),
+      ]),
+    );
+  }
+  return value;
+}
+
 async function withRetry<T>(produce: () => Promise<string>, parse: (raw: string) => T, attempts = 3): Promise<T> {
   let last: unknown;
   for (let i = 0; i < attempts; i++) {
@@ -246,7 +271,7 @@ function extractJson(text: string): unknown {
   const end = text.lastIndexOf("}");
   if (start === -1 || end <= start) throw new Error("no_json_in_response");
   // Every model response reaches the schema through here — analyze, ask and translate.
-  return dropNulls(JSON.parse(text.slice(start, end + 1)));
+  return fixTags(dropNulls(JSON.parse(text.slice(start, end + 1))));
 }
 
 async function complete(system: string, content: ChatContent, maxTokens: number, signal?: AbortSignal): Promise<string> {
