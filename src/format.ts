@@ -1,4 +1,5 @@
 import type { Lang } from "./types";
+import { canonical } from "./depth";
 
 const locale = (lang: Lang) =>
   ({ de: "de-DE", en: "en-GB", tr: "tr-TR", uk: "uk-UA", ar: "ar" })[lang] ?? "de-DE";
@@ -36,30 +37,25 @@ const CURRENCY_WORD: Record<string, string> = { EUR: "\u20ac", CHF: "CHF", GBP: 
 // values. Everything else the model writes is prose a reader sees.
 const VERBATIM = new Set(["quote", "ref", "id", "clauseId", "monthlyClauseId", "yearlyClauseId", "currency", "lang", "docLanguage", "law", "section", "iso", "level", "tone", "kind", "freq", "tags", "warnings"]);
 
-// Where the symbol goes is a property of the locale, not of us: de-DE writes
-// "1.480 \u20ac", en-GB writes "\u20ac1,480". Ask Intl rather than hardcoding, so a
-// rewritten amount sits the same way round as one the app formatted itself.
-function symbolLeads(lang: Lang, currency: string): boolean {
-  try {
-    // "1,00 \u20ac" (de) starts with a digit; "\u20ac1.00" (en) does not.
-    return !/^\d/.test(new Intl.NumberFormat(locale(lang), { style: "currency", currency }).format(1).trimStart());
-  } catch {
-    return false;
-  }
-}
 
 export function currencyStyle(text: string, currency = "EUR", lang: Lang = "de"): string {
   const symbol = CURRENCY_WORD[currency.toUpperCase()];
   if (!symbol || symbol === currency) return text;
   const c = currency.replace(/[^A-Z]/gi, "");
-  const lead = symbolLeads(lang, currency);
-  // The lookbehind stops a match starting in the middle of a number: without it
-  // "12.50 EUR" matched from the "2" and came out as "1\u20ac2.50".
-  const AMOUNT = `(?<![\\d.,])(\\d{1,3}(?:[.,\\s]\\d{3})*(?:[.,]\\d{1,2})?)`;
-  return text
-    // Zero cents go, because the app's own formatter drops them. Real cents stay.
-    .replace(new RegExp(`${AMOUNT.replace("(?:[.,]\\d{1,2})?", "")}[.,]00(?=\\s*${c}\\b)`, "g"), "$1")
-    .replace(new RegExp(`${AMOUNT}\\s*${c}\\b`, "gi"), lead ? `${symbol}$1` : `$1\u00a0${symbol}`);
+  // Parse the amount and re-emit it through the app's own formatter, rather than
+  // swapping the currency word and leaving the digits as the model typed them.
+  // Swapping alone left a hole exactly where it shows most: the pattern needed a
+  // thousands separator, so "1.240,00 EUR" became "1.240 €" and "1240 EUR" stayed
+  // "1240 EUR" — on the same screen, for the same rent.
+  //
+  // The lookarounds stop a match starting or ending inside a longer number: without
+  // the first one "12.50 EUR" matched from the "2" and came out as "1€2.50".
+  const AMOUNT = String.raw`\d{1,3}(?:[.,\s]\d{3})+(?:[.,]\d{1,2})?|\d{1,9}(?:[.,]\d{1,2})?`;
+  const written = new RegExp(String.raw`(?<![\d.,])(${AMOUNT})\s*${c}\b|\b${c}\s*(${AMOUNT})(?![\d.,])`, "gi");
+  return text.replace(written, (match, before, after) => {
+    const value = canonical(before ?? after);
+    return value == null ? match : euro(Number(value), lang, currency);
+  });
 }
 
 // Walk an analysis and put every amount the model wrote in prose into the same

@@ -19,7 +19,21 @@ test("a model currency label cannot crash the financial summary or change the va
 test("model prose gets the app's currency notation", () => {
   assert.equal(currencyStyle("Sie zahlen 1.180,00 EUR Kaltmiete."), "Sie zahlen 1.180\u00a0€ Kaltmiete.");
   assert.equal(currencyStyle("bis 150,00 EUR je Reparatur"), "bis 150\u00a0€ je Reparatur");
-  assert.equal(currencyStyle("You pay 1,180.00 EUR"), "You pay 1,180\u00a0€");
+  // An amount is re-emitted in the language it is being shown in; the case below
+  // passed the English sentence with the German default, which is not a combination
+  // the app ever produces. The locale test further down covers English properly.
+  assert.equal(currencyStyle("You pay 1,180.00 EUR", "EUR", "en"), "You pay €1,180");
+});
+
+// The model writes an amount the way the contract does, and a contract writes a
+// thousand without a separator often enough. Swapping only the currency word left
+// "1240 EUR" beside "1.240 €" on one screen, for the same rent.
+test("an amount without a thousands separator gets the same notation as one with", () => {
+  assert.equal(currencyStyle("Die Miete beträgt 1240 EUR."), "Die Miete beträgt 1.240\u00a0€.");
+  assert.equal(currencyStyle("Die Miete beträgt 1240,00 EUR."), "Die Miete beträgt 1.240\u00a0€.");
+  assert.equal(currencyStyle("Kaution EUR 3000"), "Kaution 3.000\u00a0€");
+  // and a section number is not an amount
+  assert.equal(currencyStyle("§ 1240 BGB"), "§ 1240 BGB");
 });
 
 test("real cents survive", () => {
