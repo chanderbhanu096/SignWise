@@ -24,11 +24,25 @@ const MAX_PER_WINDOW = 20;
 const MAX_CALLERS = 10_000; // bounded: a burst of unique addresses must not grow it forever
 const calls = new Map<string, number[]>();
 
-/** The client, as far as we can tell. Azure terminates TLS, so the socket is a proxy. */
+/**
+ * The client, as far as we can tell. Azure terminates TLS, so the socket address is
+ * its front end and X-Forwarded-For carries the caller.
+ *
+ * The LAST entry, not the first. A reverse proxy appends the address it saw, so
+ * everything before it is whatever the caller chose to send — reading the first
+ * entry means a caller can rename itself on every request and never meet the limit
+ * at all. The platform's own header wins where it is present, because the caller
+ * cannot write that one either.
+ */
 export function callerKey(req: any): string {
-  const forwarded = req?.headers?.["x-forwarded-for"];
-  const first = (Array.isArray(forwarded) ? forwarded[0] : forwarded)?.split(",")[0]?.trim();
-  return (first || req?.socket?.remoteAddress || "unknown").replace(/:\d+$/, "");
+  const header = (name: string) => {
+    const value = req?.headers?.[name];
+    return Array.isArray(value) ? value[value.length - 1] : value;
+  };
+  const forwarded = header("x-forwarded-for");
+  const nearest = typeof forwarded === "string" ? forwarded.split(",").pop()?.trim() : undefined;
+  const source = header("x-azure-clientip") ?? header("x-client-ip") ?? nearest ?? req?.socket?.remoteAddress;
+  return String(source || "unknown").trim().replace(/:\d+$/, "");
 }
 
 export function rateLimit(req: any, now = Date.now()) {

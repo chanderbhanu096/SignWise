@@ -230,7 +230,16 @@ test("a caller cannot spend the whole model budget in a loop", async () => {
   assert.doesNotThrow(() => rateLimit(from("203.0.113.7"), later));
 
   // Azure terminates TLS, so the proxy header is the caller, and the port is not.
-  assert.equal(callerKey({ headers: { "x-forwarded-for": "198.51.100.4:51234, 10.0.0.1" }, socket: {} }), "198.51.100.4");
+  // The proxy appends what it saw, so the LAST entry is the one the caller cannot
+  // choose — reading the first would let a caller rename itself on every request.
+  assert.equal(callerKey({ headers: { "x-forwarded-for": "1.2.3.4, 198.51.100.4:51234" }, socket: {} }), "198.51.100.4");
   assert.equal(callerKey({ headers: {}, socket: { remoteAddress: "198.51.100.9" } }), "198.51.100.9");
+  assert.equal(callerKey({ headers: { "x-azure-clientip": "198.51.100.7", "x-forwarded-for": "1.2.3.4" }, socket: {} }), "198.51.100.7");
+
+  // And a spoofed prefix does not buy a fresh budget.
+  resetRateLimitForTest();
+  const spoof = (n: number) => ({ headers: { "x-forwarded-for": `10.0.0.${n}, 198.51.100.5:443` }, socket: {} });
+  for (let i = 0; i < 20; i++) rateLimit(spoof(i));
+  assert.throws(() => rateLimit(spoof(99)), (e: any) => e.code === "too_many_requests");
   resetRateLimitForTest();
 });
