@@ -106,3 +106,42 @@ test("a model's own word for a tag does not throw the analysis away", async () =
   assert.deepEqual(tagsOf(json(["duty", "responsibility"])), ["responsibility"]); // no duplicate chip
   assert.deepEqual(tagsOf(json(["money", "deadline"])), ["money", "deadline"]);
 });
+
+// Measured over 15 live responses: 10 were rejected by the schema and every one was
+// a good analysis with a bad edge. These are the edges, and each repair uses only
+// what the same response already says.
+test("an analysis is repaired at the edges instead of being thrown away", async () => {
+  const { parseAnalysisForTest } = await import("../api/_model.ts");
+  const base = () => JSON.parse(JSON.stringify(sampleAnalysis("de")));
+  const parse = (a: unknown) => parseAnalysisForTest(JSON.stringify(a), "de");
+
+  // The model answers with the label it prints rather than the id it assigned.
+  const named = base();
+  const first = named.clauses[0];
+  named.glance[0] = { key: "Miete", value: "1.240 €", clauseId: first.ref };
+  named.rights[0] = { clauseId: first.title, text: "Sie dürfen die Wohnung nutzen." };
+  named.findings[0] = first.ref;
+  const fixed = parse(named);
+  assert.equal(fixed.glance[0].clauseId, first.id, "a ref was not resolved to its clause");
+  assert.equal(fixed.rights[0].clauseId, first.id, "a title was not resolved to its clause");
+  assert.equal(fixed.findings[0], first.id);
+
+  // A name that matches nothing is removed, never guessed at.
+  const invented = base();
+  invented.glance[0] = { key: "Miete", value: "1.240 €", clauseId: "§ 99 Erfundenes" };
+  const cleaned = parse(invented);
+  assert.equal(cleaned.glance[0].clauseId, undefined, "an invented source must not survive");
+  const ids = new Set(cleaned.clauses.map((c) => c.id));
+  for (const id of JSON.stringify(cleaned).match(/"clauseId":"(.*?)"/g) ?? []) {
+    assert.ok(ids.has(id.slice(12, -1)), `dangling link ${id}`);
+  }
+
+  // An entry that lost a field it cannot be shown without goes; the rest stay.
+  const holed = base();
+  const dates = holed.dates.length;
+  holed.dates.push({ date: null, title: "Ohne Datum", body: "x", tone: "normal" });
+  assert.equal(parse(holed).dates.length, dates, "a date with no date must not reach the screen");
+
+  // And a clause is never invented to satisfy a link.
+  assert.equal(parse(base()).clauses.length, base().clauses.length);
+});

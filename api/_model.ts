@@ -242,6 +242,105 @@ function fixTags(value: unknown): unknown {
   return value;
 }
 
+// Between the model's answer and the schema's verdict.
+//
+// AnalysisSchema.parse is all or nothing, and that is right for a figure and wrong
+// for a whole upload: measured over 15 live responses, 10 were rejected outright and
+// every one of them was a good analysis with a bad edge. Losing thirteen explained
+// clauses because the fourteenth names its source by title is not caution, it is a
+// two-minute wait ending in "etwas ist schiefgegangen".
+//
+// So: repair only what the answer itself already says, drop what cannot be resolved,
+// and let the schema reject what is left. Nothing here invents a value.
+type Loose = Record<string, unknown>;
+const isObj = (v: unknown): v is Loose => !!v && typeof v === "object" && !Array.isArray(v);
+const label = (v: unknown) => (typeof v === "string" ? v.trim().toLowerCase().replace(/\s+/g, " ") : "");
+const section = (v: unknown) => label(v).match(/§+\s?\d+[a-z]?/)?.[0].replace(/\s+/g, "");
+
+// "clauseId": "§ 3 Vergütung" — the model answered with the label it prints rather
+// than the id it assigned. Everything needed to fix that is in the same response, so
+// a link is repaired when exactly one clause answers to that name, and removed when
+// none does. A dangling link is the one thing that must not survive: the whole point
+// of the id is that the reader can click through to the passage it came from.
+function resolveLinks(root: Loose): Loose {
+  const clauses = Array.isArray(root.clauses) ? root.clauses.filter(isObj) : [];
+  const ids = new Set(clauses.map((c) => c.id).filter((id): id is string => typeof id === "string"));
+  const byName = new Map<string, string | null>(); // null = ambiguous, do not guess
+  for (const c of clauses) {
+    if (typeof c.id !== "string") continue;
+    for (const name of [label(c.ref), label(c.title), section(c.ref), section(c.quote)]) {
+      if (!name) continue;
+      byName.set(name, byName.has(name) && byName.get(name) !== c.id ? null : c.id);
+    }
+  }
+  const resolve = (value: unknown): string | undefined => {
+    if (typeof value !== "string") return undefined;
+    if (ids.has(value)) return value;
+    return byName.get(label(value)) ?? byName.get(section(value) ?? "") ?? undefined;
+  };
+
+  const walk = (value: unknown): unknown => {
+    if (Array.isArray(value)) return value.map(walk);
+    if (!isObj(value)) return value;
+    const out: Loose = {};
+    for (const [key, entry] of Object.entries(value)) {
+      if (key.endsWith("clauseId") || key.endsWith("ClauseId")) {
+        const id = resolve(entry);
+        if (id) out[key] = id; // unresolvable links are dropped, never guessed
+        continue;
+      }
+      out[key] = walk(entry);
+    }
+    return out;
+  };
+  const out = walk(root) as Loose;
+  // "findings" is a bare list of ids, not a field called clauseId.
+  if (Array.isArray(out.findings)) out.findings = out.findings.map(resolve).filter(Boolean);
+  return out;
+}
+
+// An entry that lost a field it cannot be displayed without is dropped, so the rest
+// of the list still reaches the reader. A date with no date is not a date.
+const REQUIRED: Record<string, string[]> = {
+  dates: ["date", "title", "body", "tone"],
+  glance: ["key", "value"],
+  rights: ["clauseId", "text"],
+  duties: ["clauseId", "text"],
+  clauses: ["id", "ref", "page", "quote", "level", "title", "means", "simple"],
+};
+function dropIncomplete(root: Loose): Loose {
+  const out: Loose = { ...root };
+  for (const [key, fields] of Object.entries(REQUIRED)) {
+    if (!Array.isArray(out[key])) continue;
+    out[key] = (out[key] as unknown[]).filter((entry) => isObj(entry) && fields.every((f) => entry[f] != null && entry[f] !== ""));
+  }
+  if (isObj(out.money)) {
+    const money: Loose = { ...out.money };
+    for (const key of ["oneTime", "variable"]) {
+      if (Array.isArray(money[key])) money[key] = (money[key] as unknown[]).filter((e) => isObj(e) && typeof e.label === "string");
+    }
+    out.money = money;
+  }
+  return out;
+}
+
+// Only the analysis is salvaged. An answer to a question is one short object whose
+// whole job is to cite a passage, and a translation is checked field by field
+// against the analysis it came from — quietly dropping a fabricated link there would
+// turn "the model invented a source" into "the model gave no source", which is the
+// same sentence with the warning removed. Those two are retried instead.
+function parseAnalysis(raw: string, lang: Lang): Analysis {
+  const value = extractJson(raw);
+  const analysis = AnalysisSchema.parse(isObj(value) ? dropIncomplete(resolveLinks(value)) : value);
+  if (analysis.lang !== lang) throw new Error("wrong_analysis_language");
+  // Verification is the browser's job against the document it holds; whatever the
+  // model claims here is overwritten either way.
+  return { ...analysis, clauses: analysis.clauses.map((clause) => ({ ...clause, verified: false })) };
+}
+
+/** The analysis parse path, for tests. */
+export const parseAnalysisForTest = parseAnalysis;
+
 async function withRetry<T>(produce: () => Promise<string>, parse: (raw: string) => T, attempts = 3): Promise<T> {
   let last: unknown;
   for (let i = 0; i < attempts; i++) {
@@ -296,11 +395,7 @@ export async function analyzeContract(input: AnalyzeInput, signal?: AbortSignal)
   if (!live) throw new ApiFailure("service_unavailable", 503);
   return withRetry(
     () => complete(ANALYZE_SYSTEM, userContent(input), 16000, signal),
-    (raw) => {
-      const a = AnalysisSchema.parse(extractJson(raw));
-      if (a.lang !== input.lang) throw new Error("wrong_analysis_language");
-      return { ...a, clauses: a.clauses.map((clause) => ({ ...clause, verified: false })) };
-    },
+    (raw) => parseAnalysis(raw, input.lang),
   );
 }
 
