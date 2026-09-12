@@ -841,6 +841,7 @@ li.law-ref > .law-ref-label { display: inline-block; padding: 6px 2px; } /* plai
   .app::before, .hdr::after, .upload-intro::after, section.screen.upload-screen::before, section.screen.upload-screen::after { display: none !important; }
   .upload-card, .example-strip { background: #fff; box-shadow: none; backdrop-filter: none; }
   .card { break-inside: avoid; border-color: #ccc; }
+  .pay-hero { break-inside: avoid; padding: 16px 18px; background: #fff; border-color: #ccc; }
   .decision-hero { padding: 20px; background: #fff; }
   .decision-hero::after { display: none; }
   .commitment-card, .review-card, .clarification-card, .understanding-item { break-inside: avoid; box-shadow: none; }

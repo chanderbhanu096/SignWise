@@ -305,69 +305,9 @@ export function Overview({
         </ol>
       </div>
 
-      {/* Ask — never collapsed: it is the proof the analysis is about *this* document */}
-      <div className="card block ask-card">
-        <h2 style={{ fontSize: 20 }}>{s.askHeading}</h2>
-        <p className="section-sub" style={{ marginBottom: 0 }}>
-          {s.askSub}
-        </p>
-        <div className="ask-chips">
-          {suggestions.map((q) => (
-            <button key={q} className="chip" onClick={() => {
-              if (asking || disabled) return;
-              setTyped(q);
-              onAsk(q);
-            }} disabled={asking || disabled}>
-              {q}
-            </button>
-          ))}
-        </div>
-        {/* The model can take a while; without this the card looks inert and people
-            press the button again. */}
-        {asking && (
-          <div className="ask-thinking" role="status">
-            <span className="ask-dots" aria-hidden="true">
-              <i />
-              <i />
-              <i />
-            </span>
-            {s.askThinking}
-          </div>
-        )}
-        {answer && !asking && (
-          <div className="answer" role={answer.error ? "alert" : "status"}>
-            {answer.question && (
-              <p style={{ marginBottom: 12 }}>
-                <strong>{analysis.lang === "de" ? "Ihre Frage:" : "Your question:"}</strong> {answer.question}
-              </p>
-            )}
-            <div className="answer-label">{answer.error
-              ? analysis.lang === "de" ? "Antwort gerade nicht verfügbar" : "Answer unavailable right now"
-              : s.askExplanation}</div>
-            <p style={{ marginTop: 6 }}>{answer.text}</p>
-            {!answer.error && answer.clauseId && byId(answer.clauseId) && (
-              <button className="link-btn" onClick={() => onOpenClause(answer.clauseId!)}>
-                {s.askShowClause}
-              </button>
-            )}
-          </div>
-        )}
-        <form
-          className="ask-row"
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (!asking && !disabled && typed.trim() && typed.trim().length <= 2000) {
-              onAsk(typed.trim());
-            }
-          }}
-        >
-          <input aria-label={s.askHeading} placeholder={s.askPlaceholder} maxLength={2000} value={typed} disabled={disabled} onChange={(e) => setTyped(e.target.value)} />
-          <button className="btn btn-primary" type="submit" disabled={asking || disabled || !typed.trim()}>
-            {s.askBtn}
-          </button>
-        </form>
-      </div>
-
+      {/* Money before the question box: the reader's second question after "what
+          is wrong with this" is "what does it cost me", and both are facts read
+          off the document. The Q&A is a tool, and tools come after the reading. */}
       {/* Financial — heading, labels and chart adapt to the contract category.
           Nothing stated? A single line, not a card full of dashes. */}
       {moneyState.hasAnything ? (
@@ -530,6 +470,69 @@ export function Overview({
         // Absence is itself worth stating when the contract type implies money.
         !neutral && <p className="sec-empty block">{s.noAmounts}</p>
       )}
+
+      {/* Ask — never collapsed: it is the proof the analysis is about *this* document */}
+      <div className="card block ask-card">
+        <h2 style={{ fontSize: 20 }}>{s.askHeading}</h2>
+        <p className="section-sub" style={{ marginBottom: 0 }}>
+          {s.askSub}
+        </p>
+        <div className="ask-chips">
+          {suggestions.map((q) => (
+            <button key={q} className="chip" onClick={() => {
+              if (asking || disabled) return;
+              setTyped(q);
+              onAsk(q);
+            }} disabled={asking || disabled}>
+              {q}
+            </button>
+          ))}
+        </div>
+        {/* The model can take a while; without this the card looks inert and people
+            press the button again. */}
+        {asking && (
+          <div className="ask-thinking" role="status">
+            <span className="ask-dots" aria-hidden="true">
+              <i />
+              <i />
+              <i />
+            </span>
+            {s.askThinking}
+          </div>
+        )}
+        {answer && !asking && (
+          <div className="answer" role={answer.error ? "alert" : "status"}>
+            {answer.question && (
+              <p style={{ marginBottom: 12 }}>
+                <strong>{analysis.lang === "de" ? "Ihre Frage:" : "Your question:"}</strong> {answer.question}
+              </p>
+            )}
+            <div className="answer-label">{answer.error
+              ? analysis.lang === "de" ? "Antwort gerade nicht verfügbar" : "Answer unavailable right now"
+              : s.askExplanation}</div>
+            <p style={{ marginTop: 6 }}>{answer.text}</p>
+            {!answer.error && answer.clauseId && byId(answer.clauseId) && (
+              <button className="link-btn" onClick={() => onOpenClause(answer.clauseId!)}>
+                {s.askShowClause}
+              </button>
+            )}
+          </div>
+        )}
+        <form
+          className="ask-row"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!asking && !disabled && typed.trim() && typed.trim().length <= 2000) {
+              onAsk(typed.trim());
+            }
+          }}
+        >
+          <input aria-label={s.askHeading} placeholder={s.askPlaceholder} maxLength={2000} value={typed} disabled={disabled} onChange={(e) => setTyped(e.target.value)} />
+          <button className="btn btn-primary" type="submit" disabled={asking || disabled || !typed.trim()}>
+            {s.askBtn}
+          </button>
+        </form>
+      </div>
 
       {/* Dates — open when one of them is a deadline that can cost the reader */}
       {analysis.dates.length > 0 && (
