@@ -52,6 +52,7 @@ function errMessage(code: string, lang: Lang): string {
         response_truncated: "Die KI-Antwort wurde abgeschnitten. Bitte versuchen Sie es erneut oder verwenden Sie ein kürzeres Dokument.",
         model_response_invalid: "Die KI-Antwort konnte nicht zuverlässig verarbeitet werden. Es wurde keine Analyse angezeigt. Bitte versuchen Sie es erneut.",
         request_timeout: "Die Analyse hat zu lange gedauert. Bitte versuchen Sie es erneut, gegebenenfalls mit einem kürzeren Dokument.",
+        too_many_requests: "Zu viele Anfragen in kurzer Zeit. Bitte warten Sie ein paar Minuten — Ihr Vertrag ist nicht das Problem. Die Beispiele unten funktionieren weiterhin.",
         analysis_failed: "Bei der Analyse ist etwas schiefgegangen.",
       }
     : {
@@ -72,6 +73,7 @@ function errMessage(code: string, lang: Lang): string {
         response_truncated: "The AI response was cut short. Please try again or use a shorter document.",
         model_response_invalid: "The AI response could not be processed reliably, so no analysis was shown. Please try again.",
         request_timeout: "The analysis took too long. Please try again, perhaps with a shorter document.",
+        too_many_requests: "Too many requests in a short time. Please wait a few minutes — your contract is not the problem. The examples below still work.",
         analysis_failed: "Something went wrong during analysis.",
       };
   return map[code] ?? (de ? "Verbindung fehlgeschlagen. Bitte erneut versuchen." : "Connection failed. Please try again.");

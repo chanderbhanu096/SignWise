@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { analyze, ask, translate, ApiError } from "../src/api.ts";
 import { ContractSession } from "../src/session.ts";
 import { sampleAnalysis } from "../src/sample.ts";
@@ -265,4 +266,33 @@ test("client API boundaries", { concurrency: false }, async (suite) => {
         (error: unknown) => error instanceof ApiError && error.code === "http_503");
     });
   });
+});
+
+// Every refusal the server can send has to arrive as a sentence the person can act
+// on. The rate limiter shipped without one, so a caller who hit it would have been
+// told "Verbindung fehlgeschlagen" — which points at their network and is wrong.
+test("every failure the API can return has a message written for the reader", () => {
+  const source = (file: string) => readFileSync(new URL(`../${file}`, import.meta.url), "utf8");
+  const files = ["api/_http.ts", "api/_validation.ts", "api/_model.ts", "api/analyze.ts", "api/ask.ts",
+                 "api/translate.ts", "src/pdf.ts", "src/upload.ts"];
+  const thrown = new Set(
+    files.flatMap((f) => [...source(f).matchAll(/new (?:ApiFailure|UploadError)\("([a-z_]+)"/g)].map((m) => m[1])),
+  );
+  const app = source("src/App.tsx");
+  const described = new Set([...app.matchAll(/^\s{8}([a-z_]+):\s*"/gm)].map((m) => m[1]));
+
+  // Codes the UI cannot reach: the request shape is the app's own, the question box
+  // caps its own length and disables itself when empty, and an abort is the person
+  // pressing cancel. If one of these ever shows up on screen it is a bug in the
+  // client, and a friendly sentence would hide it.
+  const unreachable = new Set(["bad_analysis", "empty_question", "invalid_json", "invalid_language",
+                               "invalid_request", "question_too_long", "request_aborted"]);
+
+  const silent = [...thrown].filter((code) => !described.has(code) && !unreachable.has(code));
+  assert.deepEqual(silent, [], `no message for: ${silent.join(", ")}`);
+
+  // And the validation codes the upload screen raises before any request.
+  for (const code of ["unsupported_type", "too_large", "empty_file"]) {
+    assert.ok(described.has(code), `no message for ${code}`);
+  }
 });
