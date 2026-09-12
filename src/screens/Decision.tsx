@@ -75,7 +75,13 @@ export function Decision({
           <ul className="commitment-grid">
             {brief.commitments.map((commitment) => (
               <li className="commitment-card" key={`${commitment.clauseId}:${commitment.title}`}>
-                {commitment.value && <div className="commitment-value">{commitment.value}</div>}
+                {/* Two words or a whole sentence both land here. At one size the
+                    sentences became four lines of headline; the length picks the size. */}
+                {commitment.value && (
+                  <div className="commitment-value" data-len={commitment.value.length > 30 ? "long" : commitment.value.length > 18 ? "mid" : "short"}>
+                    {commitment.value}
+                  </div>
+                )}
                 <h3>{commitment.title}</h3>
                 <p>{commitment.explanation}</p>
                 <button className="link-btn" onClick={() => onOpenClause(commitment.clauseId)}>
@@ -106,7 +112,7 @@ export function Decision({
           {brief.reviewItems.length > 0 ? (
             <ul className="review-list">
               {brief.reviewItems.map((item) => (
-                <li className="review-card" key={item.clauseId}>
+                <li className="review-card" data-level={clauseLevel(item.clauseId)} key={item.clauseId}>
                   {clauseLevel(item.clauseId) && <Severity level={clauseLevel(item.clauseId)!} lang={analysis.lang} />}
                   <h3>{item.title}</h3>
                   <p>{item.explanation}</p>

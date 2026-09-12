@@ -407,6 +407,22 @@ button:disabled:hover { transform: none; }
 .money-row > :last-child { text-align: right; }
 .money-row:first-of-type { border-top: none; }
 .money-row .na { color: var(--muted-2); font-weight: 500; font-style: italic; font-size: 13px; }
+/* The headline amount, at the width of the page. */
+.pay-hero { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px 36px;
+  margin-top: 16px; padding: 22px 26px; border: 1px solid #b9dbdd; border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, #f7fcfc 0%, var(--brand-tint) 100%); }
+.pay-hero-main { min-width: 0; }
+.pay-amount { margin-top: 4px; font-size: clamp(38px, 4.6vw, 54px); font-weight: 700; letter-spacing: -1.6px; line-height: 1; overflow-wrap: anywhere; }
+.pay-basis { margin-top: 8px; font-size: 13.5px; color: var(--muted); }
+.pay-aside { display: flex; flex-wrap: wrap; gap: 12px 30px; }
+.pay-stat { min-width: 0; font-size: 13px; color: var(--muted); }
+.pay-stat b { display: block; margin-top: 2px; font-size: 21px; font-weight: 700; color: var(--ink); letter-spacing: -0.4px; }
+.pay-range { color: var(--muted); font-weight: 600; }
+.pay-amount .pay-range { font-size: 0.72em; letter-spacing: -0.8px; }
+.pay-stat .pay-range { font-size: 0.86em; }
+.pay-hero .link-btn { margin-top: 6px; }
+.chart-total { font-size: 13px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+.chart-note { margin-top: 4px; font-size: 13.5px; color: var(--ink-2); }
 .chart { display: flex; align-items: flex-end; gap: 8px; height: 160px; margin-top: 16px; overflow-x: auto; overflow-y: hidden; }
 .bar-col { flex: 1; min-width: 0; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; justify-items: center; gap: 6px; height: 100%; }
 .bar-amt { font-size: 11px; color: var(--muted-2); }
@@ -415,6 +431,7 @@ button:disabled:hover { transform: none; }
 /* The extra payment sits on top of the base rather than recolouring the whole
    bar, so its size is readable against a salary that dwarfs it. */
 .bar-extra { width: 100%; background: var(--brand); }
+.bar-col.tall .bar-amt { font-weight: 700; color: var(--brand-strong); }
 .bar-m { font-size: 12px; color: var(--muted-2); }
 .chart-scale-note { margin-top: 12px; color: var(--muted-2); font-size: 12px; line-height: 1.5; }
 .money-notes { list-style: none; display: grid; gap: 12px; }
@@ -558,30 +575,32 @@ button:disabled:hover { transform: none; }
 .commitment-card { min-width: 0; padding: 18px; border: 1px solid var(--line); border-top: 3px solid var(--brand); border-radius: var(--radius); background: var(--surface); display: flex; flex-direction: column; align-items: flex-start; }
 .commitment-card { box-shadow: 0 8px 22px rgba(18,38,43,0.05); transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease; }
 .commitment-card:hover { border-color: #b9dbdd; transform: translateY(-2px); box-shadow: 0 16px 32px rgba(18,38,43,0.09); }
-.commitment-value { max-width: 100%; font-size: clamp(25px, 2.4vw, 34px); line-height: 1.08; font-weight: 700; letter-spacing: -0.7px; overflow-wrap: anywhere; }
+.commitment-value { max-width: 100%; font-size: clamp(25px, 2.4vw, 34px); line-height: 1.1; font-weight: 700; letter-spacing: -0.7px; overflow-wrap: break-word; hyphens: auto; }
+.commitment-value[data-len="mid"] { font-size: clamp(20px, 1.8vw, 25px); letter-spacing: -0.4px; }
+.commitment-value[data-len="long"] { font-size: 18px; line-height: 1.28; letter-spacing: -0.1px; }
 .commitment-card h3 { margin-top: 7px; font-size: 16px; }
 .commitment-card p { margin-top: 6px; color: var(--muted); font-size: 14px; }
 .commitment-card .link-btn { margin-top: auto; padding-top: 12px; }
 .brief-empty { margin-top: 14px; padding: 18px 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
-.brief-empty.compact { margin-top: 16px; }
-.brief-empty.compact p { margin-top: 10px; color: var(--muted); font-size: 14px; }
-.decision-attention-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 34px; align-items: start; }
+.brief-empty.compact { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin-top: 14px; padding: 12px 16px; border-style: dashed; background: none; }
+.brief-empty.compact p { margin-top: 0; flex: 1 1 320px; color: var(--muted); font-size: 13.5px; }
+.decision-attention-grid { display: grid; grid-template-columns: 1fr; gap: 34px; margin-top: 34px; align-items: start; }
 .decision-attention-grid.single { grid-template-columns: 1fr; }
-.decision-panel { min-width: 0; padding: 22px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); }
-/* Both panels wear the brand, not a severity colour. The amber rule here was the
-   last thing on this screen still claiming that everything inside it is the "worth
-   checking" level — it is not: the section is ranked by consequence and holds
-   clauses of every level, each now carrying its own badge. */
-.review-panel, .clarify-panel { border-top: 3px solid var(--brand); }
+.decision-panel { min-width: 0; }
 .decision-panel-head { display: flex; align-items: flex-start; gap: 12px; }
-.review-list, .clarification-list { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; margin-top: 16px; }
-.review-card, .clarification-card { min-width: 0; padding: 15px 16px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); }
+.review-list, .clarification-list { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; margin-top: 16px; }
+.review-card, .clarification-card { min-width: 0; padding: 15px 17px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: 0 6px 18px rgba(18,38,43,0.04); }
+.review-card { border-left: 3px solid var(--line); }
+.review-card[data-level="important"] { border-left-color: var(--imp-fg); }
+.review-card[data-level="check"] { border-left-color: var(--chk-fg); }
+.review-card[data-level="standard"] { border-left-color: var(--std-fg); }
+.clarification-card { border-left: 3px solid var(--brand); }
 .review-card h3, .clarification-card h3 { font-size: 16px; overflow-wrap: anywhere; }
 .review-card .sev { margin-bottom: 8px; }
 .review-card p, .clarification-card p { margin-top: 6px; color: var(--muted); font-size: 14px; }
 .review-card .review-reason { color: var(--ink-2); }
 .review-card .link-btn, .clarification-card .link-btn { margin-top: 5px; }
-.understanding-section { padding: 24px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); }
+.understanding-section { min-width: 0; }
 .understanding-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 8px; margin-top: 16px; }
 .understanding-item { border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); overflow: hidden; }
 .understanding-item[open] { border-color: #b9dbdd; background: var(--surface); }
@@ -684,6 +703,11 @@ li.law-ref > .law-ref-label { display: inline-block; padding: 6px 2px; } /* plai
   .money-row { gap: 10px; }
   .money-row > span { min-width: 0; overflow-wrap: anywhere; }
   .money-big { font-size: 34px; }
+  /* At this width the aside still fits beside the amount, so the year figure and
+     the "show clause" link ended up on one cramped line. Stack instead. */
+  .pay-hero { flex-direction: column; align-items: stretch; padding: 18px; gap: 14px; }
+  .pay-amount { font-size: 38px; }
+  .pay-aside { gap: 12px 22px; padding-top: 12px; border-top: 1px solid rgba(15,95,107,0.18); }
   .seg { width: 100%; }
   .seg button { flex: 1; min-width: 0; padding: 0 10px; font-size: 14px; }
   .ask-row { flex-wrap: wrap; }
@@ -736,7 +760,6 @@ li.law-ref > .law-ref-label { display: inline-block; padding: 6px 2px; } /* plai
   .decision-hero { padding: 24px 20px; }
   .decision-lead { font-size: 16px; }
   .commitment-grid { grid-template-columns: 1fr; }
-  .decision-panel, .understanding-section { padding: 18px; }
   .understanding-answer { padding-left: 18px; }
 }
 
