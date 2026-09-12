@@ -219,7 +219,6 @@ export default function App() {
     try {
       const a = await analyze(file, lang, text, task.signal, images);
       if (!task.isCurrent()) return;
-      if (a.warnings.includes("stub")) throw new ApiError("service_unavailable");
       setPhase("verify");
       const checked = verifyAnalysis(a, text);
       sessionRef.current.translations.set(lang, checked);
@@ -313,7 +312,13 @@ export default function App() {
         ? sampleKind === "employment" ? employmentAnalysis(l) : sampleAnalysis(l)
         : sessionRef.current.translations.get(l) ?? await translate(analysis, l, task.signal);
       if (!task.isCurrent()) return;
-      if (translated.lang !== l || translated.warnings.includes("translate-stub")) throw new ApiError("translation_unavailable");
+      // "warnings" is the model's own free text and nothing reads it but this line
+      // used to: the server answered with a fixture tagged "stub" when it had no
+      // credentials, and both screens checked for that tag. The server now refuses
+      // with service_unavailable instead, so the tags cannot arrive — while a model
+      // that happened to write the word would have had a real analysis thrown away
+      // and the person told the service was down.
+      if (translated.lang !== l) throw new ApiError("translation_unavailable");
       const checked = verifyAnalysis(translated, docText);
       sessionRef.current.translations.set(l, checked);
       setAnalysis(checked);
