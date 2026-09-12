@@ -137,3 +137,89 @@ test("the recurring-service benchmark uses the current one-month notice and excl
   analysis.contractType = "Insurance policy";
   assert.ok(!lawChecks(analysis).some((item) => item.id === "laufzeit-abo"));
 });
+
+// Employment benchmarks. Every quote below is from the fictional Werkstudent test
+// contract that made the gap obvious: before these, an employment contract was
+// measured against one benchmark, and the working-student hours rule — the one the
+// person holding that contract most needs — was not among them.
+function employment(quotes: Record<string, string>, contractType = "Werkstudentenvertrag"): Analysis {
+  const base = employmentAnalysis("de");
+  return {
+    ...base,
+    contractType,
+    money: { ...base.money, oneTime: [] },
+    clauses: Object.entries(quotes).map(([id, quote], i) => ({ ...base.clauses[0], id, ref: `§ ${i + 1}`, quote })),
+    findings: [Object.keys(quotes)[0]],
+  };
+}
+const fired = (a: Analysis, id: string) => lawChecks(a).find((h) => h.id === id);
+
+test("a Werkstudentenvertrag is recognised as employment, not as a generic contract", () => {
+  for (const type of ["Werkstudentenvertrag", "Minijob-Vertrag", "Praktikumsvertrag", "Ausbildungsvertrag", "Working student agreement"]) {
+    const scope = lawCheckScope(employment({ a: "§ 1 Beginn. Das Arbeitsverhältnis beginnt am 01.10.2026." }, type));
+    assert.ok(scope.checked > 1, `${type} was measured against ${scope.checked} benchmark(s)`);
+  }
+});
+
+test("hours above the working-student line are put next to § 6 SGB V, taking the highest the clause allows", () => {
+  const hit = fired(employment({
+    hours: "§ 2 Arbeitszeit. Die regelmäßige Arbeitszeit beträgt während der Vorlesungszeit 20 Stunden pro Woche. Bei außergewöhnlichem Projektbedarf verpflichtet sich der Werkstudent, auf Anweisung bis zu 28 Stunden pro Woche zu arbeiten.",
+  }), "werkstudent-20-stunden");
+  assert.ok(hit, "expected the working-student hours benchmark to fire");
+  assert.match(hit.contract, /28 Stunden/, "the first figure was taken instead of the highest");
+  assert.doesNotMatch(hit.contract, /unwirksam|ungültig/);
+});
+
+test("a working week inside the line stays silent", () => {
+  assert.equal(fired(employment({
+    hours: "§ 2 Arbeitszeit. Die regelmäßige Arbeitszeit beträgt während der Vorlesungszeit 20 Stunden pro Woche.",
+  }), "werkstudent-20-stunden"), undefined);
+});
+
+test("leave that lapses without notice is put next to § 7 Abs. 3 BUrlG", () => {
+  const hit = fired(employment({
+    leave: "§ 5 Urlaub. Urlaub, der bis zum 31. Dezember nicht genommen wurde, verfällt unabhängig davon, ob der Arbeitgeber zuvor auf den drohenden Verfall hingewiesen hat.",
+  }), "urlaubsverfall");
+  assert.ok(hit, "expected the holiday-lapse benchmark to fire");
+  assert.match(hit.rule, /hingewiesen/);
+});
+
+test("an ordinary carry-over clause stays silent", () => {
+  assert.equal(fired(employment({
+    leave: "§ 5 Urlaub. Resturlaub kann bis zum 31. März des Folgejahres genommen werden.",
+  }), "urlaubsverfall"), undefined);
+});
+
+test("leave below the statutory floor is put next to § 3 BUrlG, and the floor follows the week", () => {
+  const hit = fired(employment({
+    leave: "§ 5 Urlaub. Der Werkstudent erhält 15 Arbeitstage Jahresurlaub auf Basis einer Fünf-Tage-Woche.",
+  }), "mindesturlaub");
+  assert.ok(hit, "expected the minimum-leave benchmark to fire");
+  assert.match(hit.contract, /15/);
+  assert.match(hit.contract, /20/);
+  assert.equal(fired(employment({
+    leave: "§ 5 Urlaub. Der Werkstudent erhält 20 Arbeitstage Jahresurlaub auf Basis einer Fünf-Tage-Woche.",
+  }), "mindesturlaub"), undefined);
+});
+
+test("an hourly wage is only put next to § 1 MiLoG when it falls short", () => {
+  assert.equal(fired(employment({
+    pay: "§ 3 Vergütung. Die Vergütung beträgt 16,50 EUR brutto je Arbeitsstunde.",
+  }), "mindestlohn"), undefined, "a wage above the minimum is not a gap worth showing");
+  const hit = fired(employment({
+    pay: "§ 3 Vergütung. Die Vergütung beträgt 11,00 EUR brutto je Arbeitsstunde.",
+  }), "mindestlohn");
+  assert.ok(hit, "expected the minimum-wage benchmark to fire");
+  assert.match(hit.contract, /11,00/);
+});
+
+test("no employment benchmark ever returns a verdict on the contract", () => {
+  const all = lawChecks(employment({
+    hours: "§ 2 Arbeitszeit. Bis zu 28 Stunden pro Woche während der Vorlesungszeit.",
+    leave: "§ 5 Urlaub. 15 Arbeitstage auf Basis einer Fünf-Tage-Woche; nicht genommener Urlaub verfällt unabhängig davon, ob der Arbeitgeber hingewiesen hat.",
+    pay: "§ 3 Vergütung. 11,00 EUR brutto je Arbeitsstunde.",
+    cut: "§ 11 Ausschlussfrist. Ansprüche verfallen, wenn sie nicht innerhalb von zwei Monaten geltend gemacht werden.",
+  }));
+  assert.ok(all.length >= 4, `expected every trap to be measured, got ${all.map((h) => h.id).join(", ")}`);
+  for (const hit of all) assert.doesNotMatch(hit.contract, /unwirksam|nichtig|ungültig|void|illegal/i, hit.id);
+});

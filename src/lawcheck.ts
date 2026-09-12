@@ -57,6 +57,36 @@ function months(text: string): number | null {
   return /^\d+$/.test(raw) ? parseInt(raw, 10) : (MONTH_WORDS[raw] ?? null);
 }
 
+/** A per-hour rate, which is what § 1 MiLoG measures. "16,50 EUR je Arbeitsstunde". */
+function hourlyWage(text: string): number | null {
+  const m = text.match(/((?:EUR\b|Euro\b|€)\s*)?(\d+(?:[.,]\d+)*)\s*(?:EUR|Euro|€)?\s*(?:brutto\s*)?(?:je|pro|per|\/)\s*(?:Arbeits)?stunde|\bstundenlohn[^\d]{0,20}(\d+(?:[.,]\d+)*)/i);
+  if (!m) return null;
+  const value = canonical(m[2] ?? m[3] ?? "");
+  return value == null ? null : Number(value);
+}
+
+/**
+ * The most hours a week the clause can require. The highest figure, not the first:
+ * a working-time clause states the normal week and then what may be demanded on top
+ * — "20 Stunden pro Woche ... verpflichtet sich, bis zu 28 Stunden pro Woche zu
+ * arbeiten" — and it is the 28 that decides whether the studies stay the main thing.
+ */
+function weeklyHours(text: string): number | null {
+  const all = [...text.matchAll(/(\d{1,2})(?:[.,]\d+)?\s*(?:Arbeits)?stunden?\s*(?:pro\s+Woche|je\s+Woche|wöchentlich|\/\s*Woche|per week|a week|weekly)/gi)]
+    .map((m) => parseInt(m[1], 10));
+  return all.length ? Math.max(...all) : null;
+}
+
+/** Annual leave in working days: "20 Arbeitstage Jahresurlaub". */
+function leaveDays(text: string): number | null {
+  const m = text.match(/(\d{1,2})\s*(?:Arbeits|Werk|Urlaubs)?tage?\s*(?:bezahlten\s+)?(?:Jahres)?urlaub|urlaubsanspruch[^\d]{0,30}(\d{1,2})\s*(?:Arbeits|Werk)?tage?|(\d{1,2})\s*(?:working |business )?days.{0,12}(?:annual |paid )?(?:leave|holiday)/i);
+  if (!m) return null;
+  return parseInt(m[1] ?? m[2] ?? m[3], 10);
+}
+
+/** A five-day week is the basis the statutory minimum is converted to. */
+const fiveDayWeek = (text: string) => /Fünf-?Tage-?Woche|5-?Tage-?Woche|fünf\s+Arbeitstage|five-?day week/i.test(text);
+
 /** The net cold rent, which is what § 551 BGB measures a deposit against. */
 function netColdRent(analysis: Analysis): number | null {
   for (const c of analysis.clauses) {
@@ -228,6 +258,109 @@ const RULES: Rule[] = [
       return {
         de: `Ihr Vertrag sieht ${fmt(pct, "de")} % jährlich vor — rund ${fmt(Math.round(overThree), "de")} % in drei Jahren.`,
         en: `Your contract provides for ${fmt(pct, "en")} % a year — about ${fmt(Math.round(overThree), "en")} % over three years.`,
+      };
+    },
+  },
+  {
+    id: "mindestlohn",
+    law: "MiLoG",
+    section: "§ 1",
+    cite: { de: "§ 1 MiLoG", en: "§ 1 MiLoG" },
+    rule: {
+      de: "Jede Arbeitnehmerin und jeder Arbeitnehmer hat Anspruch auf den gesetzlichen Mindestlohn; er beträgt seit dem 1. Januar 2026 13,90 EUR brutto je Zeitstunde.",
+      en: "Every employee is entitled to the statutory minimum wage; since 1 January 2026 it is €13.90 gross per hour.",
+    },
+    subtypes: ["employment"],
+    test: ({ clause }) => {
+      const wage = hourlyWage(clause.quote);
+      // Side by side only when they diverge — a wage above the minimum is not a
+      // benchmark the reader needs, and this panel exists for the gap.
+      if (wage == null || wage >= 13.9) return null;
+      return {
+        de: `Ihr Vertrag: ${fmt(wage, "de", 2)} € brutto je Stunde — gesetzlicher Mindestlohn 13,90 €.`,
+        en: `Your contract: €${fmt(wage, "en", 2)} gross per hour — statutory minimum €13.90.`,
+      };
+    },
+  },
+  {
+    id: "werkstudent-20-stunden",
+    law: "SGB V",
+    section: "§ 6",
+    cite: { de: "§ 6 Abs. 1 Nr. 3 SGB V", en: "§ 6 (1) no. 3 SGB V" },
+    rule: {
+      de: "Wer neben dem Studium arbeitet, bleibt in der Kranken-, Pflege- und Arbeitslosenversicherung nur dann versicherungsfrei, wenn das Studium die Hauptsache bleibt; die Praxis der Sozialversicherungsträger zieht diese Grenze während der Vorlesungszeit bei 20 Wochenstunden.",
+      en: "Working alongside a degree is exempt from health, care and unemployment insurance only while the studies remain the main activity; social-insurance practice draws that line at 20 hours a week during lecture periods.",
+    },
+    subtypes: ["employment"],
+    test: ({ clause }) => {
+      if (!/Werkstudent|working student|Studium|Immatrikulation/i.test(clause.quote + clause.title)) {
+        if (!/Vorlesungszeit|lecture period/i.test(clause.quote)) return null;
+      }
+      const hours = weeklyHours(clause.quote);
+      if (hours == null || hours <= 20) return null;
+      return {
+        de: `Ihr Vertrag nennt ${hours} Stunden pro Woche — die Grenze für den Werkstudentenstatus liegt während der Vorlesungszeit bei 20.`,
+        en: `Your contract names ${hours} hours a week — the working-student line during lecture periods is 20.`,
+      };
+    },
+  },
+  {
+    id: "mindesturlaub",
+    law: "BUrlG",
+    section: "§ 3",
+    cite: { de: "§ 3 Abs. 1 BUrlG", en: "§ 3 (1) BUrlG" },
+    rule: {
+      de: "Der gesetzliche Mindesturlaub beträgt jährlich 24 Werktage bei einer Sechs-Tage-Woche; bei einer Fünf-Tage-Woche entspricht das 20 Arbeitstagen.",
+      en: "Statutory minimum leave is 24 working days a year on a six-day week, which corresponds to 20 days on a five-day week.",
+    },
+    subtypes: ["employment"],
+    test: ({ clause }) => {
+      const days = leaveDays(clause.quote);
+      if (days == null) return null;
+      const floor = fiveDayWeek(clause.quote) ? 20 : 24;
+      if (days >= floor) return null;
+      return {
+        de: `Ihr Vertrag nennt ${days} Urlaubstage — der gesetzliche Mindestwert auf dieser Basis ist ${floor}.`,
+        en: `Your contract names ${days} days of leave — the statutory minimum on this basis is ${floor}.`,
+      };
+    },
+  },
+  {
+    id: "urlaubsverfall",
+    law: "BUrlG",
+    section: "§ 7",
+    cite: { de: "§ 7 Abs. 3 BUrlG", en: "§ 7 (3) BUrlG" },
+    rule: {
+      de: "Urlaub verfällt am Jahresende grundsätzlich nur, wenn der Arbeitgeber zuvor konkret auf den Urlaubsanspruch und den drohenden Verfall hingewiesen und zur Urlaubsnahme aufgefordert hat (BAG, 19.02.2019 – 9 AZR 541/15, nach EuGH C-684/16).",
+      en: "Leave normally lapses at year end only where the employer has specifically told the employee about the entitlement and the coming lapse and asked them to take it (BAG 19.02.2019 – 9 AZR 541/15, following CJEU C-684/16).",
+    },
+    subtypes: ["employment"],
+    test: ({ clause }) => {
+      if (!/verfäll|verfall|lapse|expire/i.test(clause.quote)) return null;
+      if (!/unabhängig davon|ohne dass es|in jedem Fall|ersatzlos|regardless of whether/i.test(clause.quote)) return null;
+      return {
+        de: "Ihr Vertrag lässt den Urlaub unabhängig von einem Hinweis des Arbeitgebers verfallen.",
+        en: "Your contract lets leave lapse regardless of any notice from the employer.",
+      };
+    },
+  },
+  {
+    id: "ausschlussfrist",
+    law: "BGB",
+    section: "§ 202",
+    cite: { de: "§ 202 Abs. 1 BGB", en: "§ 202 (1) BGB" },
+    rule: {
+      de: "Die Verjährung kann bei Haftung wegen Vorsatzes nicht im Voraus erleichtert werden; das Bundesarbeitsgericht hält arbeitsvertragliche Ausschlussfristen von weniger als drei Monaten je Stufe für zu kurz (BAG, 28.09.2005 – 5 AZR 52/05).",
+      en: "Limitation may not be eased in advance for liability in intent; the Federal Labour Court treats contractual cut-off periods shorter than three months per stage as too short (BAG 28.09.2005 – 5 AZR 52/05).",
+    },
+    subtypes: ["employment"],
+    test: ({ clause }) => {
+      if (!/Ausschlussfrist|Verfallfrist|Verfallklausel|cut-?off period/i.test(clause.quote + clause.title)) return null;
+      const m = months(clause.quote);
+      if (m == null || m >= 3) return null;
+      return {
+        de: `Ihr Vertrag setzt eine Ausschlussfrist von ${m} Monat${m === 1 ? "" : "en"} — das BAG zieht die Grenze bei drei.`,
+        en: `Your contract sets a cut-off period of ${m} month${m === 1 ? "" : "s"} — the Federal Labour Court draws the line at three.`,
       };
     },
   },

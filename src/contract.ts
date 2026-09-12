@@ -8,7 +8,13 @@ import { sectionExists } from "./lawindex";
 
 export type Subtype = "rental" | "employment" | "subscription" | "insurance" | "loan" | "generic";
 
-const EMPLOYMENT = /arbeitsvertrag|arbeitsverh|anstellung|dienstvertrag|freier mitarbeiter|honorar|employ|freelance|service agreement/i;
+// "Werkstudentenvertrag", "Praktikumsvertrag", "Minijob" and "Ausbildungsvertrag" are
+// employment contracts that do not contain the word "Arbeitsvertrag", and the subtype
+// decides which statutory benchmarks even run. A real Werkstudentenvertrag was being
+// checked against one benchmark instead of six — and the working-student hours rule,
+// which is the one that matters most to the person holding that contract, was not
+// among them.
+const EMPLOYMENT = /arbeitsvertrag|arbeitsverh|anstellung|dienstvertrag|freier mitarbeiter|honorar|werkstudent|studentische[rn]? (?:aushilfe|hilfskraft)|shk\b|whk\b|minijob|geringfügige? beschäftigung|praktikum|praktikanten|ausbildungsvertrag|berufsausbildung|employ|freelance|service agreement|working student|internship|apprentice/i;
 const RENTAL = /miet|wohnraum|pacht|rental|tenan|lease/i;
 const SUBSCRIPTION = /mobilfunk|handy|mobile|abo\b|abonnement|tarif|streaming|fitness|gym|internet|dsl|subscription/i;
 const INSURANCE = /versicherung|insurance|policy|police\b/i;
