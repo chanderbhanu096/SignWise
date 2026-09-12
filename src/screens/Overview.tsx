@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import type { Analysis, Level } from "../types";
 import { LEVELS } from "../types";
 import { t } from "../i18n";
 import { euro } from "../format";
 import { isIsoCalendarDate } from "../ics";
+import { lawChecks } from "../lawcheck";
+import type { LawHit } from "../lawcheck";
 import { getContractCategory, getFinancialCopy, getContractSuggestions, getMoneyState } from "../contract";
 import { Severity, MARK } from "../components/Severity";
 import { Section } from "../components/Section";
@@ -107,6 +109,14 @@ export function Overview({
   const shown = filter ? analysis.clauses.filter((c) => c.level === filter).map((c) => ({ c, n: 0 })) : findings;
 
   // Calendar: the first warning-tone (or first available) date with a machine date.
+  // One pass over the benchmarks for the whole list; lawChecksFor would re-run every
+  // rule for every row.
+  const lawByClause = useMemo(() => {
+    const byClause = new Map<string, LawHit[]>();
+    for (const hit of lawChecks(analysis)) byClause.set(hit.clauseId, [...(byClause.get(hit.clauseId) ?? []), hit]);
+    return byClause;
+  }, [analysis]);
+
   const deadline = analysis.dates.find((d) => d.tone === "warning" && isIsoCalendarDate(d.iso)) ?? analysis.dates.find((d) => isIsoCalendarDate(d.iso));
   const hasUrgentDate = analysis.dates.some((d) => d.tone === "warning");
   const rdCount = analysis.rights.length + analysis.duties.length;
@@ -233,6 +243,16 @@ export function Overview({
                   <span className="finding-meta">
                     <Severity level={c.level} lang={analysis.lang} />
                     <span className="finding-ref">{c.ref}</span>
+                    {/* The statutory benchmark used to live two clicks away, inside
+                        this clause's panel. A reader who never opened the panel never
+                        learned that their contract and the statute say different
+                        things — which is the most useful sentence this app has. The
+                        citation rides along on the row that is already on screen. */}
+                    {(lawByClause.get(c.id) ?? []).map((hit) => (
+                      <span className="finding-law" key={hit.id} title={`${s.lawPanelLabel}: ${hit.rule}`}>
+                        {hit.cite}
+                      </span>
+                    ))}
                   </span>
                 </span>
                 <span className="finding-caret" aria-hidden="true">

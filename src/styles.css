@@ -354,6 +354,14 @@ button:disabled:hover { transform: none; }
 .finding-title { font-size: 17px; font-weight: 600; }
 .finding-meta { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-top: 6px; }
 .finding-ref { font-size: 13px; color: var(--muted-2); }
+/* A statutory citation on a finding row. Quiet by design: it marks where the
+   contract and the statute differ, and the panel behind it does the explaining. */
+.finding-law {
+  font-size: 12px; font-weight: 600; letter-spacing: 0.01em;
+  color: var(--law-fg, #2a4a5c); background: var(--law-bg, #e8f0f4);
+  border: 1px solid var(--law-br, #cddde6);
+  border-radius: 999px; padding: 2px 9px; white-space: nowrap;
+}
 .finding-caret { flex: none; color: var(--muted-2); font-size: 22px; }
 .finding.unverified { opacity: 0.6; }
 /* Filtered = every clause at one level, in document order. No rank, so no badge —
