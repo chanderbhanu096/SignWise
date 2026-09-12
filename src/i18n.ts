@@ -189,6 +189,9 @@ interface Strings {
   totalAnnual: string;
   depositBump: string;
   bonusBump: string;
+  payDerivedTag: string;
+  payBasis: (rate: string, hours: string) => string;
+  chartYearTotal: (total: string) => string;
 
   // legal links
   viewOfficialLaw: string;
@@ -446,6 +449,9 @@ const EN: Strings = {
   totalAnnual: "Potential total annual compensation",
   depositBump: "The first month is higher because of the deposit.",
   bonusBump: "A highlighted month includes a bonus or holiday payment.",
+  payDerivedTag: "worked out, not written in the contract",
+  payBasis: (rate, hours) => `${rate} per hour × ${hours} hours a week × 4.33 weeks a month`,
+  chartYearTotal: (total) => `All 12 months together: ${total}`,
   viewOfficialLaw: "View official law ↗",
   employmentBtn: "Also view an employment example",
   employmentNote: "Salary, probation and overtime",
@@ -699,6 +705,9 @@ const DE: Strings = {
   totalAnnual: "Mögliche Gesamtvergütung pro Jahr",
   depositBump: "Der erste Monat ist wegen der Kaution höher.",
   bonusBump: "Ein hervorgehobener Monat enthält eine Bonus- oder Sonderzahlung.",
+  payDerivedTag: "berechnet, nicht so im Vertrag genannt",
+  payBasis: (rate, hours) => `${rate} pro Stunde × ${hours} Stunden pro Woche × 4,33 Wochen im Monat`,
+  chartYearTotal: (total) => `Alle 12 Monate zusammen: ${total}`,
   viewOfficialLaw: "Gesetz im Original ansehen ↗",
   employmentBtn: "Auch ein Arbeitsvertrags-Beispiel ansehen",
   employmentNote: "Gehalt, Probezeit und Überstunden",

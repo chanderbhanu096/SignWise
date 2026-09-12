@@ -1,6 +1,7 @@
 import type { Analysis, Clause, Lang } from "./types";
 import { getContractSubtype, type Subtype } from "./contract";
 import { canonical } from "./depth";
+import { hourlyWage, weeklyHours } from "./pay";
 
 // Statutory benchmarks.
 //
@@ -55,26 +56,6 @@ function months(text: string): number | null {
   if (!m) return null;
   const raw = m[1].toLowerCase();
   return /^\d+$/.test(raw) ? parseInt(raw, 10) : (MONTH_WORDS[raw] ?? null);
-}
-
-/** A per-hour rate, which is what § 1 MiLoG measures. "16,50 EUR je Arbeitsstunde". */
-function hourlyWage(text: string): number | null {
-  const m = text.match(/((?:EUR\b|Euro\b|€)\s*)?(\d+(?:[.,]\d+)*)\s*(?:EUR|Euro|€)?\s*(?:brutto\s*)?(?:je|pro|per|\/)\s*(?:Arbeits)?stunde|\bstundenlohn[^\d]{0,20}(\d+(?:[.,]\d+)*)/i);
-  if (!m) return null;
-  const value = canonical(m[2] ?? m[3] ?? "");
-  return value == null ? null : Number(value);
-}
-
-/**
- * The most hours a week the clause can require. The highest figure, not the first:
- * a working-time clause states the normal week and then what may be demanded on top
- * — "20 Stunden pro Woche ... verpflichtet sich, bis zu 28 Stunden pro Woche zu
- * arbeiten" — and it is the 28 that decides whether the studies stay the main thing.
- */
-function weeklyHours(text: string): number | null {
-  const all = [...text.matchAll(/(\d{1,2})(?:[.,]\d+)?\s*(?:Arbeits)?stunden?\s*(?:pro\s+Woche|je\s+Woche|wöchentlich|\/\s*Woche|per week|a week|weekly)/gi)]
-    .map((m) => parseInt(m[1], 10));
-  return all.length ? Math.max(...all) : null;
 }
 
 /** Annual leave in working days: "20 Arbeitstage Jahresurlaub". */

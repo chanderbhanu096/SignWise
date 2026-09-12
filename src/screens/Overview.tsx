@@ -7,6 +7,7 @@ import { isIsoCalendarDate } from "../ics";
 import { lawChecks } from "../lawcheck";
 import type { LawHit } from "../lawcheck";
 import { getContractCategory, getFinancialCopy, getContractSuggestions, getMoneyState } from "../contract";
+import { derivedPayFor } from "../pay";
 import { Severity, MARK } from "../components/Severity";
 import { Section } from "../components/Section";
 
@@ -53,9 +54,19 @@ export function Overview({
   const mixed = category === "mixed";
   const neutral = category === "neutral";
 
-  const monthly = money.monthly ?? 0;
   const items = money.oneTime; // one-time costs (expense) or additional pay (income)
-  const moneyState = getMoneyState(money);
+  const stated = getMoneyState(money);
+  // A contract paid by the hour states its income as plainly as a salaried one —
+  // it just leaves the multiplication to the reader. Without this the whole money
+  // panel of a working-student or hourly contract was one card of prose and no
+  // figure at all, and the 12-month chart never drew, because both hang off a
+  // monthly number the contract technically never writes down.
+  const derivedPay = derivedPayFor(analysis);
+  const hoursLabel = derivedPay ? `${derivedPay.hours}${derivedPay.hoursMax != null ? `–${derivedPay.hoursMax}` : ""}` : "";
+  const moneyState = derivedPay
+    ? { ...stated, headline: { amount: derivedPay.monthly, period: "monthly" as const }, hasAnything: true }
+    : stated;
+  const monthly = money.monthly ?? derivedPay?.monthly ?? 0;
 
   // Freq note appended to a line item, e.g. "/ year".
   const freqNote = (freq?: string) =>
@@ -69,14 +80,44 @@ export function Overview({
           : " / month"
         : "";
 
-  // The response does not reliably anchor payment timing to a start date. Show
-  // only the stated recurring amount, without inventing calendar months or an
-  // upfront deposit schedule. Additional payments remain in the cards above it.
+  // Twelve identical bars are a picture of nothing. What makes a year of this
+  // contract worth drawing is the month that differs — the deposit, the bonus,
+  // the holiday payment — so a one-time amount is drawn on top of the month it
+  // falls in. Month numbers, never calendar months: the response does not anchor
+  // payment timing to a start date, and "Oct, Nov, Dec" would be an invention.
   const months = Array.from({ length: 12 }, (_, i) => `${analysis.lang === "de" ? "Monat" : "Month"} ${i + 1}`);
+  const placed = items
+    .filter((it) => it.amount != null && it.timingMonth != null)
+    .map((it) => ({ it, m: it.timingMonth as number }));
+  // A deposit is due at the start whether or not the model said so.
+  const fallback = category === "expense"
+    ? items.filter((it) => it.amount != null && it.freq !== "annual" && it.freq !== "monthly").slice(0, 1).map((it) => ({ it, m: 0 }))
+    : [];
+  const overlay = placed.length ? placed : fallback;
+  const bump = Array(12).fill(0);
+  for (const o of overlay) if (o.m >= 0 && o.m < 12) bump[o.m] += o.it.amount as number;
+  const bars = months.map((label, i) => ({ label, base: monthly, extra: bump[i], value: monthly + bump[i] }));
+  const maxBar = Math.max(...bars.map((b) => b.value), 1);
+  // A deposit can be several times the rent. Drawn to a literal scale it flattens
+  // the other eleven months into stubs, so past ~1.8x the recurring amount the
+  // axis is compressed: the recurring months keep a readable share and the tall
+  // month is clearly taller without being tall in proportion. Every bar still
+  // carries its real figure, and the compression is disclosed under the chart.
+  const RECUR_SHARE = 0.58;
+  const compressed = monthly > 0 && maxBar > monthly * 1.8;
+  const barPct = (v: number) =>
+    !compressed
+      ? (v / maxBar) * 100
+      : v <= monthly
+        ? (v / monthly) * RECUR_SHARE * 100
+        : (RECUR_SHARE + ((v - monthly) / (maxBar - monthly)) * (1 - RECUR_SHARE)) * 100;
+  const yearTotal = bars.reduce((a, b) => a + b.value, 0);
   const showChart = !neutral && monthly > 0;
+  const depositOverlay = overlay.find((o) => o.it.kind === "deposit") || (category === "expense" ? overlay.find((o) => o.m === 0) : undefined);
+  const chartNote = income && overlay.length ? s.bonusBump : depositOverlay ? s.depositBump : "";
   const chartExclusions = analysis.lang === "de"
-    ? "Gezeigt wird nur der monatliche Grundbetrag, unverändert über 12 Monate. Zusätzliche, einmalige und variable Zahlungen sind nicht enthalten; sie stehen separat oben. Die Monatsnummern sind keine Zahlungstermine."
-    : "Only the monthly base amount is shown, held constant over 12 months. Additional, one-off and variable payments are excluded and listed separately above. The month numbers are not payment dates.";
+    ? "Gezeigt wird der monatliche Grundbetrag, unverändert über 12 Monate, plus einmalige Zahlungen in dem Monat, in dem sie anfallen. Variable Zahlungen ohne festen Betrag sind nicht enthalten; sie stehen separat oben. Die Monatsnummern sind Vertragsmonate, keine Kalendermonate."
+    : "The monthly base amount is shown held constant over 12 months, plus any one-off payment in the month it falls due. Variable payments with no fixed amount are excluded and listed separately above. The month numbers are contract months, not calendar months.";
 
   // Income total (only when the document clearly adds an annual amount on top).
   const annualExtras = items.filter((it) => it.freq === "annual" && it.amount != null);
@@ -331,23 +372,59 @@ export function Overview({
           Nothing stated? A single line, not a card full of dashes. */}
       {moneyState.hasAnything ? (
         <Section title={fin.heading} sub={fin.subheading} defaultOpen>
-          <div className="money">
-            {moneyState.headline && (
-              <div className="card">
+          {/* The one number the reader came for gets the width of the page, not a
+              third of it. It used to sit in the leftmost of three equal cards,
+              the same size as "other possible payments" — so the salary and a
+              footnote about overtime carried identical weight on screen. */}
+          {moneyState.headline && (
+            <div className="pay-hero">
+              <div className="pay-hero-main">
                 <div className="money-label">{moneyState.headline.period === "monthly" ? fin.monthly : fin.yearly}</div>
-                <div className="money-big">{fmt(moneyState.headline.amount)}</div>
-                {sourceLink(moneyState.headline.period === "monthly" ? money.monthlyClauseId : money.yearlyClauseId,
-                  moneyState.headline.period === "monthly" ? fin.monthly : fin.yearly)}
+                {/* A contract that can demand more hours pays more in those months, so
+                    a single figure would have to pick a week and call it the answer.
+                    The range is the contract's own answer. */}
+                <div className="pay-amount">
+                  {fmt(moneyState.headline.amount)}
+                  {derivedPay?.monthlyMax != null && <span className="pay-range"> – {fmt(derivedPay.monthlyMax)}</span>}
+                </div>
+                {derivedPay ? (
+                  <>
+                    {/* Arithmetic the reader can redo. A figure the contract does not
+                        state has to show its working, or it is indistinguishable from
+                        one the contract does state. */}
+                    <div className="pay-basis">
+                      {s.payBasis(fmt(derivedPay.hourly), hoursLabel)} · <span className="derived">{s.payDerivedTag}</span>
+                    </div>
+                    {sourceLink(derivedPay.clauseId, fin.monthly)}
+                  </>
+                ) : (
+                  sourceLink(moneyState.headline.period === "monthly" ? money.monthlyClauseId : money.yearlyClauseId,
+                    moneyState.headline.period === "monthly" ? fin.monthly : fin.yearly)
+                )}
+              </div>
+              <div className="pay-aside">
                 {moneyState.headline.period === "monthly" && money.yearly != null && (
-                  <div className="money-year">
-                    {fin.yearly}: {fmt(money.yearly)}
+                  <div className="pay-stat">
+                    <span>{fin.yearly}</span>
+                    <b>{fmt(money.yearly)}</b>
                     {money.yearlyClauseId !== money.monthlyClauseId && sourceLink(money.yearlyClauseId, fin.yearly)}
                   </div>
                 )}
+                {derivedPay && (
+                  <div className="pay-stat">
+                    <span>{fin.yearly}</span>
+                    <b>
+                      {fmt(derivedPay.monthly * 12)}
+                      {derivedPay.monthlyMax != null && <span className="pay-range"> – {fmt(derivedPay.monthlyMax * 12)}</span>}
+                    </b>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
+          )}
 
-            {moneyState.hasDetail &&
+          <div className="money">
+            {items.length > 0 &&
               (mixed ? (
                 <div className="card">
                   <div className="money-label">{fin.receiveHeading}</div>
@@ -406,33 +483,43 @@ export function Overview({
           {showChart && (
             <div className="card block">
               <div className="overview-head" style={{ alignItems: "center" }}>
-                <h3 style={{ fontSize: 18 }}>{analysis.lang === "de" ? "Monatlicher Grundbetrag über 12 Monate" : "Monthly base amount over 12 months"}</h3>
+                <h3 style={{ fontSize: 18 }}>{fin.chartTitle || (analysis.lang === "de" ? "Monatlicher Grundbetrag über 12 Monate" : "Monthly base amount over 12 months")}</h3>
+                <span className="chart-total">{s.chartYearTotal(fmt(yearTotal))}</span>
               </div>
+              {chartNote && <p className="chart-note">{chartNote}</p>}
               <div
                 className="chart"
                 role="img"
                 tabIndex={0}
                 aria-label={
                   analysis.lang === "de"
-                    ? `Hochrechnung über 12 Monate: Grundbetrag je ${fmt(monthly)}. ${chartExclusions}`
-                    : `Projection over 12 months: base amount ${fmt(monthly)} each. ${chartExclusions}`
+                    ? `Hochrechnung über 12 Monate: Grundbetrag je ${fmt(monthly)}${chartNote ? "; " + chartNote : ""} Zusammen ${fmt(yearTotal)}. ${chartExclusions}`
+                    : `Projection over 12 months: base amount ${fmt(monthly)} each${chartNote ? "; " + chartNote : ""} Total ${fmt(yearTotal)}. ${chartExclusions}`
                 }
               >
-                {months.map((month) => (
-                  <div className="bar-col" key={month} style={{ minWidth: 54 }} aria-hidden="true">
-                    <span className="bar-amt">{new Intl.NumberFormat(locale).format(monthly)}</span>
+                {bars.map((b) => (
+                  <div className={"bar-col" + (b.extra > 0 ? " tall" : "")} key={b.label} style={{ minWidth: 54 }} aria-hidden="true">
+                    <span className="bar-amt">{new Intl.NumberFormat(locale).format(b.value)}</span>
                     {/* The track is the grid's only flexible row, so a percentage height
                         on the bar resolves against the space the bars actually have. */}
                     <div className="bar-track">
-                      <div className="bar" style={{ height: "100%" }} />
+                      <div className="bar" style={{ height: `${barPct(b.value)}%` }}>
+                        {b.extra > 0 && (
+                          <div
+                            className="bar-extra"
+                            style={{ height: `${((barPct(b.value) - barPct(b.base)) / barPct(b.value)) * 100}%` }}
+                          />
+                        )}
+                      </div>
                     </div>
-                    <span className="bar-m">{month}</span>
+                    <span className="bar-m">{b.label}</span>
                   </div>
                 ))}
               </div>
               {/* The chart holds today's amounts flat for a year. On a contract that
                   allows an increase — and one of the findings on this very page may
                   say so — that is a projection, not a forecast. Said, not implied. */}
+              {compressed && <p className="chart-scale-note">{s.chartScaleNote}</p>}
               <p className="chart-scale-note">{s.chartProjectionNote}</p>
               <p className="chart-scale-note">{chartExclusions}</p>
 
