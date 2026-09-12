@@ -213,3 +213,24 @@ test("the bundled examples pass the translation check in both directions", () =>
     }
   }
 });
+
+// The address is meant to be handed to a jury, and every call spends model quota.
+test("a caller cannot spend the whole model budget in a loop", async () => {
+  const { rateLimit, resetRateLimitForTest, callerKey, ApiFailure } = await import("../api/_http.ts");
+  resetRateLimitForTest();
+  const from = (ip: string) => ({ headers: { "x-forwarded-for": ip }, socket: { remoteAddress: ip } });
+  for (let i = 0; i < 20; i++) assert.doesNotThrow(() => rateLimit(from("203.0.113.7")), `request ${i + 1} was refused`);
+  assert.throws(() => rateLimit(from("203.0.113.7")), (e: any) => e instanceof ApiFailure && e.code === "too_many_requests" && e.status === 429);
+
+  // One caller hitting the wall must not lock anyone else out.
+  assert.doesNotThrow(() => rateLimit(from("203.0.113.8")));
+
+  // The window moves: eleven minutes later the same caller is welcome again.
+  const later = Date.now() + 11 * 60 * 1000;
+  assert.doesNotThrow(() => rateLimit(from("203.0.113.7"), later));
+
+  // Azure terminates TLS, so the proxy header is the caller, and the port is not.
+  assert.equal(callerKey({ headers: { "x-forwarded-for": "198.51.100.4:51234, 10.0.0.1" }, socket: {} }), "198.51.100.4");
+  assert.equal(callerKey({ headers: {}, socket: { remoteAddress: "198.51.100.9" } }), "198.51.100.9");
+  resetRateLimitForTest();
+});

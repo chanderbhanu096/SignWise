@@ -11,6 +11,46 @@ export class ApiFailure extends Error {
   }
 }
 
+// Every call to these routes spends model quota, and the routes are open: the
+// address is meant to be handed to a jury, and nothing stands between a loop and an
+// empty subscription. A window per caller is the whole defence — no dependency, no
+// store, and it costs nothing when nobody is abusing it.
+//
+// Generous on purpose. An analysis takes about a minute to read, so twenty requests
+// in ten minutes is far more than a person browsing their own contract will ever
+// make, and far less than a script needs to be worth running.
+const WINDOW_MS = 10 * 60 * 1000;
+const MAX_PER_WINDOW = 20;
+const MAX_CALLERS = 10_000; // bounded: a burst of unique addresses must not grow it forever
+const calls = new Map<string, number[]>();
+
+/** The client, as far as we can tell. Azure terminates TLS, so the socket is a proxy. */
+export function callerKey(req: any): string {
+  const forwarded = req?.headers?.["x-forwarded-for"];
+  const first = (Array.isArray(forwarded) ? forwarded[0] : forwarded)?.split(",")[0]?.trim();
+  return (first || req?.socket?.remoteAddress || "unknown").replace(/:\d+$/, "");
+}
+
+export function rateLimit(req: any, now = Date.now()) {
+  const key = callerKey(req);
+  const recent = (calls.get(key) ?? []).filter((at) => now - at < WINDOW_MS);
+  if (recent.length >= MAX_PER_WINDOW) {
+    calls.set(key, recent);
+    throw new ApiFailure("too_many_requests", 429);
+  }
+  recent.push(now);
+  calls.set(key, recent);
+  if (calls.size > MAX_CALLERS) {
+    for (const [k, times] of calls) {
+      if (times.every((at) => now - at >= WINDOW_MS)) calls.delete(k);
+      if (calls.size <= MAX_CALLERS) break;
+    }
+  }
+}
+
+/** Test hook: the window is process-wide state. */
+export const resetRateLimitForTest = () => calls.clear();
+
 export function validLanguage(value: unknown): value is string {
   return typeof value === "string" && value.length <= 35 && /^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/i.test(value);
 }

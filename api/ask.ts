@@ -1,6 +1,6 @@
 import { AnalysisSchema } from "../src/types";
 import { askContract } from "./_model";
-import { ApiFailure, checkAnalysisSize, MAX_QUESTION_LENGTH, requestSignal, requireJsonObject, sendFailure, validLanguage } from "./_http";
+import { ApiFailure, checkAnalysisSize, MAX_QUESTION_LENGTH, rateLimit, requestSignal, requireJsonObject, sendFailure, validLanguage } from "./_http";
 import { parseAnswer } from "./_validation";
 
 export const config = { maxDuration: 120 };
@@ -10,6 +10,7 @@ export function createAskHandler(produce = askContract) {
     if (req.method !== "POST") return res.status(405).json({ error: "POST only" });
     const request = requestSignal(req, res);
     try {
+      rateLimit(req);
       const { question, analysis } = requireJsonObject(req.body);
       if (typeof question !== "string" || !question.trim()) throw new ApiFailure("empty_question");
       if (question.length > MAX_QUESTION_LENGTH) throw new ApiFailure("question_too_long");

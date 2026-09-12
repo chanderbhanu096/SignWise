@@ -1,6 +1,6 @@
 import { AnalysisSchema } from "../src/types";
 import { analyzeContract } from "./_model";
-import { requestSignal, sendFailure } from "./_http";
+import { rateLimit, requestSignal, sendFailure } from "./_http";
 import { parseAnalyzeInput } from "./_validation";
 
 export const config = { maxDuration: 300 };
@@ -10,6 +10,7 @@ export function createAnalyzeHandler(produce = analyzeContract) {
     if (req.method !== "POST") return res.status(405).json({ error: "POST only" });
     const request = requestSignal(req, res);
     try {
+      rateLimit(req);
       const analysis = await produce(parseAnalyzeInput(req.body), request.signal);
       return res.status(200).json(AnalysisSchema.parse(analysis));
     } catch (err) {

@@ -1,6 +1,6 @@
 import { AnalysisSchema } from "../src/types";
 import { translateAnalysis } from "./_model";
-import { ApiFailure, checkAnalysisSize, requestSignal, requireJsonObject, sendFailure, validLanguage } from "./_http";
+import { ApiFailure, checkAnalysisSize, rateLimit, requestSignal, requireJsonObject, sendFailure, validLanguage } from "./_http";
 import { parseTranslation } from "./_validation";
 
 export const config = { maxDuration: 300 };
@@ -10,6 +10,7 @@ export function createTranslateHandler(produce = translateAnalysis) {
     if (req.method !== "POST") return res.status(405).json({ error: "POST only" });
     const request = requestSignal(req, res);
     try {
+      rateLimit(req);
       const { analysis, target } = requireJsonObject(req.body);
       if (!validLanguage(target)) throw new ApiFailure("invalid_language");
       checkAnalysisSize(analysis);
