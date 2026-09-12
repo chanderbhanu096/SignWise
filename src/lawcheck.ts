@@ -365,6 +365,81 @@ const RULES: Rule[] = [
     },
   },
   {
+    id: "schoenheitsreparaturen-starre-fristen",
+    law: "BGB",
+    section: "§ 307",
+    cite: { de: "§ 307 Abs. 1 BGB", en: "§ 307 (1) BGB" },
+    rule: {
+      de: "Vorformulierte Bedingungen dürfen den Vertragspartner nicht unangemessen benachteiligen. Der BGH sieht einen starren Fristenplan für Schönheitsreparaturen — feste Jahresabstände ohne Rücksicht auf den tatsächlichen Zustand der Wohnung — als solche Benachteiligung an (BGH, 23.06.2004 – VIII ZR 361/03).",
+      en: "Pre-formulated terms may not unreasonably disadvantage the other party. The Federal Court of Justice treats a rigid decorating schedule — fixed yearly intervals regardless of the flat's actual condition — as such a disadvantage (BGH 23.06.2004 – VIII ZR 361/03).",
+    },
+    subtypes: ["rental"],
+    test: ({ clause }) => {
+      if (!/Schönheitsreparaturen|decorating|cosmetic repairs/i.test(clause.quote + clause.title)) return null;
+      const years = [...clause.quote.matchAll(/alle\s+(\d{1,2}|zwei|drei|vier|fünf|sechs|sieben|acht|neun|zehn)\s+Jahren?/gi)]
+        .map((m) => (/^\d+$/.test(m[1]) ? parseInt(m[1], 10) : MONTH_WORDS[m[1].toLowerCase()] ?? 0))
+        .filter(Boolean);
+      if (!years.length) return null;
+      // A schedule that still defers to the flat's condition is not the rigid kind.
+      if (/nach Bedarf|bei Bedarf|soweit erforderlich|Zustand der (?:Wohnung|Räume)|if required|as needed/i.test(clause.quote)) return null;
+      const list = [...new Set(years)].sort((a, b) => a - b);
+      return {
+        de: `Ihr Vertrag nennt feste Abstände von ${list.join(" und ")} Jahren, ohne den Zustand der Räume zu erwähnen.`,
+        en: `Your contract names fixed intervals of ${list.join(" and ")} years, without mentioning the condition of the rooms.`,
+      };
+    },
+  },
+  {
+    id: "kleinreparaturen-ohne-grenze",
+    law: "BGB",
+    section: "§ 307",
+    cite: { de: "§ 307 Abs. 1 BGB", en: "§ 307 (1) BGB" },
+    rule: {
+      de: "Eine Kleinreparaturklausel wälzt Kosten ab, die nach § 535 Abs. 1 BGB den Vermieter treffen. Die Rechtsprechung lässt das nur zu, wenn der Vertrag beides begrenzt: einen Höchstbetrag je Einzelfall und eine Obergrenze pro Jahr. Welche Beträge angemessen sind, entscheidet der Einzelfall.",
+      en: "A small-repairs clause shifts costs that § 535 (1) BGB places on the landlord. The courts allow it only where the contract caps both: a maximum per individual repair and a ceiling per year. What amounts are appropriate depends on the individual case.",
+    },
+    subtypes: ["rental"],
+    test: ({ clause }) => {
+      if (!/Kleinreparatur|Bagatellschad|small repairs|minor repairs/i.test(clause.quote + clause.title)) return null;
+      const perCase = /je (?:Einzelfall|Reparatur|Fall)|pro (?:Einzelfall|Reparatur|Fall)|per (?:case|repair)/i.test(clause.quote) && amount(clause.quote) != null;
+      const perYear = /(?:im |pro |je )?(?:Kalender)?jahr|jährlich|annually|per year|Jahresmiete/i.test(clause.quote);
+      if (perCase && perYear) return null; // both limits present — nothing to put side by side
+      const missing = !perCase && !perYear ? "beides" : !perCase ? "einzelfall" : "jahr";
+      return {
+        de: missing === "beides"
+          ? "Ihr Vertrag nennt weder einen Höchstbetrag je Einzelfall noch eine Jahresgrenze."
+          : missing === "einzelfall"
+            ? "Ihr Vertrag nennt eine Jahresgrenze, aber keinen Höchstbetrag je Einzelfall."
+            : "Ihr Vertrag nennt einen Höchstbetrag je Einzelfall, aber keine Jahresgrenze.",
+        en: missing === "beides"
+          ? "Your contract names neither a cap per repair nor a yearly ceiling."
+          : missing === "einzelfall"
+            ? "Your contract names a yearly ceiling but no cap per individual repair."
+            : "Your contract names a cap per individual repair but no yearly ceiling.",
+      };
+    },
+  },
+  {
+    id: "betriebskosten-abrechnungsfrist",
+    law: "BGB",
+    section: "§ 556",
+    cite: { de: "§ 556 Abs. 3 BGB", en: "§ 556 (3) BGB" },
+    rule: {
+      de: "Die Betriebskostenabrechnung ist dem Mieter spätestens bis zum Ablauf des zwölften Monats nach Ende des Abrechnungszeitraums mitzuteilen; danach ist eine Nachforderung grundsätzlich ausgeschlossen, wenn der Vermieter die Verspätung zu vertreten hat.",
+      en: "The service-charge statement must reach the tenant within twelve months of the end of the accounting period; after that a claim for arrears is generally excluded where the landlord is responsible for the delay.",
+    },
+    subtypes: ["rental"],
+    test: ({ clause }) => {
+      if (!/Betriebskosten|Nebenkosten|Abrechnung|service charges|utilities/i.test(clause.quote + clause.title)) return null;
+      const m = months(clause.quote);
+      if (m == null || m <= 12) return null;
+      return {
+        de: `Ihr Vertrag nennt eine Abrechnungsfrist von ${m} Monaten — das Gesetz nennt zwölf.`,
+        en: `Your contract names a statement period of ${m} months — the statute names twelve.`,
+      };
+    },
+  },
+  {
     id: "laufzeit-abo",
     law: "BGB",
     section: "§ 309",

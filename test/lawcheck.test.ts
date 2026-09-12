@@ -223,3 +223,48 @@ test("no employment benchmark ever returns a verdict on the contract", () => {
   assert.ok(all.length >= 4, `expected every trap to be measured, got ${all.map((h) => h.id).join(", ")}`);
   for (const hit of all) assert.doesNotMatch(hit.contract, /unwirksam|nichtig|ungültig|void|illegal/i, hit.id);
 });
+
+// Three tenancy benchmarks for the clauses German tenants actually end up arguing
+// about. Each one is silent unless the contract and the rule diverge.
+test("a rigid decorating schedule is put next to § 307 BGB, and a condition-aware one is not", () => {
+  const hit = lawChecks(rental({
+    dec: "§ 8 Schönheitsreparaturen. Der Mieter hat die Schönheitsreparaturen auszuführen, und zwar in Küche und Bad alle drei Jahre, in den übrigen Räumen alle fünf Jahre, unabhängig vom Zustand.",
+  })).find((h) => h.id === "schoenheitsreparaturen-starre-fristen");
+  assert.ok(hit, "expected the decorating benchmark to fire");
+  assert.match(hit.contract, /3 und 5 Jahren/);
+  assert.doesNotMatch(hit.contract, /unwirksam|ungültig/);
+
+  assert.equal(lawChecks(rental({
+    dec: "§ 8 Schönheitsreparaturen. Der Mieter führt Schönheitsreparaturen nach Bedarf aus, in der Regel alle fünf Jahre, abhängig vom Zustand der Räume.",
+  })).find((h) => h.id === "schoenheitsreparaturen-starre-fristen"), undefined);
+});
+
+test("a small-repairs clause is measured on whether both limits are there, not on their size", () => {
+  const both = "§ 13 Kleinreparaturen. Der Mieter trägt die Kosten bis zu einem Betrag von 150,00 EUR je Einzelfall, insgesamt höchstens 8 % der Jahresmiete.";
+  assert.equal(lawChecks(rental({ k: both })).find((h) => h.id === "kleinreparaturen-ohne-grenze"), undefined,
+    "a clause that caps both ways must stay silent — the app does not invent a threshold");
+  const hit = lawChecks(rental({
+    k: "§ 13 Kleinreparaturen. Der Mieter trägt die Kosten für Kleinreparaturen bis zu 150,00 EUR je Einzelfall.",
+  })).find((h) => h.id === "kleinreparaturen-ohne-grenze");
+  assert.ok(hit, "expected the missing yearly ceiling to be reported");
+  assert.match(hit.contract, /Jahresgrenze/);
+});
+
+test("a service-charge deadline beyond twelve months is put next to § 556 Abs. 3 BGB", () => {
+  const hit = lawChecks(rental({
+    b: "§ 5 Betriebskosten. Die Abrechnung erfolgt spätestens 18 Monate nach Ende des Abrechnungszeitraums.",
+  })).find((h) => h.id === "betriebskosten-abrechnungsfrist");
+  assert.ok(hit, "expected the statement-period benchmark to fire");
+  assert.match(hit.contract, /18 Monaten/);
+  assert.equal(lawChecks(rental({
+    b: "§ 5 Betriebskosten. Die Abrechnung erfolgt spätestens 12 Monate nach Ende des Abrechnungszeitraums.",
+  })).find((h) => h.id === "betriebskosten-abrechnungsfrist"), undefined);
+});
+
+test("the demo tenancy and the demo employment contract are not flagged by the new benchmarks", () => {
+  for (const a of [sampleAnalysis("de"), employmentAnalysis("de")]) {
+    for (const hit of lawChecks(a)) {
+      assert.doesNotMatch(hit.contract, /unwirksam|nichtig|ungültig|void/i, `${hit.id} returned a verdict`);
+    }
+  }
+});
