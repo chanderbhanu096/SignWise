@@ -11,3 +11,6 @@ dist
 
 # QA scratch upload fixture
 public/__qa_test.pdf
+
+# duet run logs and reports (local tooling)
+.duet/
