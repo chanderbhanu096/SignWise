@@ -311,7 +311,18 @@ export function Overview({
       {/* Financial — heading, labels and chart adapt to the contract category.
           Nothing stated? A single line, not a card full of dashes. */}
       {moneyState.hasAnything ? (
-        <Section title={fin.heading} sub={fin.subheading} defaultOpen>
+        // A plain card, not the collapsible <Section> used below for dates and
+        // rights/duties. That component's chevron-and-summary chrome reads as
+        // "optional, tuck away if you like" — exactly wrong for the one section
+        // holding the figure the reader came for, and it let an accidental tap
+        // hide it entirely. Same non-collapsible treatment as the findings card
+        // above it, so the two read as equally primary rather than one looking
+        // skippable next to the other.
+        <div className="card block">
+          <h2 className="section-h" style={{ fontSize: 22 }}>
+            {fin.heading}
+          </h2>
+          <p className="section-sub">{fin.subheading}</p>
           {/* The one number the reader came for gets the width of the page, not a
               third of it. It used to sit in the leftmost of three equal cards,
               the same size as "other possible payments" — so the salary and a
@@ -421,7 +432,10 @@ export function Overview({
           </div>
 
           {showChart && (
-            <div className="card block">
+            // Not a card: this already sits inside the money card. A box in a box
+            // is the nesting the rest of this pass removed, and on a phone its two
+            // paddings cost the chart 36px — about one month of the twelve.
+            <div className="chart-block">
               <div className="overview-head" style={{ alignItems: "center" }}>
                 <h3 style={{ fontSize: 18 }}>{fin.chartTitle || (analysis.lang === "de" ? "Monatlicher Grundbetrag über 12 Monate" : "Monthly base amount over 12 months")}</h3>
                 <span className="chart-total">{s.chartYearTotal(fmt(yearTotal))}</span>
@@ -438,7 +452,7 @@ export function Overview({
                 }
               >
                 {bars.map((b) => (
-                  <div className={"bar-col" + (b.extra > 0 ? " tall" : "")} key={b.label} style={{ minWidth: 54 }} aria-hidden="true">
+                  <div className={"bar-col" + (b.extra > 0 ? " tall" : "")} key={b.label} aria-hidden="true">
                     <span className="bar-amt">{new Intl.NumberFormat(locale).format(b.value)}</span>
                     {/* The track is the grid's only flexible row, so a percentage height
                         on the bar resolves against the space the bars actually have. */}
@@ -465,7 +479,7 @@ export function Overview({
 
             </div>
           )}
-        </Section>
+        </div>
       ) : (
         // Absence is itself worth stating when the contract type implies money.
         !neutral && <p className="sec-empty block">{s.noAmounts}</p>

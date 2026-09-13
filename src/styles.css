@@ -421,10 +421,11 @@ button:disabled:hover { transform: none; }
 .pay-amount .pay-range { font-size: 0.72em; letter-spacing: -0.8px; }
 .pay-stat .pay-range { font-size: 0.86em; }
 .pay-hero .link-btn { margin-top: 6px; }
+.chart-block { margin-top: 26px; padding-top: 22px; border-top: 1px solid var(--line); }
 .chart-total { font-size: 13px; font-weight: 600; color: var(--muted); white-space: nowrap; }
 .chart-note { margin-top: 4px; font-size: 13.5px; color: var(--ink-2); }
 .chart { display: flex; align-items: flex-end; gap: 8px; height: 160px; margin-top: 16px; overflow-x: auto; overflow-y: hidden; }
-.bar-col { flex: 1; min-width: 0; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; justify-items: center; gap: 6px; height: 100%; }
+.bar-col { flex: 1; min-width: 54px; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; justify-items: center; gap: 6px; height: 100%; }
 .bar-amt { font-size: 11px; color: var(--muted-2); }
 .bar-track { width: 100%; display: flex; align-items: flex-end; }
 .bar { width: 100%; min-height: 3px; border-radius: 6px 6px 3px 3px; background: #a9d3d6; overflow: hidden; }
@@ -515,7 +516,7 @@ button:disabled:hover { transform: none; }
 .sec-chevron { color: var(--muted-2); font-size: 20px; transition: transform 0.16s ease; }
 .sec[open] .sec-chevron { transform: rotate(180deg); }
 .sec-body { padding: 20px; }
-.sec-body > .money, .sec-body > .timeline { margin-top: 0; }
+.sec-body > .timeline { margin-top: 0; }
 .sec-empty { padding: 15px 18px; border: 1px dashed var(--line-2); border-radius: var(--radius); background: var(--surface); color: var(--muted); font-size: 15px; }
 
 /* Ask — deliberately never collapsed */
@@ -584,9 +585,21 @@ button:disabled:hover { transform: none; }
 .brief-empty { margin-top: 14px; padding: 18px 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
 .brief-empty.compact { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin-top: 14px; padding: 12px 16px; border-style: dashed; background: none; }
 .brief-empty.compact p { margin-top: 0; flex: 1 1 320px; color: var(--muted); font-size: 13.5px; }
-.decision-attention-grid { display: grid; grid-template-columns: 1fr; gap: 34px; margin-top: 34px; align-items: start; }
+/* Two columns, review wider than clarify — review is usually the longer list
+   and the one with the higher-stakes clauses. The gap alone is the separator:
+   no vertical rule, because a rule here would be exactly the nested-box chrome
+   the rest of this page just shed. */
+.decision-attention-grid { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 34px; margin-top: 34px; align-items: start; }
 .decision-attention-grid.single { grid-template-columns: 1fr; }
-.decision-panel { min-width: 0; }
+/* Review and clarify used to be bare content sitting in a grid cell — gap was
+   the only thing telling the two panels apart. Once the review column is wide
+   enough for its cards to wrap onto a second row (from ~1000px down through
+   ~700px), a 34px gap next to a plain page background reads as one wrapped
+   list, not two grouped panels. A quiet tint (no border — the de-bulking pass
+   on this page stripped nested borders on purpose) gives each panel a
+   boundary the eye can find without stacking a second box outline on top of
+   the cards inside it. */
+.decision-panel { min-width: 0; padding: 20px 22px; border-radius: var(--radius-lg); background: #edf2f2; }
 .decision-panel-head { display: flex; align-items: flex-start; gap: 12px; }
 .review-list, .clarification-list { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; margin-top: 16px; }
 .review-card, .clarification-card { min-width: 0; padding: 15px 17px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: 0 6px 18px rgba(18,38,43,0.04); }
@@ -672,13 +685,21 @@ li.law-ref > .law-ref-label { display: inline-block; padding: 6px 2px; } /* plai
 }
 
 @media (max-width: 860px) {
-  .money, .two, .split, .decision-attention-grid { grid-template-columns: 1fr; }
+  .money, .two, .split { grid-template-columns: 1fr; }
   .review-list, .clarification-list, .understanding-list { grid-template-columns: 1fr; }
   .commitment-grid { grid-template-columns: 1fr 1fr; }
   .glance { grid-template-columns: 1fr 1fr; }
   .doc-side { position: static; }
   .doc { max-height: none; }
   .panel { top: auto; left: 0; right: 0; bottom: 0; width: 100%; max-height: 88vh; border-left: none; border-top: 1px solid var(--line); border-radius: 16px 16px 0 0; animation: sheet 0.22s ease-out; }
+}
+
+/* Review and clarify hold their two columns down through the 700–1000px band —
+   collapsing them at the same 860px breakpoint as everything else left them
+   stacked well before either panel was actually short of room. Below 700px a
+   single review card plus its own padding is already close to this width. */
+@media (max-width: 700px) {
+  .decision-attention-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 540px) {
@@ -713,9 +734,18 @@ li.law-ref > .law-ref-label { display: inline-block; padding: 6px 2px; } /* plai
   .ask-row { flex-wrap: wrap; }
   .ask-row input { flex: 1 1 100%; min-width: 0; }
   .ask-row .btn { width: 100%; }
-  /* Twelve months don't fit a phone: scroll the chart, keep the labels readable. */
-  .chart { gap: 6px; height: 150px; padding-bottom: 6px; }
-  .bar-col { flex: 0 0 40px; }
+  /* Twelve months don't fit a phone: scroll the chart, keep the labels readable.
+     A wider column than the 12-up desktop layout, and a fade on the trailing
+     edge — the scrollbar itself is invisible on most phones, so nothing else
+     here would tell a thumb that most months are still off to the right. The
+     matching padding-right gives the last bar room to scroll clear of that
+     fade, so the one figure a reader scrolls all the way to is never the one
+     partly masked. */
+  .chart { gap: 8px; height: 150px; padding-bottom: 6px; padding-right: 26px;
+    mask-image: linear-gradient(to right, #000 calc(100% - 26px), transparent);
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 26px), transparent); }
+  .bar-col { flex: 0 0 46px; min-width: 46px; }
+  .bar-amt { font-size: 11.5px; }
   /* Title + count + chevron on one line, description full width beneath, instead
      of a five-line description squeezed into a narrow column. */
   .sec-head { padding: 12px 16px; grid-template-areas: "title count chevron" "sub sub sub"; row-gap: 6px; }
@@ -760,6 +790,7 @@ li.law-ref > .law-ref-label { display: inline-block; padding: 6px 2px; } /* plai
   .decision-hero { padding: 24px 20px; }
   .decision-lead { font-size: 16px; }
   .commitment-grid { grid-template-columns: 1fr; }
+  .decision-panel { padding: 16px 18px; }
   .understanding-answer { padding-left: 18px; }
 }
 
@@ -845,6 +876,12 @@ li.law-ref > .law-ref-label { display: inline-block; padding: 6px 2px; } /* plai
   .decision-hero { padding: 20px; background: #fff; }
   .decision-hero::after { display: none; }
   .commitment-card, .review-card, .clarification-card, .understanding-item { break-inside: avoid; box-shadow: none; }
+  /* The screen tells review and clarify apart with a tint; paper has no such
+     wash by default (most print dialogs skip background colours unless asked),
+     so here — where a nested border is the normal way to bound a printed
+     block, not the card fatigue the screen de-bulking pass fixed — a border
+     takes over the same job. */
+  .decision-panel { background: #fff; border: 1px solid #ccc; border-radius: 10px; padding: 16px 18px; break-inside: avoid; }
   .understanding-item .understanding-answer { display: block !important; }
   .decision-disclaimer { background: #fff; border: 1px solid #ccc; }
   /* The contract pane scrolls inside a 70vh box on screen. On paper that box is
