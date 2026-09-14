@@ -164,9 +164,8 @@ export function Overview({
 
   const sourceLink = (clauseId: string | undefined, label: string) => clauseId && byId(clauseId) ? (
     <button
-      className="link-btn"
+      className="link-btn money-source"
       type="button"
-      style={{ display: "block" }}
       aria-label={`${s.showClause}: ${label}`}
       onClick={() => onOpenClause(clauseId)}
     >
@@ -193,7 +192,7 @@ export function Overview({
           <h1 className="section-h" id="ov-h">
             {s.glanceHeading}
           </h1>
-          <p className="section-sub" style={{ marginBottom: 0 }}>
+          <p className="section-sub overview-sub">
             {filename} · {s.fileMeta(pages)}
           </p>
         </div>
@@ -436,8 +435,8 @@ export function Overview({
             // is the nesting the rest of this pass removed, and on a phone its two
             // paddings cost the chart 36px — about one month of the twelve.
             <div className="chart-block">
-              <div className="overview-head" style={{ alignItems: "center" }}>
-                <h3 style={{ fontSize: 18 }}>{fin.chartTitle || (analysis.lang === "de" ? "Monatlicher Grundbetrag über 12 Monate" : "Monthly base amount over 12 months")}</h3>
+              <div className="overview-head chart-head">
+                <h3 className="chart-title">{fin.chartTitle || (analysis.lang === "de" ? "Monatlicher Grundbetrag über 12 Monate" : "Monthly base amount over 12 months")}</h3>
                 <span className="chart-total">{s.chartYearTotal(fmt(yearTotal))}</span>
               </div>
               {chartNote && <p className="chart-note">{chartNote}</p>}
@@ -487,8 +486,8 @@ export function Overview({
 
       {/* Ask — never collapsed: it is the proof the analysis is about *this* document */}
       <div className="card block ask-card">
-        <h2 style={{ fontSize: 20 }}>{s.askHeading}</h2>
-        <p className="section-sub" style={{ marginBottom: 0 }}>
+        <h2 className="overview-card-title">{s.askHeading}</h2>
+        <p className="section-sub overview-sub">
           {s.askSub}
         </p>
         <div className="ask-chips">
@@ -556,7 +555,7 @@ export function Overview({
               <li className="tl" data-tone={d.tone} key={i}>
                 <div className="tl-rail">
                   <span className="tl-dot" aria-hidden="true" />
-                  <span className="tl-line" aria-hidden="true" style={i === analysis.dates.length - 1 ? { minHeight: 0 } : undefined} />
+                  <span className="tl-line" aria-hidden="true" />
                 </div>
                 <div className="tl-card">
                   <div className="tl-date">{d.date}</div>
@@ -589,8 +588,8 @@ export function Overview({
           <div className="two">
             {analysis.rights.length > 0 && (
               <div className="card">
-                <h3 style={{ fontSize: 20 }}>{s.rightsHeading}</h3>
-                <p className="section-sub" style={{ marginBottom: 0 }}>
+                <h3 className="overview-card-title">{s.rightsHeading}</h3>
+                <p className="section-sub overview-sub">
                   {s.rightsSub}
                 </p>
                 <ul className="rd-list">
@@ -614,8 +613,8 @@ export function Overview({
             )}
             {analysis.duties.length > 0 && (
               <div className="card">
-                <h3 style={{ fontSize: 20 }}>{s.dutiesHeading}</h3>
-                <p className="section-sub" style={{ marginBottom: 0 }}>
+                <h3 className="overview-card-title">{s.dutiesHeading}</h3>
+                <p className="section-sub overview-sub">
                   {s.dutiesSub}
                 </p>
                 <ul className="rd-list">

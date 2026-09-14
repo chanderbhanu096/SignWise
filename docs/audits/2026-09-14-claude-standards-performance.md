@@ -119,3 +119,51 @@ make the diff unreviewable.
 - `npx tsc -b` — clean
 - `npm test` — 201 passing
 - `npm run build` — clean, and report the main chunk size before and after
+
+---
+
+## Outcome (2026-09-14, built by Codex, reviewed and accepted by Claude)
+
+**P1 — done.** `src/App.tsx` now defers `./sample` at both use sites (`openExample`
+and `changeLang`), using the existing `sessionRef.current.ticket()` staleness
+guard, a busy banner, and an error path (`example_load_failed`).
+
+Measured after `npm run build`:
+
+| | before | after |
+|---|---|---|
+| main chunk | 432.49 kB (gzip 136.41) | **362.58 kB (gzip 115.65)** |
+| `sample` chunk | — (inside main) | 71.42 kB (gzip 21.18) |
+| `grep -c Kastanienallee` on main chunk | 1 | **0** |
+
+A visitor who uploads their own contract no longer downloads either demo:
+about 70 kB raw, 21 kB gzipped, saved on first load.
+
+**S2 — done.** Nine inline style props moved to classes (`overview-sub`,
+`overview-card-title`, `chart-title`, `chart-head`, `money-source`). One-off
+spacing was left alone as instructed. Verified identical in the browser: ask
+heading 20px, chart title 18px, sub margin-bottom 0, source link `display:block`,
+chart head centred.
+
+One change improved on the instruction: the last timeline connector used a JS
+index test, `style={i === analysis.dates.length - 1 ? { minHeight: 0 } : undefined}`,
+and is now `.tl:last-child .tl-line { min-height: 0 }`. Checked before accepting —
+the parent holds only `LI.tl` children, and computed min-heights are
+`[18px, 18px, 0px]`, matching the old behaviour exactly.
+
+**Verified by the reviewer, not just by the checks:** double-clicking two
+different demo buttons resolves to one consistent contract (the second click
+wins; filename, amount and clause count all agree) — the ticket guard handles
+the race. DE↔EN toggle works through the async import in both directions, with
+`Monat 1..12` labels, the scale note and the derived tag all intact.
+
+**Accepted with two open observations, neither blocking:**
+
+1. The demo buttons in `src/screens/Upload.tsx` are not disabled while the
+   import is in flight, though the language buttons are. The race is handled
+   correctly so this is not a correctness bug, only an inconsistency in
+   feedback. Raised by the duet reviewer.
+2. `example_load_failed` is special-cased at the `<Upload>` call site rather
+   than living in the `errMessage` map with every other error code. Works today
+   because there is one call site; a second one would silently get the generic
+   fallback. Found during acceptance review.

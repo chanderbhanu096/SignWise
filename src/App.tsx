@@ -1,14 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { Analysis, Depth, Lang } from "./types";
 import { t } from "./i18n";
-import {
-  sampleAnalysis,
-  SAMPLE_DOC_TEXT,
-  SAMPLE_FILENAME,
-  employmentAnalysis,
-  EMPLOYMENT_DOC_TEXT,
-  EMPLOYMENT_FILENAME,
-} from "./sample";
 import { verifyQuote } from "./verify";
 import { contractMimeType, UploadError, validateContractFile } from "./upload";
 import { ContractSession } from "./session";
@@ -100,7 +92,7 @@ export default function App() {
   const [phase, setPhase] = useState<Phase>("read");
   const [source, setSource] = useState<Source>("sample");
   const [sampleKind, setSampleKind] = useState<"rental" | "employment">("rental");
-  const [filename, setFilename] = useState(SAMPLE_FILENAME);
+  const [filename, setFilename] = useState("");
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   // The extracted contract text, kept so the "original contract" screen can show the
   // document itself rather than a list of the passages the model happened to quote.
@@ -118,6 +110,7 @@ export default function App() {
   const [confirmNew, setConfirmNew] = useState(false);
   const [translating, setTranslating] = useState(false);
   const [translationError, setTranslationError] = useState(false);
+  const [loadingExample, setLoadingExample] = useState(false);
   const [imageReview, setImageReview] = useState<PendingImages | null>(null);
 
   const sessionRef = useRef(new ContractSession());
@@ -157,18 +150,33 @@ export default function App() {
     setDlMsg("");
     setError(null);
     setImageReview(null);
+    setLoadingExample(false);
   }
 
-  function openExample(kind: "rental" | "employment") {
+  async function openExample(kind: "rental" | "employment") {
     resetContract();
-    const a = kind === "employment" ? employmentAnalysis(lang) : sampleAnalysis(lang);
-    const text = kind === "employment" ? EMPLOYMENT_DOC_TEXT : SAMPLE_DOC_TEXT;
-    setSource("sample");
-    setSampleKind(kind);
-    setFilename(kind === "employment" ? EMPLOYMENT_FILENAME : SAMPLE_FILENAME);
-    setAnalysis(verifyAnalysis(a, text));
-    setDocText(text);
-    setScreen("overview");
+    const task = sessionRef.current.ticket();
+    setLoadingExample(true);
+    try {
+      const {
+        sampleAnalysis, SAMPLE_DOC_TEXT, SAMPLE_FILENAME,
+        employmentAnalysis, EMPLOYMENT_DOC_TEXT, EMPLOYMENT_FILENAME,
+      } = await import("./sample");
+      if (!task.isCurrent()) return;
+      const a = kind === "employment" ? employmentAnalysis(lang) : sampleAnalysis(lang);
+      const text = kind === "employment" ? EMPLOYMENT_DOC_TEXT : SAMPLE_DOC_TEXT;
+      const checked = verifyAnalysis(a, text);
+      setSource("sample");
+      setSampleKind(kind);
+      setFilename(kind === "employment" ? EMPLOYMENT_FILENAME : SAMPLE_FILENAME);
+      setAnalysis(checked);
+      setDocText(text);
+      setScreen("overview");
+    } catch {
+      if (task.isCurrent()) setError("example_load_failed");
+    } finally {
+      if (task.isCurrent()) setLoadingExample(false);
+    }
   }
 
   function startExample() {
@@ -296,7 +304,7 @@ export default function App() {
   }, [lang]);
 
   async function changeLang(l: Lang) {
-    if (l === lang || translatingRef.current || screen === "analyzing") return;
+    if (l === lang || translatingRef.current || loadingExample || screen === "analyzing") return;
     setTranslationError(false);
     if (!analysis) { setLang(l); return; }
     const task = sessionRef.current.ticket();
@@ -308,9 +316,14 @@ export default function App() {
     setTranslating(true);
     try {
       sessionRef.current.translations.set(lang, analysis);
-      const translated = source === "sample"
-        ? sampleKind === "employment" ? employmentAnalysis(l) : sampleAnalysis(l)
-        : sessionRef.current.translations.get(l) ?? await translate(analysis, l, task.signal);
+      let translated: Analysis;
+      if (source === "sample") {
+        const { sampleAnalysis, employmentAnalysis } = await import("./sample");
+        if (!task.isCurrent()) return;
+        translated = sampleKind === "employment" ? employmentAnalysis(l) : sampleAnalysis(l);
+      } else {
+        translated = sessionRef.current.translations.get(l) ?? await translate(analysis, l, task.signal);
+      }
       if (!task.isCurrent()) return;
       // "warnings" is the model's own free text and nothing reads it but this line
       // used to: the server answered with a fixture tagged "stub" when it had no
@@ -342,7 +355,7 @@ export default function App() {
     <button
       className={"pill" + (lang === code ? " on" : "")}
       aria-pressed={lang === code}
-      disabled={translating || screen === "analyzing"}
+      disabled={translating || loadingExample || screen === "analyzing"}
       onClick={() => changeLang(code)}
     >
       {label}
@@ -398,6 +411,15 @@ export default function App() {
         </nav>
       )}
 
+      {loadingExample && (
+        <div className="banner banner-busy">
+          <div className="banner-in" role="status">
+            <span className="spinner" aria-hidden="true" />
+            <span>{s.exampleLoading}</span>
+          </div>
+        </div>
+      )}
+
       {/* A translation is a model call; without this the page looks frozen. */}
       {translating && (
         <div className="banner banner-busy">
@@ -440,7 +462,7 @@ export default function App() {
 
       <main>
         {screen === "upload" && (
-          <Upload lang={lang} onUpload={startUpload} onExample={startExample} onEmploymentExample={startEmploymentExample} error={error ? errMessage(error, lang) : null} />
+          <Upload lang={lang} onUpload={startUpload} onExample={startExample} onEmploymentExample={startEmploymentExample} error={error === "example_load_failed" ? s.exampleLoadFailed : error ? errMessage(error, lang) : null} />
         )}
         {screen === "analyzing" && <Analyzing lang={lang} phase={phase} filename={filename} onCancel={() => { resetContract(); setScreen("upload"); }} />}
         {screen === "overview" && analysis && (

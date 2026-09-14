@@ -24,6 +24,8 @@ interface Strings {
   slogans: string[]; // rotate one at a time in the header
   languageSelector: string;
   translating: string;
+  exampleLoading: string;
+  exampleLoadFailed: string;
   askThinking: string;
   chartScaleNote: string;
   chartProjectionNote: string;
@@ -210,6 +212,8 @@ const EN: Strings = {
   ],
   languageSelector: "Language",
   translating: "Translating your analysis…",
+  exampleLoading: "Loading the example contract…",
+  exampleLoadFailed: "The example contract could not be loaded. Please try again.",
   askThinking: "Reading your contract for an answer…",
   chartScaleNote: "Bar heights are compressed so the regular months stay readable. The figures above each bar are exact.",
   chartProjectionNote:
@@ -466,6 +470,8 @@ const DE: Strings = {
   ],
   languageSelector: "Sprache",
   translating: "Ihre Analyse wird übersetzt…",
+  exampleLoading: "Beispielvertrag wird geladen…",
+  exampleLoadFailed: "Der Beispielvertrag konnte nicht geladen werden. Bitte versuchen Sie es erneut.",
   askThinking: "Der Vertrag wird nach einer Antwort durchsucht…",
   chartScaleNote: "Die Balkenhöhen sind gestaucht, damit die regulären Monate lesbar bleiben. Die Beträge über den Balken sind exakt.",
   chartProjectionNote:
