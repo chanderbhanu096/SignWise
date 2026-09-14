@@ -165,6 +165,7 @@ button { font: inherit; }
 
 section.screen { padding-top: 40px; }
 .section-h { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+h2.section-h { font-size: 22px; }
 .section-sub { color: var(--muted); margin-bottom: 18px; max-width: 52em; }
 
 /* Banners */

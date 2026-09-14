@@ -213,7 +213,7 @@ export function Overview({
 
       {/* Findings — always open, with the attention triage as its header */}
       <div className="card block">
-        <h2 className="section-h" style={{ fontSize: 22 }}>
+        <h2 className="section-h">
           {s.findingsHeading(findings.length)}
         </h2>
         <p className="section-sub">{s.findingsSub}</p>
@@ -319,7 +319,7 @@ export function Overview({
         // above it, so the two read as equally primary rather than one looking
         // skippable next to the other.
         <div className="card block">
-          <h2 className="section-h" style={{ fontSize: 22 }}>
+          <h2 className="section-h">
             {fin.heading}
           </h2>
           <p className="section-sub">{fin.subheading}</p>
