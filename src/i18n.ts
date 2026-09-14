@@ -189,7 +189,8 @@ interface Strings {
   baseAnnual: string;
   additionalAnnual: string;
   totalAnnual: string;
-  depositBump: string;
+  depositBumpIn: (month: string) => string;
+  chartUnplaced: (payments: string) => string;
   bonusBump: string;
   payDerivedTag: string;
   payBasis: (rate: string, hours: string) => string;
@@ -451,7 +452,9 @@ const EN: Strings = {
   baseAnnual: "Base annual salary",
   additionalAnnual: "Additional payments",
   totalAnnual: "Potential total annual compensation",
-  depositBump: "The first month is higher because of the deposit.",
+  depositBumpIn: (month) => `${month} is higher because of the deposit.`,
+  chartUnplaced: (payments) =>
+    `Not shown on any month, because the contract does not say when it is due: ${payments}.`,
   bonusBump: "A highlighted month includes a bonus or holiday payment.",
   payDerivedTag: "worked out, not written in the contract",
   payBasis: (rate, hours) => `${rate} per hour × ${hours} hours a week × 4.33 weeks a month`,
@@ -709,7 +712,9 @@ const DE: Strings = {
   baseAnnual: "Jahresgrundgehalt",
   additionalAnnual: "Zusätzliche Zahlungen",
   totalAnnual: "Mögliche Gesamtvergütung pro Jahr",
-  depositBump: "Der erste Monat ist wegen der Kaution höher.",
+  depositBumpIn: (month) => `${month} ist wegen der Kaution höher.`,
+  chartUnplaced: (payments) =>
+    `Nicht eingezeichnet, weil der Vertrag keinen Monat nennt: ${payments}.`,
   bonusBump: "Ein hervorgehobener Monat enthält eine Bonus- oder Sonderzahlung.",
   payDerivedTag: "berechnet, nicht so im Vertrag genannt",
   payBasis: (rate, hours) => `${rate} pro Stunde × ${hours} Stunden pro Woche × 4,33 Wochen im Monat`,

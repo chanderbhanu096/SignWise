@@ -8,6 +8,7 @@ import { lawChecks } from "../lawcheck";
 import type { LawHit } from "../lawcheck";
 import { getContractCategory, getFinancialCopy, getContractSuggestions, getMoneyState } from "../contract";
 import { derivedPayFor } from "../pay";
+import { chartPlan } from "../chart";
 import { Severity, MARK } from "../components/Severity";
 import { Section } from "../components/Section";
 
@@ -86,16 +87,11 @@ export function Overview({
   // falls in. Month numbers, never calendar months: the response does not anchor
   // payment timing to a start date, and "Oct, Nov, Dec" would be an invention.
   const months = Array.from({ length: 12 }, (_, i) => `${analysis.lang === "de" ? "Monat" : "Month"} ${i + 1}`);
-  const placed = items
-    .filter((it) => it.amount != null && it.timingMonth != null)
-    .map((it) => ({ it, m: it.timingMonth as number }));
-  // A deposit is due at the start whether or not the model said so.
-  const fallback = category === "expense"
-    ? items.filter((it) => it.amount != null && it.freq !== "annual" && it.freq !== "monthly").slice(0, 1).map((it) => ({ it, m: 0 }))
-    : [];
-  const overlay = placed.length ? placed : fallback;
-  const bump = Array(12).fill(0);
-  for (const o of overlay) if (o.m >= 0 && o.m < 12) bump[o.m] += o.it.amount as number;
+  // Which bar a one-off lands on is a claim about the reader's money, so it is
+  // decided in one tested place rather than inline here. A payment the contract
+  // never timed is not drawn at all: the old code put it on month one and then
+  // captioned it as a deposit, which was two inventions in one sentence.
+  const { bump, note: bumpNote, unplaced } = chartPlan(items, income);
   const bars = months.map((label, i) => ({ label, base: monthly, extra: bump[i], value: monthly + bump[i] }));
   const maxBar = Math.max(...bars.map((b) => b.value), 1);
   // A deposit can be several times the rent. Drawn to a literal scale it flattens
@@ -113,8 +109,10 @@ export function Overview({
         : (RECUR_SHARE + ((v - monthly) / (maxBar - monthly)) * (1 - RECUR_SHARE)) * 100;
   const yearTotal = bars.reduce((a, b) => a + b.value, 0);
   const showChart = !neutral && monthly > 0;
-  const depositOverlay = overlay.find((o) => o.it.kind === "deposit") || (category === "expense" ? overlay.find((o) => o.m === 0) : undefined);
-  const chartNote = income && overlay.length ? s.bonusBump : depositOverlay ? s.depositBump : "";
+  const chartNote = bumpNote == null ? ""
+    : bumpNote.kind === "bonus" ? s.bonusBump
+    : s.depositBumpIn(months[bumpNote.month]);
+  const unplacedNote = unplaced.length ? s.chartUnplaced(unplaced.map((it) => it.label).join(", ")) : "";
   const chartExclusions = analysis.lang === "de"
     ? "Gezeigt wird der monatliche Grundbetrag, unverändert über 12 Monate, plus einmalige Zahlungen in dem Monat, in dem sie anfallen. Variable Zahlungen ohne festen Betrag sind nicht enthalten; sie stehen separat oben. Die Monatsnummern sind Vertragsmonate, keine Kalendermonate."
     : "The monthly base amount is shown held constant over 12 months, plus any one-off payment in the month it falls due. Variable payments with no fixed amount are excluded and listed separately above. The month numbers are contract months, not calendar months.";
@@ -446,8 +444,8 @@ export function Overview({
                 tabIndex={0}
                 aria-label={
                   analysis.lang === "de"
-                    ? `Hochrechnung über 12 Monate: Grundbetrag je ${fmt(monthly)}${chartNote ? "; " + chartNote : ""} Zusammen ${fmt(yearTotal)}. ${chartExclusions}`
-                    : `Projection over 12 months: base amount ${fmt(monthly)} each${chartNote ? "; " + chartNote : ""} Total ${fmt(yearTotal)}. ${chartExclusions}`
+                    ? `Hochrechnung über 12 Monate: Grundbetrag je ${fmt(monthly)}${chartNote ? "; " + chartNote : ""} Zusammen ${fmt(yearTotal)}. ${chartExclusions}${unplacedNote ? " " + unplacedNote : ""}`
+                    : `Projection over 12 months: base amount ${fmt(monthly)} each${chartNote ? "; " + chartNote : ""} Total ${fmt(yearTotal)}. ${chartExclusions}${unplacedNote ? " " + unplacedNote : ""}`
                 }
               >
                 {bars.map((b) => (
@@ -472,6 +470,7 @@ export function Overview({
               {/* The chart holds today's amounts flat for a year. On a contract that
                   allows an increase — and one of the findings on this very page may
                   say so — that is a projection, not a forecast. Said, not implied. */}
+              {unplacedNote && <p className="chart-note">{unplacedNote}</p>}
               {compressed && <p className="chart-scale-note">{s.chartScaleNote}</p>}
               <p className="chart-scale-note">{s.chartProjectionNote}</p>
               <p className="chart-scale-note">{chartExclusions}</p>
