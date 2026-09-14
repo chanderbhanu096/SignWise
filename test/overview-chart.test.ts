@@ -31,6 +31,25 @@ function render(analysis: Analysis) {
 const barAmounts = (html: string) => [...html.matchAll(/class="bar-amt">([^<]+)/g)].map((m) => m[1]);
 const chartNotes = (html: string) => [...html.matchAll(/class="chart-note">([^<]+)/g)].map((m) => m[1]);
 const ariaLabel = (html: string) => html.match(/class="chart"[^>]*aria-label="([^"]+)"/)?.[1] ?? "";
+/** Just the pay hero, so a link somewhere else on the page cannot stand in for its own. */
+const payHero = (html: string) => html.match(/<div class="pay-hero">[\s\S]*?<div class="pay-aside">/)?.[0] ?? "";
+
+/**
+ * An hourly contract: it never writes a monthly figure, so the headline is
+ * derived. Synthetic test input built from the clause shapes in pay.test.ts --
+ * no user-facing contract data is invented by this.
+ */
+function hourlyAnalysis(lang: Lang): Analysis {
+  const a = sampleAnalysis(lang);
+  a.money.monthly = null;
+  a.money.yearly = null;
+  a.money.monthlyClauseId = undefined;
+  a.clauses = [
+    { ...a.clauses[0], id: "§ 2", ref: "§ 2", quote: "Die regelmäßige Arbeitszeit beträgt 20 Stunden pro Woche." },
+    { ...a.clauses[0], id: "§ 3", ref: "§ 3", quote: "Die Vergütung beträgt 16,50 EUR brutto je Arbeitsstunde." },
+  ];
+  return a;
+}
 
 for (const lang of ["de", "en"] as Lang[]) {
   const s = t(lang);
@@ -78,7 +97,20 @@ for (const lang of ["de", "en"] as Lang[]) {
   test(`[${lang}] the compression disclosure survives, and so does the clause source link`, () => {
     const html = render(sampleAnalysis(lang));
     assert.ok(html.includes(s.chartScaleNote), "a compressed chart must disclose it");
-    assert.ok(html.includes(s.showClause), "figures must keep a way back to the clause");
+    assert.ok(payHero(html).includes(s.showClause), "the headline figure must keep a way back to its clause");
     assert.ok(html.includes(month(1)) && html.includes(month(12)), "labels stay contract months");
+  });
+}
+
+for (const lang of ["de", "en"] as Lang[]) {
+  const s = t(lang);
+
+  test(`[${lang}] a pay figure the contract never wrote is shown as derived, inside the hero`, () => {
+    const hero = payHero(render(hourlyAnalysis(lang)));
+    assert.ok(hero, "the pay hero must render for an hourly contract");
+    // 16,50 x 20 x 52/12 = 1430. The digits must be on screen in either locale's formatting.
+    assert.ok(/1[.,]430/.test(hero), `the derived monthly figure must be shown: ${hero.slice(0, 200)}`);
+    assert.ok(hero.includes(s.payDerivedTag), "and it must say the figure was worked out, not quoted");
+    assert.ok(hero.includes(s.showClause), "and link to the clause the arithmetic came from");
   });
 }
