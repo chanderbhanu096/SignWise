@@ -265,3 +265,56 @@ Actual output:
 ```
 
 `scaleNotePresent` establishes presence of the exact compression note for these fixture renders. The other field searches the whole HTML despite its name; it is not an isolated accessible-name assertion. These probes do not establish browser accessibility or print acceptance. All source, dictionaries, dependencies, styles and accessibility attributes are left unchanged by this audit.
+
+---
+
+## Outcome (2026-09-14, built by Claude, reviewed and accepted by Codex)
+
+**Finding 1 — fixed.** Both inventions are gone. Placement now lives in
+`src/chart.ts` (`chartPlan`), a pure function, instead of inline in the
+component where neither defect was visible.
+
+- A payment with no stated `timingMonth` is **not drawn**. It stays in the list
+  above the chart and is named underneath as not shown, because the contract does
+  not say when it is due (`chartUnplaced`), in DE and EN and in the chart's
+  `aria-label`.
+- The deposit caption names the month it actually found (`depositBumpIn(month)`,
+  replacing the hardcoded `depositBump`) and fires only for `kind === "deposit"`,
+  so a fee is never called a deposit.
+
+Re-running this audit's own probe against the fix:
+
+| case | before | after |
+|---|---|---|
+| deposit, month 0 | first `4.240`, "Der erste Monat…" | first `4.240`, "Monat 1 ist wegen der Kaution höher." |
+| fee, no month stated | first `4.240`, captioned as a deposit | first `1.240`, named as not drawn |
+| deposit, `timingMonth: 5` | sixth `4.240`, caption said "erste Monat" | sixth `4.240`, "Monat 6 ist wegen der Kaution höher." |
+
+**Two rounds of review push-back, both upheld against the builder:**
+
+1. First submission tested only `chartPlan`. The reviewer required *rendered*
+   bilingual coverage and was right: the original defect was a correct bar under
+   a contradicting caption, which no unit test can see. Added
+   `test/overview-chart.test.ts`, 10 rendered DE/EN cases.
+2. The builder then argued the derived-pay assertions were a fair scoping call.
+   The reviewer rejected that, noting deleting `payDerivedTag` or the hero's
+   source link would escape every assertion, and that the `showClause` check
+   matched the whole page so any link satisfied it. Both true. Added a `payHero()`
+   helper to scope the assertion and two rendered hourly cases.
+
+**Mutation-tested, because a test that passes on broken code is worse than none:**
+
+| reintroduced defect | tests failing |
+|---|---|
+| caption hardcoded to month 1 | 2 (month-six cases, DE + EN) |
+| untimed payment forced onto month 0 | 6 (unit + rendered, both languages) |
+| `payDerivedTag` span deleted | 2 (DE + EN) |
+| derived-pay `sourceLink` deleted | 2 (DE + EN) |
+
+All reverted. Suite **222 passing** (was 201), `npx tsc -b` clean,
+`npm run build` clean. Browser re-check on both shipped samples: contract-month
+labels, compression note and no page overflow intact.
+
+**Finding 2 (`server.ts` and `vite.config.ts` outside the tsconfig program)
+remains open and declined**, on the reviewer's own stated reasoning: no
+production type error was demonstrated. Worth a separate maintenance pass.
